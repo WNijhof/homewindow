@@ -24,24 +24,18 @@ Hoe je alles gebruikt staat in de **[handleiding](docs/HANDLEIDING.md)**.
 
 ## Installeren
 
-Er is nog geen kant-en-klare download. Bouw HomeyBar zelf; dat duurt een minuut.
+1. Download `HomeyBar-Setup-<versie>.exe` bij de nieuwste [release](https://github.com/WNijhof/homeybar-windows/releases/latest).
+2. Start het bestand. Windows kan waarschuwen dat de uitgever onbekend is (de installer is niet digitaal ondertekend): kies **Meer informatie → Toch uitvoeren**.
+3. HomeyBar installeert voor jouw Windows-account, zonder beheerdersrechten, en zet zichzelf in het Start-menu. .NET zit in de installer; je hoeft niets anders te installeren.
+4. Bij de eerste start opent Instellingen: vul het IP-adres van je Homey en een API-key in. De [handleiding](docs/HANDLEIDING.md#een-api-key-maken) legt uit hoe je die maakt.
 
-1. Installeer de [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (Windows 10 of 11).
-2. Haal de code op en bouw:
-   ```
-   git clone https://github.com/WNijhof/homeybar-windows.git
-   cd homeybar-windows\HomeyBar
-   dotnet publish -c Release -o ..\publish
-   ```
-3. Start `publish\HomeyBar.exe`. Bij de eerste start opent Instellingen; vul daar het IP-adres van je Homey en een API-key in. De [handleiding](docs/HANDLEIDING.md#een-api-key-maken) legt uit hoe je die maakt.
-
-De map `publish` kun je naar elke plek of pc kopiëren. Op een andere pc is alleen de [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) nodig, niet de hele SDK.
+HomeyBar zoekt daarna zelf naar nieuwe versies en installeert die stil (uit te zetten bij Instellingen → Updates). Verwijderen gaat via **Windows-instellingen → Apps**.
 
 Eerst rondkijken zonder Homey? Start `HomeyBar.exe --demo`.
 
 ## Privacy
 
-HomeyBar praat alleen met je eigen Homey: rechtstreeks in je netwerk, of via de cloud-doorgang van Athom (`<homey-id>.connect.athom.com`) als je niet thuis bent. Er gaat niets naar andere partijen. Je instellingen staan in `%APPDATA%\HomeyBar\settings.json`; de API-key is daarin versleuteld met je Windows-account.
+HomeyBar praat met je eigen Homey: rechtstreeks in je netwerk, of via de cloud-doorgang van Athom (`<homey-id>.connect.athom.com`) als je niet thuis bent. Daarnaast vraagt hij bij GitHub of er een nieuwe versie is. Er gaat geen informatie over je Homey naar andere partijen. Je instellingen staan in `%APPDATA%\HomeyBar\settings.json`; de API-key is daarin versleuteld met je Windows-account.
 
 ## Ontwikkelen
 
@@ -52,10 +46,28 @@ dotnet run -- --demo                          # met het voorbeeldhuis
 dotnet run -- --snapshot ..\.shots\x [--dark]  # alle schermen van de demo als PNG
 ```
 
+Zelf bouwen vraagt de [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). De installer bouw je met [Inno Setup 6](https://jrsoftware.org/isinfo.php) (`winget install JRSoftware.InnoSetup`):
+
+```
+powershell -ExecutionPolicy Bypass -File scripts\build-installer.ps1 [-Version 0.2.0] [-SelfContained]
+```
+
+Zonder `-SelfContained` is de installer klein en heeft de pc de .NET 10 Desktop Runtime nodig (de installer controleert dat). Met `-SelfContained` zit .NET erin; daarvoor moet NuGet de runtime-pakketten kunnen downloaden.
+
+### Een nieuwe versie uitbrengen
+
+```
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+De workflow `.github/workflows/release.yml` bouwt dan de installer (met .NET erin) en zet hem als release op GitHub. Geïnstalleerde exemplaren van HomeyBar vinden die binnen zes uur en werken zichzelf bij. GitHub laat releases alleen zonder inloggen zien bij een **openbare** repository; bij een privé-repository vindt HomeyBar geen updates.
+
 | Map | Inhoud |
 |---|---|
 | `HomeyBar/Core` | Verbinding met Homey (`HomeyClient`), ophalen en bijhouden van gegevens (`HomeyStore`), modellen, thema, systeemvak, vertalingen, demohuis |
 | `HomeyBar/Views` | Het paneel (`FlyoutWindow`), het hoofdvenster met de pagina's, stijlen en sjablonen |
-| `scripts` | `make-icon.ps1` maakt het logo, `strings.js` toont teksten zonder Engelse vertaling, `screenshot.ps1` maakt een schermafbeelding van een venster |
+| `installer` | Het Inno Setup-script van de installer |
+| `scripts` | `build-installer.ps1` bouwt de installer, `make-icon.ps1` maakt het logo, `strings.js` toont teksten zonder Engelse vertaling, `screenshot.ps1` maakt een schermafbeelding van een venster |
 
 Teksten staan in het Nederlands in de code; `HomeyBar/Core/Loc.En.cs` vertaalt ze naar het Engels. HomeyBar gebruikt de Web API van Homey Pro (`/api/manager/...`) met een API-key en haalt elke paar seconden nieuwe gegevens op terwijl een venster open is.

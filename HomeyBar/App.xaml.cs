@@ -77,13 +77,27 @@ public partial class App : Application
         var quiet = args.Contains("--tray");
         if (Settings.Homeys.Count == 0 && !demo) ShowMain("settings");
         else if (!quiet) ShowMain();
+
+        if (Settings.LastVersion != Updater.CurrentText)
+        {
+            if (Settings.LastVersion != null) tray.Notify("HomeyBar", Loc.F("Bijgewerkt naar versie {0}", Updater.CurrentText));
+            Settings.LastVersion = Updater.CurrentText;
+            Settings.Save();
+        }
+        if (!demo) Updater.I.Start();
     }
+
+    // HomeyBar is in use while the panel is open or the main window has the focus
+    public bool IsInUse => flyout?.IsVisible == true || main?.IsActive == true;
+
+    // The setup of a new version replaces the files; it starts HomeyBar again when it is done
+    public void QuitForUpdate() => Quit();
 
     // Renders every page and the flyout of the demo home to PNG files, off screen.
     // For checking the design: HomeyBar.exe --snapshot <folder> [--dark]
     async Task SnapshotAsync(string folder, bool dark)
     {
-        Settings = new AppSettings { Theme = dark ? "dark" : "light", Backdrop = "aurora", Language = "nl" };
+        Settings = new AppSettings { Theme = dark ? "dark" : "light", Backdrop = "aurora", Language = "nl", ReadOnly = true };
         Loc.Init("nl");
         Theme.Apply();
         Directory.CreateDirectory(folder);

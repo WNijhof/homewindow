@@ -1,0 +1,54 @@
+# Builds the installer, with .NET included, and publishes it as a GitHub release.
+# Start it by pushing a version tag:  git tag v0.2.0 && git push origin v0.2.0
+# HomeyBar checks the latest release at start-up and updates itself from it.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version without v, e.g. 0.2.0 (builds the installer as an artifact, no release)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Version
+        id: version
+        shell: pwsh
+        run: |
+          $v = if ('${{ github.event_name }}' -eq 'push') { '${{ github.ref_name }}'.TrimStart('v') } else { '${{ inputs.version }}' }
+          "value=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Build installer
+        shell: pwsh
+        run: ./scripts/build-installer.ps1 -Version ${{ steps.version.outputs.value }} -SelfContained -Iscc "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HomeyBar-Setup-${{ steps.version.outputs.value }}
+          path: installer/Output/HomeyBar-Setup-*.exe
+
+      - name: Publish release
+        if: github.event_name == 'push'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $v = '${{ steps.version.outputs.value }}'
+          gh release create "v$v" "installer/Output/HomeyBar-Setup-$v.exe" --title "HomeyBar $v" --generate-notes

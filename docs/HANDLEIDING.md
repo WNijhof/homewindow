@@ -18,6 +18,17 @@ HomeyBar zet je Homey Pro in het Windows-systeemvak, naast de klok. Deze handlei
 
 ## 1. Eerste keer instellen
 
+### Installeren
+
+1. Download `HomeyBar-Setup-<versie>.exe` bij de nieuwste [release op GitHub](https://github.com/WNijhof/homeybar-windows/releases/latest).
+2. Start het bestand. Omdat de installer niet digitaal ondertekend is, kan Windows *Windows heeft uw pc beschermd* tonen. Klik op **Meer informatie** en dan **Toch uitvoeren**.
+3. Kies of HomeyBar met Windows mee moet starten (aanbevolen) en of je een snelkoppeling op het bureaublad wilt.
+4. Klik op **Installeren**. HomeyBar komt in je eigen gebruikersmap (`%LOCALAPPDATA%\Programs\HomeyBar`); je hebt geen beheerdersrechten nodig. Wil je hem voor alle gebruikers van de pc installeren, kies dat dan in het eerste scherm van de installer.
+
+Een nieuwere installer over een bestaande installatie heen draaien werkt gewoon: je instellingen blijven bewaard.
+
+### Koppelen aan je Homey
+
 Je hebt drie dingen nodig: het **IP-adres** van je Homey, een **API-key** en een paar minuten.
 
 ### Het IP-adres vinden
@@ -293,6 +304,20 @@ De accentkleur (van schakelaars en actieve apparaten) volgt de accentkleur van W
 | Meldingen van Homey tonen | Nieuwe meldingen uit de tijdlijn verschijnen als Windows-melding. Klik erop om HomeyBar te openen. |
 | Taal | Automatisch (volgt Windows), Nederlands of English. Start HomeyBar opnieuw om te wisselen. |
 
+### Updates
+
+Met **Automatisch bijwerken** aan (standaard) kijkt HomeyBar kort na het opstarten en daarna elke zes uur op GitHub of er een nieuwe versie is. Is die er, dan:
+
+1. downloadt HomeyBar de nieuwe installer en controleert hij die met de controlesom die GitHub erbij publiceert;
+2. wacht hij tot je HomeyBar niet gebruikt (het paneel is dicht en het hoofdvenster heeft de focus niet);
+3. installeert hij de nieuwe versie stil en start daarna vanzelf opnieuw. Je ziet een melding *Bijgewerkt naar versie …*.
+
+Je instellingen, favorieten en de keuze voor *Starten met Windows* blijven daarbij hetzelfde.
+
+Met **Nu controleren** zoek je meteen, en installeer je een gevonden versie direct, ook als automatisch bijwerken uit staat. Daaronder zie je je huidige versie en de uitkomst van de laatste controle.
+
+Automatisch bijwerken werkt alleen als HomeyBar met de installer is geïnstalleerd, niet als je hem zelf uit de broncode hebt gebouwd.
+
 ---
 
 ## 7. Sneltoetsen
@@ -318,6 +343,7 @@ De accentkleur (van schakelaars en actieve apparaten) volgt de accentkleur van W
 | **Lokaal: geen antwoord** | Klopt het IP-adres? Zit je pc in hetzelfde netwerk als je Homey (niet in een gastnetwerk)? Probeer `http://<ip-adres>` in je browser. |
 | **Geen adres of Homey-ID ingesteld** | Vul het IP-adres in, of het Homey-ID voor de cloud. |
 | Werkt thuis, maar onderweg niet | HomeyBar kent het Homey-ID nog niet. Verbind één keer thuis, of vul het ID zelf in. |
+| *Geen releases gevonden op GitHub* bij Updates | Er is nog geen versie uitgebracht, of de repository op GitHub is privé. |
 | Het icoon is niet te zien | Klik op **^** naast de klok en sleep het HomeyBar-icoon naar de taakbalk. |
 | Ctrl + Alt + H doet niets | Een ander programma gebruikt die combinatie al. Sluit dat programma, of zet de sneltoets uit en weer aan bij Instellingen. |
 | De energietotalen blijven leeg | Geef de API-key het recht om Insights te bekijken. Zonder slimme meter telt HomeyBar alleen apparaten met een eigen kWh-meter. |
@@ -330,8 +356,8 @@ HomeyBar haalt elke 2,5 seconden nieuwe gegevens op als het paneel of het hoofdv
 
 ## 9. Verwijderen
 
-1. Zet bij Instellingen **Starten met Windows** uit.
-2. Sluit HomeyBar via de rechtermuisknop op het icoon → **Afsluiten**.
-3. Verwijder de map met HomeyBar.
-4. Verwijder de map `%APPDATA%\HomeyBar` met je instellingen. Typ dat adres in de adresbalk van Verkenner om hem te vinden.
-5. Verwijder de API-key in my.homey.app onder Instellingen → API-sleutels.
+1. Open **Windows-instellingen → Apps → Geïnstalleerde apps**, zoek **HomeyBar** en kies **Verwijderen**. HomeyBar wordt eerst afgesloten en ook uit het opstarten van Windows gehaald.
+2. Aan het eind vraagt de verwijderaar of je ook je instellingen (Homeys, API-keys, favorieten) wilt wissen. Kies **Ja** als je HomeyBar niet meer gaat gebruiken.
+3. Verwijder de API-key in my.homey.app onder Instellingen → API-sleutels.
+
+Heb je HomeyBar zelf gebouwd in plaats van geïnstalleerd? Zet dan bij Instellingen **Starten met Windows** uit, sluit HomeyBar af, en verwijder de map met HomeyBar en de map `%APPDATA%\HomeyBar`.

@@ -17,8 +17,22 @@ public partial class SettingsPage : UserControl
     {
         InitializeComponent();
         Load();
-        var version = typeof(App).Assembly.GetName().Version;
-        VersionText.Text = $"HomeyBar {version?.ToString(3)}";
+        VersionText.Text = Loc.F("HomeyBar versie {0}", Updater.CurrentText);
+        CheckButton.IsEnabled = Updater.IsInstalled;
+    }
+
+    void Update_Click(object sender, RoutedEventArgs e)
+    {
+        if (loading) return;
+        S.AutoUpdate = UpdateSwitch.IsChecked == true;
+        S.Save();
+    }
+
+    async void Check_Click(object sender, RoutedEventArgs e)
+    {
+        CheckButton.IsEnabled = false;
+        await Updater.I.CheckAsync(manual: true);
+        CheckButton.IsEnabled = true;
     }
 
     void Load()
@@ -40,6 +54,7 @@ public partial class SettingsPage : UserControl
         StartupSwitch.IsChecked = AppSettings.StartWithWindows;
         HotkeySwitch.IsChecked = S.Hotkey;
         ToastSwitch.IsChecked = S.Toasts;
+        UpdateSwitch.IsChecked = S.AutoUpdate;
         loading = false;
         if (S.Homeys.Count == 0) OpenEditor(null);
     }

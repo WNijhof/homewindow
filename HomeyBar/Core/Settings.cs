@@ -56,6 +56,9 @@ public sealed class AppSettings
     public string? Language { get; set; }
     public bool Hotkey { get; set; } = true;
     public bool Toasts { get; set; } = true;
+    public bool AutoUpdate { get; set; } = true;
+    // The version that ran last, to say so once after an update
+    public string? LastVersion { get; set; }
 
     public event Action? Saved;
 
@@ -80,8 +83,17 @@ public sealed class AppSettings
         return new();
     }
 
+    // For the snapshot renderer, which must not touch the user's settings
+    [JsonIgnore]
+    public bool ReadOnly { get; init; }
+
     public void Save()
     {
+        if (ReadOnly)
+        {
+            Saved?.Invoke();
+            return;
+        }
         Directory.CreateDirectory(Folder);
         var tmp = FilePath + ".tmp";
         File.WriteAllText(tmp, JsonSerializer.Serialize(this, Options));
