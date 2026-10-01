@@ -229,6 +229,7 @@ public static partial class Loc
         ["Automatisch bijwerken"] = "Update automatically",
         ["Automatisch bijwerken werkt alleen als HomeyBar met de installer is geïnstalleerd."] = "Automatic updates only work when HomeyBar was installed with the installer.",
         ["Bijgewerkt naar versie {0}"] = "Updated to version {0}",
+        ["Er ging iets mis: {0}"] = "Something went wrong: {0}",
         ["Geen releases gevonden op GitHub."] = "No releases found on GitHub.",
         ["HomeyBar versie {0}"] = "HomeyBar version {0}",
         ["HomeyBar zoekt bij het starten en elke zes uur naar een nieuwe versie op GitHub en installeert die stil."] = "HomeyBar looks for a new version on GitHub at start-up and every six hours, and installs it silently.",

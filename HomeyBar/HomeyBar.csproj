@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -11,7 +11,7 @@
     <RootNamespace>HomeyBar</RootNamespace>
     <ApplicationIcon>Assets\HomeyBar.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Product>HomeyBar</Product>
     <Description>Bedien je Homey Pro vanuit het Windows-systeemvak</Description>
     <SatelliteResourceLanguages>nl;en</SatelliteResourceLanguages>

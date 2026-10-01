@@ -13,19 +13,21 @@ namespace HomeyBar.Core;
 // GitHub only shows releases of a public repository to an app without a login.
 public sealed class Updater : ObservableObject
 {
+    // Static fields are set in this order: the version first, as the rest uses it
+    public static Version Current { get; } = Normalize(typeof(App).Assembly.GetName().Version ?? new Version(0, 0, 0));
     public static Updater I { get; } = new();
 
     const string Repository = "WNijhof/homeybar-windows";
     static readonly TimeSpan Interval = TimeSpan.FromHours(6);
     static readonly TimeSpan Retry = TimeSpan.FromMinutes(10);
 
-    static readonly HttpClient Http = CreateClient();
+    static readonly Lazy<HttpClient> client = new(CreateClient);
+    static HttpClient Http => client.Value;
     readonly DispatcherTimer timer = new();
     bool busy;
 
     Updater() => timer.Tick += async (_, _) => await CheckAsync(manual: false);
 
-    public static Version Current { get; } = Normalize(typeof(App).Assembly.GetName().Version ?? new Version(0, 0, 0));
     public static string CurrentText => Current.ToString(3);
     public static bool IsInstalled => File.Exists(Path.Combine(AppContext.BaseDirectory, "unins000.exe"));
 

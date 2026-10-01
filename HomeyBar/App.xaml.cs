@@ -25,12 +25,22 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        // A tray app should keep running after an error in one screen; every error is logged
+        DispatcherUnhandledException += (_, ev) =>
+        {
+            Log.Error("UI", ev.Exception);
+            ev.Handled = true;
+            HomeyStore.I.ShowError(Loc.F("Er ging iets mis: {0}", ev.Exception.Message));
+        };
+        AppDomain.CurrentDomain.UnhandledException += (_, ev) => { if (ev.ExceptionObject is Exception ex) Log.Error("Fatal", ex); };
+        TaskScheduler.UnobservedTaskException += (_, ev) => { Log.Error("Task", ev.Exception); ev.SetObserved(); };
+
         var args = e.Args.ToList();
         var snapshot = args.IndexOf("--snapshot") is var si && si >= 0 && si + 1 < args.Count ? args[si + 1] : null;
         if (snapshot != null)
         {
             base.OnStartup(e);
-            _ = SnapshotAsync(snapshot, args.Contains("--dark"));
+            _ = SnapshotOrFailAsync(snapshot, args.Contains("--dark"));
             return;
         }
 
@@ -92,6 +102,18 @@ public partial class App : Application
 
     // The setup of a new version replaces the files; it starts HomeyBar again when it is done
     public void QuitForUpdate() => Quit();
+
+    // A failing snapshot leaves error.txt behind and ends, instead of waiting forever
+    async Task SnapshotOrFailAsync(string folder, bool dark)
+    {
+        try { await SnapshotAsync(folder, dark); }
+        catch (Exception e)
+        {
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(Path.Combine(folder, "error.txt"), e.ToString());
+            Shutdown(1);
+        }
+    }
 
     // Renders every page and the flyout of the demo home to PNG files, off screen.
     // For checking the design: HomeyBar.exe --snapshot <folder> [--dark]
