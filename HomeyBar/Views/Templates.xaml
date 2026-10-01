@@ -1,0 +1,467 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:HomeyBar.Core">
+
+    <!-- Icon of a device in a circle, filled with the accent colour while it is on -->
+    <DataTemplate x:Key="DeviceIcon" DataType="{x:Type c:DeviceVM}">
+        <Border x:Name="Circle" Style="{StaticResource IconCircle}">
+            <TextBlock x:Name="Glyph" Style="{StaticResource Icon}" Text="{Binding Glyph}" />
+        </Border>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                <Setter TargetName="Circle" Property="Background" Value="{DynamicResource AccentBrush}" />
+                <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsAlarm}" Value="True">
+                <Setter TargetName="Circle" Property="Background" Value="{DynamicResource AlarmBrush}" />
+                <Setter TargetName="Glyph" Property="Foreground" Value="White" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Available}" Value="False">
+                <Setter TargetName="Circle" Property="Opacity" Value="0.5" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <ContextMenu x:Key="DeviceMenu" x:Shared="False">
+        <MenuItem Header="{c:T Favoriet}" IsCheckable="True" IsChecked="{Binding IsFavorite, Mode=OneWay}" Command="{Binding FavoriteCommand}" />
+        <MenuItem Header="{c:T 'Alle instellingen'}" Command="{Binding DetailsCommand}"
+                  CommandParameter="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+    </ContextMenu>
+
+    <!-- Grid tile: a click runs the quick action, the corner button opens the details -->
+    <DataTemplate x:Key="DeviceTile" DataType="{x:Type c:DeviceVM}">
+        <Grid Width="{DynamicResource TileWidth}" Height="{DynamicResource TileHeight}" Margin="4" ContextMenu="{StaticResource DeviceMenu}">
+            <Border x:Name="Card" Style="{StaticResource Card}" Padding="0" />
+            <Button Style="{StaticResource TileBtn}" Command="{Binding QuickCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                    ToolTip="{Binding Name}">
+                <Grid Margin="12,11,12,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DeviceIcon}" HorizontalAlignment="Left" />
+                    <TextBlock Grid.Row="2" Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Row="3" Text="{Binding StateText}" Style="{StaticResource Sub}" Margin="0,1,0,0" />
+                </Grid>
+            </Button>
+            <Button Style="{StaticResource IconBtn}" Content="&#xE712;" FontSize="12" Width="26" Height="26"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,6,0"
+                    Foreground="{DynamicResource SubTextBrush}" ToolTip="{c:T 'Alle instellingen'}"
+                    Command="{Binding DetailsCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}" />
+            <TextBlock Style="{StaticResource Icon}" Text="&#xE735;" FontSize="10" Foreground="{DynamicResource SolarBrush}"
+                       HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,13,36,0"
+                       Visibility="{Binding IsFavorite, Converter={StaticResource Visible}}" />
+        </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                <Setter TargetName="Card" Property="Background" Value="{DynamicResource ActiveCardBrush}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- List row: a click runs the quick action; the chevron opens the controls in place -->
+    <DataTemplate x:Key="DeviceRow" DataType="{x:Type c:DeviceVM}">
+        <Grid Margin="0,0,0,6" ContextMenu="{StaticResource DeviceMenu}">
+            <Border x:Name="Card" Style="{StaticResource Card}" Padding="0" />
+            <StackPanel>
+                <Grid Height="54">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button Style="{StaticResource TileBtn}" Command="{Binding QuickCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}">
+                        <DockPanel Margin="10,0,6,0" VerticalAlignment="Center">
+                            <ContentPresenter DockPanel.Dock="Left" Content="{Binding}" ContentTemplate="{StaticResource DeviceIcon}" Margin="0,0,10,0" />
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding StateText}" Style="{StaticResource Sub}" />
+                            </StackPanel>
+                        </DockPanel>
+                    </Button>
+                    <ToggleButton Grid.Column="1" Style="{StaticResource Switch}" Margin="4,0,4,0" IsChecked="{Binding IsOn}"
+                                  Visibility="{Binding HasOnOff, Converter={StaticResource Visible}}" IsEnabled="{Binding Available}" />
+                    <Button Grid.Column="2" x:Name="Expand" Style="{StaticResource IconBtn}" FontSize="11" Margin="2,0,8,0" Content="&#xE70D;"
+                            Foreground="{DynamicResource SubTextBrush}" ToolTip="{c:T Bediening}" Command="{Binding ExpandCommand}" />
+                </Grid>
+                <ContentPresenter x:Name="Controls" Content="{Binding}" ContentTemplate="{DynamicResource QuickControls}" Margin="14,0,14,12" Visibility="Collapsed" />
+            </StackPanel>
+        </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                <Setter TargetName="Card" Property="Background" Value="{DynamicResource ActiveCardBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsExpanded}" Value="True">
+                <Setter TargetName="Controls" Property="Visibility" Value="Visible" />
+                <Setter TargetName="Expand" Property="Content" Value="&#xE70E;" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- The controls that matter most: dimmer, thermostat, blinds, media and lock -->
+    <DataTemplate x:Key="QuickControls" DataType="{x:Type c:DeviceVM}">
+        <StackPanel>
+            <TextBlock Text="{Binding StateText}" Style="{StaticResource Sub}" Margin="0,0,0,6"
+                       Visibility="{Binding Available, Converter={StaticResource Visible}, ConverterParameter=not}" />
+
+            <DockPanel Margin="0,4" Visibility="{Binding HasDim, Converter={StaticResource Visible}}">
+                <TextBlock DockPanel.Dock="Left" Style="{StaticResource Icon}" Text="&#xE706;" FontSize="14" Margin="0,0,10,0" Foreground="{DynamicResource SubTextBrush}" />
+                <TextBlock DockPanel.Dock="Right" Text="{Binding DimCap.Display}" Style="{StaticResource Sub}" Width="42" TextAlignment="Right" />
+                <Slider Minimum="0" Maximum="1" SmallChange="0.01" LargeChange="0.1" Value="{Binding DimCap.NumberValue}" />
+            </DockPanel>
+
+            <DockPanel Margin="0,4" Visibility="{Binding LightTempCap, Converter={StaticResource Visible}}">
+                <TextBlock DockPanel.Dock="Left" Style="{StaticResource Icon}" Text="&#xE793;" FontSize="14" Margin="0,0,10,0" Foreground="{DynamicResource SubTextBrush}"
+                           ToolTip="{c:T Kleurtemperatuur}" />
+                <Slider Minimum="0" Maximum="1" SmallChange="0.01" Value="{Binding LightTempCap.NumberValue}">
+                    <Slider.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#CFE4FF" Offset="0" />
+                            <GradientStop Color="#FFC67A" Offset="1" />
+                        </LinearGradientBrush>
+                    </Slider.Background>
+                </Slider>
+            </DockPanel>
+
+            <DockPanel Margin="0,4" Visibility="{Binding HasThermostat, Converter={StaticResource Visible}}">
+                <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+                    <TextBlock Text="{c:T Nu}" Style="{StaticResource Sub}" />
+                    <TextBlock Text="{Binding TemperatureText}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource Btn}" Width="36" Height="36" Padding="0" Command="{Binding StepCommand}" CommandParameter="-1">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE738;" FontSize="13" />
+                    </Button>
+                    <StackPanel Margin="12,0" VerticalAlignment="Center" MinWidth="56">
+                        <TextBlock Text="{c:T Doel}" Style="{StaticResource Sub}" HorizontalAlignment="Center" />
+                        <TextBlock Text="{Binding TargetText}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextBrush}" HorizontalAlignment="Center" />
+                    </StackPanel>
+                    <Button Style="{StaticResource Btn}" Width="36" Height="36" Padding="0" Command="{Binding StepCommand}" CommandParameter="1">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE710;" FontSize="13" />
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+
+            <StackPanel Margin="0,4" Visibility="{Binding HasCovering, Converter={StaticResource Visible}}">
+                <UniformGrid Columns="3" Height="34">
+                    <Button Style="{StaticResource Btn}" Margin="0,0,4,0" Padding="0" Command="{Binding CoverCommand}" CommandParameter="up" ToolTip="{c:T Omhoog}">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE70E;" FontSize="13" />
+                    </Button>
+                    <Button Style="{StaticResource Btn}" Margin="2,0" Padding="0" Command="{Binding CoverCommand}" CommandParameter="idle" ToolTip="{c:T Stop}">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE71A;" FontSize="13" />
+                    </Button>
+                    <Button Style="{StaticResource Btn}" Margin="4,0,0,0" Padding="0" Command="{Binding CoverCommand}" CommandParameter="down" ToolTip="{c:T Omlaag}">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE70D;" FontSize="13" />
+                    </Button>
+                </UniformGrid>
+                <DockPanel Margin="0,8,0,0" Visibility="{Binding CoverCap.Setable, Converter={StaticResource Visible}, FallbackValue=Collapsed}">
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding CoverCap.Display}" Style="{StaticResource Sub}" Width="42" TextAlignment="Right" />
+                    <Slider Minimum="0" Maximum="1" SmallChange="0.01" LargeChange="0.1" Value="{Binding CoverCap.NumberValue}" />
+                </DockPanel>
+            </StackPanel>
+
+            <StackPanel Margin="0,4" Visibility="{Binding HasMedia, Converter={StaticResource Visible}}">
+                <TextBlock Text="{Binding MediaText}" Style="{StaticResource Sub}" Margin="0,0,0,6" Visibility="{Binding MediaText, Converter={StaticResource Visible}}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Style="{StaticResource IconBtn}" Width="40" Height="40" Content="&#xE892;" Command="{Binding MediaCommand}" CommandParameter="prev" />
+                    <Button x:Name="PlayBtn" Style="{StaticResource AccentBtn}" Width="44" Height="44" Padding="0" Margin="10,0" Command="{Binding MediaCommand}" CommandParameter="play">
+                        <TextBlock x:Name="PlayGlyph" Style="{StaticResource Icon}" Text="&#xE768;" Foreground="{DynamicResource OnAccentBrush}" />
+                    </Button>
+                    <Button Style="{StaticResource IconBtn}" Width="40" Height="40" Content="&#xE893;" Command="{Binding MediaCommand}" CommandParameter="next" />
+                </StackPanel>
+                <DockPanel Margin="0,8,0,0" Visibility="{Binding VolumeCap, Converter={StaticResource Visible}}">
+                    <Button DockPanel.Dock="Left" Style="{StaticResource IconBtn}" Content="&#xE767;" FontSize="14" Command="{Binding MediaCommand}" CommandParameter="mute" />
+                    <Slider Minimum="0" Maximum="1" SmallChange="0.01" Value="{Binding VolumeCap.NumberValue}" Margin="6,0,0,0" />
+                </DockPanel>
+            </StackPanel>
+
+            <Button Style="{StaticResource Btn}" Margin="0,4" HorizontalAlignment="Left" Command="{Binding QuickCommand}"
+                    Visibility="{Binding HasLock, Converter={StaticResource Visible}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="LockGlyph" Style="{StaticResource Icon}" Text="&#xE785;" FontSize="13" Margin="0,0,8,0" />
+                    <TextBlock x:Name="LockText" Text="{c:T Vergrendelen}" />
+                </StackPanel>
+            </Button>
+
+            <Button Style="{StaticResource Btn}" Margin="0,8,0,0" HorizontalAlignment="Left" Padding="10,5"
+                    Command="{Binding DetailsCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Icon}" Text="&#xE713;" FontSize="12" Margin="0,0,6,0" />
+                    <TextBlock Text="{c:T 'Alle instellingen'}" FontSize="12" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                <Setter TargetName="PlayGlyph" Property="Text" Value="&#xE769;" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsLocked}" Value="True">
+                <Setter TargetName="LockGlyph" Property="Text" Value="&#xE72E;" />
+                <Setter TargetName="LockText" Property="Text" Value="{c:T Ontgrendelen}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Generic controls, one per capability -->
+    <DataTemplate x:Key="CapToggle" DataType="{x:Type c:CapabilityVM}">
+        <DockPanel Margin="0,6">
+            <ToggleButton DockPanel.Dock="Right" Style="{StaticResource Switch}" IsChecked="{Binding BoolValue}" />
+            <TextBlock Text="{Binding Title}" Style="{StaticResource Body}" VerticalAlignment="Center" />
+        </DockPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="CapSlider" DataType="{x:Type c:CapabilityVM}">
+        <StackPanel Margin="0,6">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Display}" Style="{StaticResource Sub}" />
+                <TextBlock Text="{Binding Title}" Style="{StaticResource Body}" />
+            </DockPanel>
+            <Slider Minimum="{Binding MinD, Mode=OneWay}" Maximum="{Binding MaxD, Mode=OneWay}" SmallChange="{Binding StepD, Mode=OneWay}"
+                    Value="{Binding NumberValue}" Margin="0,4,0,0" />
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="CapEnum" DataType="{x:Type c:CapabilityVM}">
+        <StackPanel Margin="0,6">
+            <TextBlock Text="{Binding Title}" Style="{StaticResource Body}" Margin="0,0,0,6" />
+            <ListBox Style="{StaticResource OptionList}" ItemsSource="{Binding Options}" DisplayMemberPath="Title"
+                     SelectedValuePath="Id" SelectedValue="{Binding EnumValue}" />
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="CapButton" DataType="{x:Type c:CapabilityVM}">
+        <DockPanel Margin="0,6">
+            <Button DockPanel.Dock="Right" Style="{StaticResource Btn}" Padding="12,5" Content="{c:T Uitvoeren}" Command="{Binding PressCommand}" />
+            <TextBlock Text="{Binding Title}" Style="{StaticResource Body}" VerticalAlignment="Center" />
+        </DockPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="CapValue" DataType="{x:Type c:CapabilityVM}">
+        <DockPanel Margin="0,5" ToolTip="{Binding TimeText}">
+            <TextBlock x:Name="Value" DockPanel.Dock="Right" Text="{Binding Display}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" />
+            <TextBlock Text="{Binding Title}" Style="{StaticResource Body}" Foreground="{DynamicResource SubTextBrush}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" Margin="0,0,10,0" />
+        </DockPanel>
+        <DataTemplate.Triggers>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsAlarm}" Value="True" />
+                    <Condition Binding="{Binding BoolValue}" Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter TargetName="Value" Property="Foreground" Value="{DynamicResource AlarmBrush}" />
+            </MultiDataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <c:CapTemplateSelector x:Key="CapSelector" Toggle="{StaticResource CapToggle}" Slider="{StaticResource CapSlider}"
+                           Enum="{StaticResource CapEnum}" Button="{StaticResource CapButton}" Value="{StaticResource CapValue}" />
+
+    <!-- Everything about one device, for the side panel and the flyout overlay -->
+    <DataTemplate x:Key="DeviceDetail" DataType="{x:Type c:DeviceVM}">
+        <StackPanel>
+            <DockPanel>
+                <Border DockPanel.Dock="Left" x:Name="Circle" Width="48" Height="48" CornerRadius="24" Background="{DynamicResource IconBgBrush}" Margin="0,0,12,0">
+                    <TextBlock x:Name="Glyph" Style="{StaticResource Icon}" FontSize="22" Text="{Binding Glyph}" />
+                </Border>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
+                    <ToggleButton x:Name="IconPick" Width="32" Height="32" ToolTip="{c:T 'Ander pictogram'}" Cursor="Hand">
+                        <ToggleButton.Template>
+                            <ControlTemplate TargetType="ToggleButton">
+                                <Border x:Name="Bd" Background="Transparent" CornerRadius="8">
+                                    <TextBlock Style="{StaticResource Icon}" Text="&#xE70F;" FontSize="14" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource IconBgBrush}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </ToggleButton.Template>
+                    </ToggleButton>
+                    <Button x:Name="Fav" Style="{StaticResource IconBtn}" Content="&#xE734;" ToolTip="{c:T Favoriet}" Command="{Binding FavoriteCommand}" />
+                    <Popup IsOpen="{Binding IsChecked, ElementName=IconPick}" StaysOpen="False" PlacementTarget="{Binding ElementName=IconPick}"
+                           Placement="Bottom" AllowsTransparency="True">
+                        <Border Background="{DynamicResource PopupBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1"
+                                CornerRadius="10" Padding="8" Width="232">
+                            <StackPanel>
+                                <ItemsControl ItemsSource="{x:Static c:Icons.Choices}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource IconBtn}" Width="36" Height="36" Content="{Binding}"
+                                                    Command="{Binding DataContext.IconCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Style="{StaticResource Btn}" Margin="2,6,2,0" Padding="8,4" Content="{c:T 'Standaard pictogram'}"
+                                        Command="{Binding IconCommand}" CommandParameter="{x:Null}" />
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </StackPanel>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Name}" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ZoneName}" Style="{StaticResource Sub}" />
+                </StackPanel>
+            </DockPanel>
+
+            <Border Style="{StaticResource Card}" Margin="0,14,0,0" Visibility="{Binding HasQuickControls, Converter={StaticResource Visible}}">
+                <ContentPresenter Content="{Binding}" ContentTemplate="{DynamicResource QuickControls}" />
+            </Border>
+
+            <TextBlock Text="{c:T Bediening}" Style="{StaticResource Heading}" Visibility="{Binding Controls, Converter={StaticResource Visible}}" />
+            <Border Style="{StaticResource Card}" Padding="14,6" Visibility="{Binding Controls, Converter={StaticResource Visible}}">
+                <ItemsControl ItemsSource="{Binding Controls}" ItemTemplateSelector="{StaticResource CapSelector}" IsEnabled="{Binding Available}" />
+            </Border>
+
+            <TextBlock Text="{c:T Metingen}" Style="{StaticResource Heading}" Visibility="{Binding Sensors, Converter={StaticResource Visible}}" />
+            <Border Style="{StaticResource Card}" Padding="14,6" Visibility="{Binding Sensors, Converter={StaticResource Visible}}">
+                <ItemsControl ItemsSource="{Binding Sensors}" ItemTemplate="{StaticResource CapValue}" />
+            </Border>
+
+            <StackPanel Margin="2,14,0,0" Visibility="{Binding BatteryTypes, Converter={StaticResource Visible}}" Orientation="Horizontal">
+                <TextBlock Style="{StaticResource Icon}" Text="&#xE83F;" FontSize="13" Foreground="{DynamicResource SubTextBrush}" Margin="0,0,8,0" />
+                <TextBlock Style="{StaticResource Sub}" Text="{Binding BatteryTypes}" />
+            </StackPanel>
+        </StackPanel>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                <Setter TargetName="Fav" Property="Content" Value="&#xE735;" />
+                <Setter TargetName="Fav" Property="Foreground" Value="{DynamicResource SolarBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                <Setter TargetName="Circle" Property="Background" Value="{DynamicResource AccentBrush}" />
+                <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- Flows -->
+    <DataTemplate x:Key="FlowTile" DataType="{x:Type c:FlowVM}">
+        <Grid Width="{DynamicResource FlowWidth}" Height="{DynamicResource FlowHeight}" Margin="4">
+            <Border Style="{StaticResource Card}" Padding="0" />
+            <Button Style="{StaticResource TileBtn}" Command="{Binding RunCommand}" ToolTip="{Binding Name}">
+                <DockPanel Margin="10,0">
+                    <Border x:Name="Circle" DockPanel.Dock="Left" Style="{StaticResource IconCircle}" Width="30" Height="30" Background="{DynamicResource AccentSoftBrush}" Margin="0,0,10,0">
+                        <TextBlock x:Name="Glyph" Style="{StaticResource Icon}" Text="{Binding StateGlyph}" FontSize="12" Foreground="{DynamicResource AccentTextBrush}" />
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Sub}" Visibility="{Binding Subtitle, Converter={StaticResource Visible}}" />
+                    </StackPanel>
+                </DockPanel>
+            </Button>
+            <Button x:Name="Fav" Style="{StaticResource IconBtn}" Width="24" Height="24" FontSize="11" Content="&#xE734;" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,4,4,0" Foreground="{DynamicResource FaintTextBrush}" Command="{Binding FavoriteCommand}" ToolTip="{c:T Favoriet}" />
+        </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                <Setter TargetName="Fav" Property="Content" Value="&#xE735;" />
+                <Setter TargetName="Fav" Property="Foreground" Value="{DynamicResource SolarBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding CanRun}" Value="False">
+                <Setter TargetName="Circle" Property="Opacity" Value="0.4" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="done">
+                <Setter TargetName="Circle" Property="Background" Value="{DynamicResource GoodBrush}" />
+                <Setter TargetName="Glyph" Property="Foreground" Value="White" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="failed">
+                <Setter TargetName="Circle" Property="Background" Value="{DynamicResource AlarmBrush}" />
+                <Setter TargetName="Glyph" Property="Foreground" Value="White" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding State}" Value="running">
+                <Setter TargetName="Circle" Property="Background" Value="{DynamicResource AccentBrush}" />
+                <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <DataTemplate x:Key="FlowGroupTemplate" DataType="{x:Type c:FlowGroup}">
+        <StackPanel Margin="0,0,0,6">
+            <ToggleButton Style="{StaticResource GroupHeader}" IsChecked="{Binding IsExpanded}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextBrush}" />
+                    <TextBlock Text="{Binding Count}" Style="{StaticResource Sub}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+            </ToggleButton>
+            <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{StaticResource FlowTile}" Margin="-4,2,-4,0"
+                          Visibility="{Binding IsExpanded, Converter={StaticResource Visible}}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Moods -->
+    <DataTemplate x:Key="MoodTile" DataType="{x:Type c:MoodVM}">
+        <Grid Width="{DynamicResource FlowWidth}" Height="{DynamicResource FlowHeight}" Margin="4">
+            <Border Style="{StaticResource Card}" Padding="0" />
+            <Button Style="{StaticResource TileBtn}" Command="{Binding SetCommand}" ToolTip="{Binding Name}">
+                <DockPanel Margin="10,0">
+                    <Border DockPanel.Dock="Left" Style="{StaticResource IconCircle}" Width="30" Height="30" Background="{DynamicResource AccentSoftBrush}" Margin="0,0,10,0">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE793;" FontSize="13" Foreground="{DynamicResource AccentTextBrush}" />
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding ZoneName}" Style="{StaticResource Sub}" />
+                    </StackPanel>
+                </DockPanel>
+            </Button>
+        </Grid>
+    </DataTemplate>
+
+    <!-- A bar row for power or energy per device -->
+    <DataTemplate x:Key="ConsumerRow" DataType="{x:Type c:ConsumerVM}">
+        <Grid Margin="0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="26" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="13" Foreground="{DynamicResource SubTextBrush}" HorizontalAlignment="Left" />
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="{Binding Name}" FontSize="12.5" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                <Grid Height="4" Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="{Binding Fraction, Converter={StaticResource Star}}" />
+                        <ColumnDefinition Width="{Binding Fraction, Converter={StaticResource Star}, ConverterParameter=rest}" />
+                    </Grid.ColumnDefinitions>
+                    <Border CornerRadius="2" Background="{DynamicResource AccentBrush}" />
+                </Grid>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="{Binding ValueText}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" Margin="12,0,0,0" VerticalAlignment="Center" />
+        </Grid>
+    </DataTemplate>
+
+    <!-- People at home -->
+    <DataTemplate x:Key="UserChip" DataType="{x:Type c:UserVM}">
+        <Grid Margin="0,0,6,0" ToolTip="{Binding StateText}">
+            <Border x:Name="Circle" Width="30" Height="30" CornerRadius="15" Background="{DynamicResource IconBgBrush}">
+                <TextBlock Text="{Binding Initials}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <Ellipse x:Name="Dot" Width="9" Height="9" HorizontalAlignment="Right" VerticalAlignment="Bottom" Fill="{DynamicResource FaintTextBrush}"
+                     Stroke="{DynamicResource PopupBrush}" StrokeThickness="1.5" />
+        </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding Present}" Value="True">
+                <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource GoodBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Asleep}" Value="True">
+                <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource GridBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Present}" Value="False">
+                <Setter TargetName="Circle" Property="Opacity" Value="0.55" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <ItemsPanelTemplate x:Key="WrapItems"><WrapPanel /></ItemsPanelTemplate>
+    <ItemsPanelTemplate x:Key="StackItems"><StackPanel /></ItemsPanelTemplate>
+</ResourceDictionary>
