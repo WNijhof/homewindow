@@ -37,6 +37,10 @@ Eerst rondkijken zonder Homey? Start `HomeyBar.exe --demo`.
 
 HomeyBar praat met je eigen Homey: rechtstreeks in je netwerk, of via de cloud-doorgang van Athom (`<homey-id>.connect.athom.com`) als je niet thuis bent. Daarnaast vraagt hij bij GitHub of er een nieuwe versie is. Er gaat geen informatie over je Homey naar andere partijen. Je instellingen staan in `%APPDATA%\HomeyBar\settings.json`; de API-key is daarin versleuteld met je Windows-account.
 
+## Licentie
+
+HomeyBar valt onder de [GNU General Public License v3.0](LICENSE): je mag het gebruiken, aanpassen en verder verspreiden, zolang je aangepaste versies ook onder GPL-3.0 en met broncode deelt.
+
 ## Ontwikkelen
 
 ```
