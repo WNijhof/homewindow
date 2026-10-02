@@ -1,0 +1,68 @@
+<UserControl x:Class="HomeWindow.Views.Pages.DevicesPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:HomeWindow.Core">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Margin="28,22,22,4">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Grid Width="240" Margin="0,0,8,0">
+                        <TextBox x:Name="SearchBox" Padding="30,6,8,6" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE721;" FontSize="12" HorizontalAlignment="Left" Margin="11,0,0,0" Foreground="{DynamicResource SubTextBrush}" IsHitTestVisible="False" />
+                        <TextBlock Text="{c:T 'Zoek apparaat of kamer'}" Style="{StaticResource Sub}" FontSize="13" Margin="31,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False"
+                                   Visibility="{Binding Search, Converter={StaticResource Visible}, ConverterParameter=not}" />
+                    </Grid>
+                    <Button Style="{StaticResource IconBtn}" Content="&#xE70E;" ToolTip="{c:T 'Alles inklappen'}" Command="{Binding CollapseAllCommand}" />
+                    <Button Style="{StaticResource IconBtn}" Content="&#xE70D;" ToolTip="{c:T 'Alles uitklappen'}" Command="{Binding ExpandAllCommand}" />
+                    <Button x:Name="ViewToggle" Style="{StaticResource IconBtn}" ToolTip="{c:T 'Lijst of raster'}" Click="ViewToggle_Click" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{c:T Apparaten}" Style="{StaticResource Title}" />
+                    <TextBlock Text="{Binding Count}" Style="{StaticResource Sub}" FontSize="14" Margin="10,0,0,4" VerticalAlignment="Bottom" />
+                </StackPanel>
+            </DockPanel>
+            <ItemsControl ItemsSource="{Binding Classes}" Margin="0,14,0,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type c:ClassFilter}">
+                        <RadioButton Style="{StaticResource Chip}" GroupName="DeviceClass" IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                     Command="{Binding DataContext.SelectClassCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="12" Margin="0,0,6,0"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                <TextBlock Text="{Binding Title}" />
+                                <TextBlock Text="{Binding Count}" Margin="6,0,0,0" Opacity="0.6" />
+                            </StackPanel>
+                        </RadioButton>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,6,22,28">
+            <StackPanel>
+                <ItemsControl ItemsSource="{Binding Groups}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type c:ZoneGroup}">
+                            <StackPanel Margin="{Binding Depth, Converter={StaticResource Depth}}">
+                                <ToggleButton Style="{StaticResource GroupHeader}" IsChecked="{Binding IsExpanded}" HorizontalAlignment="Left" Margin="0,8,0,4">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="15" />
+                                        <TextBlock Text="{Binding Count}" Style="{StaticResource Sub}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </ToggleButton>
+                                <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{DynamicResource MainDeviceTemplate}" ItemsPanel="{DynamicResource MainDevicePanel}"
+                                              Margin="{DynamicResource MainItemsMargin}" MaxWidth="{DynamicResource MainRowWidth}" HorizontalAlignment="Left"
+                                              Visibility="{Binding IsExpanded, Converter={StaticResource Visible}}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="{c:T 'Geen apparaten gevonden'}" Style="{StaticResource Sub}" FontSize="14" Margin="0,40,0,0" HorizontalAlignment="Center"
+                           Visibility="{Binding IsEmpty, Converter={StaticResource Visible}}" />
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

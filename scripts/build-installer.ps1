@@ -1,4 +1,4 @@
-# Publishes HomeyBar and builds the Windows installer with Inno Setup.
+# Publishes HomeWindow and builds the Windows installer with Inno Setup.
 #   powershell -ExecutionPolicy Bypass -File scripts\build-installer.ps1 [-Version 0.2.0] [-SelfContained]
 # Without -SelfContained the installer is small and the PC needs the .NET 10 Desktop Runtime
 # (setup checks for it). -SelfContained puts .NET in the installer, so it runs on any PC; that
@@ -10,7 +10,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
-$project = Join-Path $root 'HomeyBar\HomeyBar.csproj'
+$project = Join-Path $root 'HomeWindow\HomeWindow.csproj'
 
 if (-not $Version) {
   $Version = ([xml](Get-Content $project)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
@@ -30,13 +30,13 @@ if (Test-Path $publish) { Get-ChildItem $publish -Recurse | Remove-Item -Recurse
 
 $publishArgs = @('publish', $project, '-c', 'Release', '-o', $publish, "-p:Version=$Version", '-nologo')
 if ($SelfContained) { $publishArgs += @('-r', 'win-x64', '--self-contained', 'true') }
-Write-Host "Publishing HomeyBar $Version$(if ($SelfContained) { ' (self-contained)' })"
+Write-Host "Publishing HomeWindow $Version$(if ($SelfContained) { ' (self-contained)' })"
 & dotnet @publishArgs
 if ($LASTEXITCODE -ne 0) { throw 'dotnet publish failed' }
 
 Write-Host 'Building the installer'
-& $Iscc "/DAppVersion=$Version" "/DSourceDir=$publish" "/DSelfContained=$(if ($SelfContained) { 1 } else { 0 })" /Q (Join-Path $root 'installer\HomeyBar.iss')
+& $Iscc "/DAppVersion=$Version" "/DSourceDir=$publish" "/DSelfContained=$(if ($SelfContained) { 1 } else { 0 })" /Q (Join-Path $root 'installer\HomeWindow.iss')
 if ($LASTEXITCODE -ne 0) { throw 'Inno Setup failed' }
 
-$setup = Join-Path $root "installer\Output\HomeyBar-Setup-$Version.exe"
+$setup = Join-Path $root "installer\Output\HomeWindow-Setup-$Version.exe"
 Write-Host "Installer: $setup ($([math]::Round((Get-Item $setup).Length / 1MB, 1)) MB)"

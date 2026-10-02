@@ -1,0 +1,103 @@
+<UserControl x:Class="HomeWindow.Views.Pages.SystemPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:HomeWindow.Core">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,22,22,28">
+        <StackPanel MaxWidth="860" HorizontalAlignment="Left">
+            <TextBlock Text="{c:T Systeem}" Style="{StaticResource Title}" Margin="0,0,0,14" />
+            <TextBlock Text="{Binding SystemError}" Style="{StaticResource Body}" Foreground="{DynamicResource WarnBrush}" Margin="0,0,0,10"
+                       Visibility="{Binding SystemError, Converter={StaticResource Visible}}" />
+
+            <Border Style="{StaticResource Card}" Margin="0,0,0,12" Background="{DynamicResource AccentSoftBrush}" DataContext="{Binding System}"
+                    Visibility="{Binding HasUpdate, Converter={StaticResource Visible}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Icon}" Text="&#xE946;" FontSize="16" Foreground="{DynamicResource AccentBrush}" Margin="0,0,10,0" />
+                    <TextBlock Style="{StaticResource Body}" FontWeight="SemiBold">
+                        <Run Text="{c:T 'Homey-update beschikbaar:'}" /> <Run Text="{Binding UpdateVersion, Mode=OneWay}" />
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <WrapPanel DataContext="{Binding System}">
+                <Border Style="{StaticResource Card}" Width="320" Margin="0,0,12,12">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Model}" FontSize="16" FontWeight="SemiBold" />
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="110" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="{c:T Versie}" Style="{StaticResource Sub}" Margin="0,2" />
+                            <TextBlock Grid.Column="1" Text="{Binding Version}" Style="{StaticResource Body}" Margin="0,2" />
+                            <TextBlock Grid.Row="1" Text="{c:T 'Aan sinds'}" Style="{StaticResource Sub}" Margin="0,2" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Uptime}" Style="{StaticResource Body}" Margin="0,2" />
+                            <TextBlock Grid.Row="2" Text="{c:T IP-adres}" Style="{StaticResource Sub}" Margin="0,2" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Address}" Style="{StaticResource Body}" Margin="0,2" />
+                            <TextBlock Grid.Row="3" Text="{c:T Wifi}" Style="{StaticResource Sub}" Margin="0,2" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Wifi}" Style="{StaticResource Body}" Margin="0,2" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}" Width="320" Margin="0,0,12,12">
+                    <StackPanel>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding CpuText}" FontWeight="SemiBold" />
+                            <TextBlock Text="{c:T Processor}" Style="{StaticResource Sub}" />
+                        </DockPanel>
+                        <ProgressBar Style="{StaticResource Meter}" Value="{Binding CpuFraction, Mode=OneWay}" Margin="0,6,0,14" />
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding MemoryText}" FontWeight="SemiBold" />
+                            <TextBlock Text="{c:T Geheugen}" Style="{StaticResource Sub}" />
+                        </DockPanel>
+                        <ProgressBar Style="{StaticResource Meter}" Value="{Binding MemoryFraction, Mode=OneWay}" Margin="0,6,0,14" />
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding StorageText}" FontWeight="SemiBold" />
+                            <TextBlock Text="{c:T Opslag}" Style="{StaticResource Sub}" />
+                        </DockPanel>
+                        <ProgressBar Style="{StaticResource Meter}" Value="{Binding StorageFraction, Mode=OneWay}" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <TextBlock Text="{c:T Apps}" Style="{StaticResource Heading}" />
+            <TextBlock Text="{Binding AppsError}" Style="{StaticResource Body}" Foreground="{DynamicResource WarnBrush}" Margin="0,0,0,10"
+                       Visibility="{Binding AppsError, Converter={StaticResource Visible}}" />
+            <ItemsControl ItemsSource="{Binding Apps}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type c:AppVM}">
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,6" Padding="14,8">
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Style="{StaticResource Btn}" Padding="12,5" Command="{Binding RestartCommand}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource Icon}" Text="&#xE72C;" FontSize="12" Margin="0,0,6,0" />
+                                        <TextBlock Text="{c:T Herstarten}" FontSize="12.5" />
+                                    </StackPanel>
+                                </Button>
+                                <TextBlock DockPanel.Dock="Right" x:Name="Update" Text="{c:T 'Update beschikbaar'}" Style="{StaticResource Sub}" Foreground="{DynamicResource AccentBrush}"
+                                           VerticalAlignment="Center" Margin="0,0,14,0" Visibility="{Binding HasUpdate, Converter={StaticResource Visible}}" />
+                                <TextBlock x:Name="Glyph" DockPanel.Dock="Left" Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="15" Margin="0,0,12,0" Foreground="{DynamicResource SubTextBrush}" />
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock x:Name="State" Style="{StaticResource Sub}">
+                                        <Run Text="{Binding StateText, Mode=OneWay}" /><Run Text="  ·  v" /><Run Text="{Binding Version, Mode=OneWay}" />
+                                    </TextBlock>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsCrashed}" Value="True">
+                                <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource AlarmBrush}" />
+                                <Setter TargetName="State" Property="Foreground" Value="{DynamicResource AlarmBrush}" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Text="{c:T 'Gegevens worden geladen…'}" Style="{StaticResource Sub}" Margin="0,10,0,0"
+                       Visibility="{Binding System.Loaded, Converter={StaticResource Visible}, ConverterParameter=not}" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,6 +1,6 @@
 # Builds the installer, with .NET included, and publishes it as a GitHub release.
 # Start it by pushing a version tag:  git tag v0.2.0 && git push origin v0.2.0
-# HomeyBar checks the latest release at start-up and updates itself from it.
+# HomeWindow checks the latest release at start-up and updates itself from it.
 name: Release
 
 on:
@@ -41,8 +41,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: HomeyBar-Setup-${{ steps.version.outputs.value }}
-          path: installer/Output/HomeyBar-Setup-*.exe
+          name: HomeWindow-Setup-${{ steps.version.outputs.value }}
+          path: installer/Output/HomeWindow-Setup-*.exe
 
       - name: Publish release
         if: github.event_name == 'push'
@@ -51,4 +51,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $v = '${{ steps.version.outputs.value }}'
-          gh release create "v$v" "installer/Output/HomeyBar-Setup-$v.exe" --title "HomeyBar $v" --generate-notes
+          # HomeyBar 0.1.0, the app under its old name, only looks for HomeyBar-Setup-*.exe;
+          # the same installer under that name lets it update itself to HomeWindow
+          Copy-Item "installer/Output/HomeWindow-Setup-$v.exe" "installer/Output/HomeyBar-Setup-$v.exe"
+          gh release create "v$v" "installer/Output/HomeWindow-Setup-$v.exe" "installer/Output/HomeyBar-Setup-$v.exe" --title "HomeWindow $v" --generate-notes

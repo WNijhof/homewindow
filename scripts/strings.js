@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const root = path.join(__dirname, '..', 'HomeyBar');
+const root = path.join(__dirname, '..', 'HomeWindow');
 const files = [];
 (function walk(dir) {
   for (const name of fs.readdirSync(dir)) {

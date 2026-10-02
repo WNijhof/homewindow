@@ -1,10 +1,21 @@
-<p align="center"><img src="docs/images/logo.png" alt="HomeyBar-logo op alle formaten" width="560"></p>
+<p align="center"><img src="docs/images/logo.png" alt="HomeWindow-logo op alle formaten" width="560"></p>
 
-# HomeyBar voor Windows
+# HomeWindow – for Homey Pro
 
 Bedien je **Homey Pro** vanuit het Windows-systeemvak. Eén klik op het icoon bij de klok en je zet lampen aan, start een flow of kiest een sfeer. Het hoofdvenster laat de rest zien: apparaten per kamer, energie, batterijen, meldingen en de gezondheid van je Homey.
 
-HomeyBar is geïnspireerd op [HomeBar](https://www.homebar.pro/) voor de Mac, maar is een eigen project zonder band met HomeBar of met Athom.
+HomeWindow is geïnspireerd op [HomeBar](https://www.homebar.pro/) voor de Mac, maar is een eigen project zonder band met HomeBar of met Athom. Homey is een merk van Athom. Tot versie 0.1 heette deze app *HomeyBar*.
+
+## Welke Homey
+
+| Homey | Werkt |
+|---|---|
+| Homey Pro (2023) en Homey Pro mini | Ja |
+| Homey Self-Hosted Server | Waarschijnlijk wel (zelfde API, niet getest) |
+| Homey (met Homey Bridge, zonder Pro) | Nee: die heeft geen API-keys |
+| Homey Pro van vóór 2023 | Nee: andere, oudere API zonder API-keys |
+
+HomeWindow werkt met de Web API van Homey en een API-key. Die API-keys maak je in my.homey.app, en dat kan alleen voor de modellen hierboven met *Ja*.
 
 | Paneel bij de klok | Hoofdvenster |
 |---|---|
@@ -24,27 +35,27 @@ Hoe je alles gebruikt staat in de **[handleiding](docs/HANDLEIDING.md)**.
 
 ## Installeren
 
-1. Download `HomeyBar-Setup-<versie>.exe` bij de nieuwste [release](https://github.com/WNijhof/homeybar-windows/releases/latest).
+1. Download `HomeWindow-Setup-<versie>.exe` bij de nieuwste [release](https://github.com/WNijhof/homewindow/releases/latest).
 2. Start het bestand. Windows kan waarschuwen dat de uitgever onbekend is (de installer is niet digitaal ondertekend): kies **Meer informatie → Toch uitvoeren**.
-3. HomeyBar installeert voor jouw Windows-account, zonder beheerdersrechten, en zet zichzelf in het Start-menu. .NET zit in de installer; je hoeft niets anders te installeren.
+3. HomeWindow installeert voor jouw Windows-account, zonder beheerdersrechten, en zet zichzelf in het Start-menu. .NET zit in de installer; je hoeft niets anders te installeren.
 4. Bij de eerste start opent Instellingen: vul het IP-adres van je Homey en een API-key in. De [handleiding](docs/HANDLEIDING.md#een-api-key-maken) legt uit hoe je die maakt.
 
-HomeyBar zoekt daarna zelf naar nieuwe versies en installeert die stil (uit te zetten bij Instellingen → Updates). Verwijderen gaat via **Windows-instellingen → Apps**.
+HomeWindow zoekt daarna zelf naar nieuwe versies en installeert die stil (uit te zetten bij Instellingen → Updates). Verwijderen gaat via **Windows-instellingen → Apps**.
 
-Eerst rondkijken zonder Homey? Start `HomeyBar.exe --demo`.
+Eerst rondkijken zonder Homey? Start `HomeWindow.exe --demo`.
 
 ## Privacy
 
-HomeyBar praat met je eigen Homey: rechtstreeks in je netwerk, of via de cloud-doorgang van Athom (`<homey-id>.connect.athom.com`) als je niet thuis bent. Daarnaast vraagt hij bij GitHub of er een nieuwe versie is. Er gaat geen informatie over je Homey naar andere partijen. Je instellingen staan in `%APPDATA%\HomeyBar\settings.json`; de API-key is daarin versleuteld met je Windows-account.
+HomeWindow praat met je eigen Homey: rechtstreeks in je netwerk, of via de cloud-doorgang van Athom (`<homey-id>.connect.athom.com`) als je niet thuis bent. Daarnaast vraagt hij bij GitHub of er een nieuwe versie is. Er gaat geen informatie over je Homey naar andere partijen. Je instellingen staan in `%APPDATA%\HomeWindow\settings.json`; de API-key is daarin versleuteld met je Windows-account.
 
 ## Licentie
 
-HomeyBar valt onder de [GNU General Public License v3.0](LICENSE): je mag het gebruiken, aanpassen en verder verspreiden, zolang je aangepaste versies ook onder GPL-3.0 en met broncode deelt.
+HomeWindow valt onder de [GNU General Public License v3.0](LICENSE): je mag het gebruiken, aanpassen en verder verspreiden, zolang je aangepaste versies ook onder GPL-3.0 en met broncode deelt.
 
 ## Ontwikkelen
 
 ```
-cd HomeyBar
+cd HomeWindow
 dotnet run                                    # starten
 dotnet run -- --demo                          # met het voorbeeldhuis
 dotnet run -- --snapshot ..\.shots\x [--dark]  # alle schermen van de demo als PNG
@@ -65,13 +76,13 @@ git tag v0.2.0
 git push origin v0.2.0
 ```
 
-De workflow `.github/workflows/release.yml` bouwt dan de installer (met .NET erin) en zet hem als release op GitHub. Geïnstalleerde exemplaren van HomeyBar vinden die binnen zes uur en werken zichzelf bij. GitHub laat releases alleen zonder inloggen zien bij een **openbare** repository; bij een privé-repository vindt HomeyBar geen updates.
+De workflow `.github/workflows/release.yml` bouwt dan de installer (met .NET erin) en zet hem als release op GitHub. Geïnstalleerde exemplaren van HomeWindow vinden die binnen zes uur en werken zichzelf bij. GitHub laat releases alleen zonder inloggen zien bij een **openbare** repository; bij een privé-repository vindt HomeWindow geen updates.
 
 | Map | Inhoud |
 |---|---|
-| `HomeyBar/Core` | Verbinding met Homey (`HomeyClient`), ophalen en bijhouden van gegevens (`HomeyStore`), modellen, thema, systeemvak, vertalingen, demohuis |
-| `HomeyBar/Views` | Het paneel (`FlyoutWindow`), het hoofdvenster met de pagina's, stijlen en sjablonen |
+| `HomeWindow/Core` | Verbinding met Homey (`HomeyClient`), ophalen en bijhouden van gegevens (`HomeyStore`), modellen, thema, systeemvak, vertalingen, demohuis |
+| `HomeWindow/Views` | Het paneel (`FlyoutWindow`), het hoofdvenster met de pagina's, stijlen en sjablonen |
 | `installer` | Het Inno Setup-script van de installer |
 | `scripts` | `build-installer.ps1` bouwt de installer, `make-icon.ps1` maakt het logo, `strings.js` toont teksten zonder Engelse vertaling, `screenshot.ps1` maakt een schermafbeelding van een venster |
 
-Teksten staan in het Nederlands in de code; `HomeyBar/Core/Loc.En.cs` vertaalt ze naar het Engels. HomeyBar gebruikt de Web API van Homey Pro (`/api/manager/...`) met een API-key en haalt elke paar seconden nieuwe gegevens op terwijl een venster open is.
+Teksten staan in het Nederlands in de code; `HomeWindow/Core/Loc.En.cs` vertaalt ze naar het Engels. HomeWindow gebruikt de Web API van Homey Pro (`/api/manager/...`) met een API-key en haalt elke paar seconden nieuwe gegevens op terwijl een venster open is.

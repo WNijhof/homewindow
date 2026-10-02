@@ -1,6 +1,6 @@
-# Handleiding HomeyBar
+# Handleiding HomeWindow
 
-HomeyBar zet je Homey Pro in het Windows-systeemvak, naast de klok. Deze handleiding legt uit hoe je hem koppelt en wat alle onderdelen doen.
+HomeWindow zet je Homey Pro in het Windows-systeemvak, naast de klok. Deze handleiding legt uit hoe je hem koppelt en wat alle onderdelen doen.
 
 **Inhoud**
 
@@ -18,12 +18,16 @@ HomeyBar zet je Homey Pro in het Windows-systeemvak, naast de klok. Deze handlei
 
 ## 1. Eerste keer instellen
 
+### Werkt het met mijn Homey?
+
+HomeWindow werkt met een **Homey Pro (2023)** of **Homey Pro mini**, en waarschijnlijk ook met de **Homey Self-Hosted Server**. Een gewone Homey met Homey Bridge, of een Homey Pro van vóór 2023, wordt niet ondersteund: die hebben geen API-keys.
+
 ### Installeren
 
-1. Download `HomeyBar-Setup-<versie>.exe` bij de nieuwste [release op GitHub](https://github.com/WNijhof/homeybar-windows/releases/latest).
+1. Download `HomeWindow-Setup-<versie>.exe` bij de nieuwste [release op GitHub](https://github.com/WNijhof/homewindow/releases/latest).
 2. Start het bestand. Omdat de installer niet digitaal ondertekend is, kan Windows *Windows heeft uw pc beschermd* tonen. Klik op **Meer informatie** en dan **Toch uitvoeren**.
-3. Kies of HomeyBar met Windows mee moet starten (aanbevolen) en of je een snelkoppeling op het bureaublad wilt.
-4. Klik op **Installeren**. HomeyBar komt in je eigen gebruikersmap (`%LOCALAPPDATA%\Programs\HomeyBar`); je hebt geen beheerdersrechten nodig. Wil je hem voor alle gebruikers van de pc installeren, kies dat dan in het eerste scherm van de installer.
+3. Kies of HomeWindow met Windows mee moet starten (aanbevolen) en of je een snelkoppeling op het bureaublad wilt.
+4. Klik op **Installeren**. HomeWindow komt in je eigen gebruikersmap (`%LOCALAPPDATA%\Programs\HomeWindow`); je hebt geen beheerdersrechten nodig. Wil je hem voor alle gebruikers van de pc installeren, kies dat dan in het eerste scherm van de installer.
 
 Een nieuwere installer over een bestaande installatie heen draaien werkt gewoon: je instellingen blijven bewaard.
 
@@ -35,14 +39,14 @@ Je hebt drie dingen nodig: het **IP-adres** van je Homey, een **API-key** en een
 
 Open de Homey-app op je telefoon en ga naar **Instellingen → Algemeen**. Daar staat het IP-adres, bijvoorbeeld `192.168.1.50`. Je vindt het ook in het overzicht van je router.
 
-Geef je Homey in je router een vast IP-adres. Anders kan het adres na een herstart veranderen en vindt HomeyBar hem thuis niet meer (onderweg werkt de cloud dan nog wel).
+Geef je Homey in je router een vast IP-adres. Anders kan het adres na een herstart veranderen en vindt HomeWindow hem thuis niet meer (onderweg werkt de cloud dan nog wel).
 
 ### Een API-key maken
 
 1. Ga naar [my.homey.app](https://my.homey.app) en log in.
 2. Kies je Homey en open **Instellingen → API-sleutels**.
-3. Klik op **Nieuwe API-sleutel** en geef hem een naam, bijvoorbeeld *HomeyBar*.
-4. Vink de rechten aan voor wat HomeyBar moet kunnen. Voor alles:
+3. Klik op **Nieuwe API-sleutel** en geef hem een naam, bijvoorbeeld *HomeWindow*.
+4. Vink de rechten aan voor wat HomeWindow moet kunnen. Voor alles:
 
    | Recht | Nodig voor |
    |---|---|
@@ -62,29 +66,29 @@ Geef je Homey in je router een vast IP-adres. Anders kan het adres na een hersta
    De namen in my.homey.app kunnen iets anders zijn. Laat je een recht weg, dan werkt de rest gewoon; op die pagina staat dan *Geen toegang*.
 5. Kopieer de sleutel. Je ziet hem maar één keer.
 
-### HomeyBar koppelen
+### HomeWindow koppelen
 
-1. Start HomeyBar. De eerste keer opent meteen **Instellingen** met het formulier *Homey toevoegen*.
+1. Start HomeWindow. De eerste keer opent meteen **Instellingen** met het formulier *Homey toevoegen*.
 2. Vul in:
-   - **Naam**: hoe je Homey in HomeyBar heet.
+   - **Naam**: hoe je Homey in HomeWindow heet.
    - **IP-adres (lokaal)**: bijvoorbeeld `192.168.1.50`.
    - **API-key**: de sleutel uit my.homey.app.
-   - **Homey-ID (cloud)**: laat leeg; HomeyBar vult dit zelf in (zie [Onderweg verbinden](#5-onderweg-verbinden)).
+   - **Homey-ID (cloud)**: laat leeg; HomeWindow vult dit zelf in (zie [Onderweg verbinden](#5-onderweg-verbinden)).
    - **Verbinding**: laat op *Automatisch*.
 3. Klik op **Verbinding testen**. Je ziet hoeveel apparaten er gevonden zijn, en de naam van je Homey wordt ingevuld.
 4. Klik op **Opslaan**.
 
 <img src="images/instellingen.png" width="700" alt="Het formulier om een Homey toe te voegen">
 
-HomeyBar staat nu in het systeemvak. Zie je het icoon niet, klik dan op het pijltje **^** naast de klok en sleep het HomeyBar-icoon naar de taakbalk, zodat het altijd zichtbaar is.
+HomeWindow staat nu in het systeemvak. Zie je het icoon niet, klik dan op het pijltje **^** naast de klok en sleep het HomeWindow-icoon naar de taakbalk, zodat het altijd zichtbaar is.
 
-> **Eerst rondkijken?** Start `HomeyBar.exe --demo`. Je krijgt dan een voorbeeldhuis waarin alles werkt, zonder dat er iets met je eigen Homey gebeurt.
+> **Eerst rondkijken?** Start `HomeWindow.exe --demo`. Je krijgt dan een voorbeeldhuis waarin alles werkt, zonder dat er iets met je eigen Homey gebeurt.
 
 ---
 
 ## 2. Het paneel bij de klok
 
-Klik op het HomeyBar-icoon bij de klok (of druk op **Ctrl + Alt + H**). Het paneel schuift omhoog. Klik ergens anders of druk op **Esc** om het te sluiten.
+Klik op het HomeWindow-icoon bij de klok (of druk op **Ctrl + Alt + H**). Het paneel schuift omhoog. Klik ergens anders of druk op **Esc** om het te sluiten.
 
 | Favorieten (lijst) | Kamers (tegels, donker thema) |
 |---|---|
@@ -101,7 +105,7 @@ Klik op het HomeyBar-icoon bij de klok (of druk op **Ctrl + Alt + H**). Het pane
 **De tabbladen:**
 
 - **Favorieten**: de apparaten en flows die jij als favoriet hebt gemarkeerd (zie [Favorieten](#favorieten)).
-- **Kamers**: alle apparaten per kamer. Klik op een kamernaam om hem in of uit te klappen; HomeyBar onthoudt dat.
+- **Kamers**: alle apparaten per kamer. Klik op een kamernaam om hem in of uit te klappen; HomeWindow onthoudt dat.
 - **Flows**: alle flows per map. Klik op een flow om hem te starten.
 - **Sferen**: klik op een sfeer om hem in te schakelen.
 
@@ -113,13 +117,13 @@ Klik op het HomeyBar-icoon bij de klok (of druk op **Ctrl + Alt + H**). Het pane
 
 Klik met de rechtermuisknop op het icoon bij de klok voor:
 
-- **HomeyBar openen**: het hoofdvenster
+- **HomeWindow openen**: het hoofdvenster
 - **Flows starten**: je favoriete flows, zonder het paneel te openen
 - **Sferen**
 - **Homey wisselen**: alleen als je meer dan één Homey hebt
 - **Opnieuw verbinden**
 - **Instellingen**
-- **Afsluiten**: HomeyBar helemaal stoppen
+- **Afsluiten**: HomeWindow helemaal stoppen
 
 ### Het bolletje op het icoon
 
@@ -136,7 +140,7 @@ Klik met de rechtermuisknop op het icoon bij de klok voor:
 
 ### Snel schakelen
 
-- **Tegel**: klik op de tegel en HomeyBar voert de snelle actie uit. Een lamp of stopcontact gaat aan of uit, een slot op slot of open, een speaker speelt of pauzeert, een rolluik gaat op of neer. Heb je in de Homey-app voor een apparaat een snelle actie gekozen, dan gebruikt HomeyBar die.
+- **Tegel**: klik op de tegel en HomeWindow voert de snelle actie uit. Een lamp of stopcontact gaat aan of uit, een slot op slot of open, een speaker speelt of pauzeert, een rolluik gaat op of neer. Heb je in de Homey-app voor een apparaat een snelle actie gekozen, dan gebruikt HomeWindow die.
 - **Lijst**: gebruik de schakelaar rechts in de rij, of klik op de rij voor de snelle actie.
 
 Een apparaat dat aan staat, krijgt een gekleurd icoon en een lichte achtergrond. Een sensor met een alarm (beweging, rook, open deur) krijgt een rood icoon.
@@ -172,13 +176,13 @@ Rechtsboven staan twee knoppen:
 
 Een apparaat zet je bij je favorieten met de ster in zijn instellingen, of met de rechtermuisknop → **Favoriet**. Bij een flow klik je op het sterretje rechtsboven op de tegel. Favorieten verschijnen in het paneel bij de klok, op het overzicht en (flows) in het menu onder de rechtermuisknop. Ze worden per Homey bewaard, in de volgorde waarin je ze toevoegt.
 
-> Een wijziging is meteen te zien. Komt Homey binnen een paar seconden met een andere waarde (omdat het apparaat niet reageerde), dan toont HomeyBar weer de echte stand en verschijnt er een rode melding onderaan.
+> Een wijziging is meteen te zien. Komt Homey binnen een paar seconden met een andere waarde (omdat het apparaat niet reageerde), dan toont HomeWindow weer de echte stand en verschijnt er een rode melding onderaan.
 
 ---
 
 ## 4. Het hoofdvenster
 
-Open het hoofdvenster met ↗ in het paneel, met **HomeyBar openen** in het menu, of door HomeyBar nog een keer te starten. Het kruisje sluit alleen het venster; HomeyBar blijft in het systeemvak draaien. Afsluiten doe je via het menu onder de rechtermuisknop.
+Open het hoofdvenster met ↗ in het paneel, met **HomeWindow openen** in het menu, of door HomeWindow nog een keer te starten. Het kruisje sluit alleen het venster; HomeWindow blijft in het systeemvak draaien. Afsluiten doe je via het menu onder de rechtermuisknop.
 
 Links staan de pagina's, en onderaan de verbinding. Heb je meer dan één Homey, dan wissel je bovenaan in de zijbalk.
 
@@ -225,7 +229,7 @@ De logica-variabelen van je Homey. Een ja/nee-variabele zet je met de schakelaar
 - **Totalen** voor vandaag en deze maand: verbruik, van het net, teruggeleverd, zon opgewekt en gas.
 - **Afgelopen 14 dagen**: per dag wat er van het net kwam en wat de zon opwekte. Beweeg de muis over een dag voor de getallen.
 
-HomeyBar vindt je slimme meter (P1), zonnepanelen en thuisbatterij zelf, aan de hand van hoe ze in Homey Energie staan. De totalen en de grafiek komen uit Insights. Ze worden geladen als je de pagina opent en daarna elke vijf minuten; **Rapport vernieuwen** laadt ze meteen opnieuw.
+HomeWindow vindt je slimme meter (P1), zonnepanelen en thuisbatterij zelf, aan de hand van hoe ze in Homey Energie staan. De totalen en de grafiek komen uit Insights. Ze worden geladen als je de pagina opent en daarna elke vijf minuten; **Rapport vernieuwen** laadt ze meteen opnieuw.
 
 ### Batterijen
 
@@ -253,11 +257,11 @@ Deze pagina vernieuwt elke tien seconden zolang hij open is. Het processorgebrui
 
 ## 5. Onderweg verbinden
 
-Buiten je eigen netwerk verbindt HomeyBar via de cloud-doorgang van Athom, met dezelfde API-key. Je hoeft niets in je router open te zetten.
+Buiten je eigen netwerk verbindt HomeWindow via de cloud-doorgang van Athom, met dezelfde API-key. Je hoeft niets in je router open te zetten.
 
-- Met de verbinding op **Automatisch** probeert HomeyBar eerst het IP-adres. Reageert dat niet binnen drie seconden, dan gaat hij via de cloud.
-- Daarvoor heeft HomeyBar het **Homey-ID** nodig. Dat leest hij zelf uit bij de eerste verbinding thuis. Je kunt het ook zelf invullen bij **Homey-ID (cloud)**.
-- Ben je weer thuis, dan gaat HomeyBar binnen ongeveer twee minuten vanzelf terug naar de snellere lokale verbinding.
+- Met de verbinding op **Automatisch** probeert HomeWindow eerst het IP-adres. Reageert dat niet binnen drie seconden, dan gaat hij via de cloud.
+- Daarvoor heeft HomeWindow het **Homey-ID** nodig. Dat leest hij zelf uit bij de eerste verbinding thuis. Je kunt het ook zelf invullen bij **Homey-ID (cloud)**.
+- Ben je weer thuis, dan gaat HomeWindow binnen ongeveer twee minuten vanzelf terug naar de snellere lokale verbinding.
 
 Wil je zeker weten dat de cloud werkt? Zet de verbinding bij Instellingen even op **Alleen cloud** en klik **Verbinding testen**. Zet hem daarna terug op *Automatisch*.
 
@@ -299,24 +303,26 @@ De accentkleur (van schakelaars en actieve apparaten) volgt de accentkleur van W
 
 | Instelling | Wat het doet |
 |---|---|
-| Starten met Windows | HomeyBar start stil in het systeemvak als je inlogt |
+| Starten met Windows | HomeWindow start stil in het systeemvak als je inlogt |
 | Sneltoets | Ctrl + Alt + H opent het paneel |
-| Meldingen van Homey tonen | Nieuwe meldingen uit de tijdlijn verschijnen als Windows-melding. Klik erop om HomeyBar te openen. |
-| Taal | Automatisch (volgt Windows), Nederlands of English. Start HomeyBar opnieuw om te wisselen. |
+| Meldingen van Homey tonen | Nieuwe meldingen uit de tijdlijn verschijnen als Windows-melding. Klik erop om HomeWindow te openen. |
+| Taal | Automatisch (volgt Windows), Nederlands of English. Start HomeWindow opnieuw om te wisselen. |
 
 ### Updates
 
-Met **Automatisch bijwerken** aan (standaard) kijkt HomeyBar kort na het opstarten en daarna elke zes uur op GitHub of er een nieuwe versie is. Is die er, dan:
+Met **Automatisch bijwerken** aan (standaard) kijkt HomeWindow kort na het opstarten en daarna elke zes uur op GitHub of er een nieuwe versie is. Is die er, dan:
 
-1. downloadt HomeyBar de nieuwe installer en controleert hij die met de controlesom die GitHub erbij publiceert;
-2. wacht hij tot je HomeyBar niet gebruikt (het paneel is dicht en het hoofdvenster heeft de focus niet);
+1. downloadt HomeWindow de nieuwe installer en controleert hij die met de controlesom die GitHub erbij publiceert;
+2. wacht hij tot je HomeWindow niet gebruikt (het paneel is dicht en het hoofdvenster heeft de focus niet);
 3. installeert hij de nieuwe versie stil en start daarna vanzelf opnieuw. Je ziet een melding *Bijgewerkt naar versie …*.
+
+> **Had je HomeyBar?** Zo heette deze app tot versie 0.1. HomeyBar werkt zichzelf bij naar HomeWindow, net als bij elke andere update. Je Homeys, favorieten en de keuze voor *Starten met Windows* gaan mee, en de oude map en snelkoppeling worden opgeruimd.
 
 Je instellingen, favorieten en de keuze voor *Starten met Windows* blijven daarbij hetzelfde.
 
 Met **Nu controleren** zoek je meteen, en installeer je een gevonden versie direct, ook als automatisch bijwerken uit staat. Daaronder zie je je huidige versie en de uitkomst van de laatste controle.
 
-Automatisch bijwerken werkt alleen als HomeyBar met de installer is geïnstalleerd, niet als je hem zelf uit de broncode hebt gebouwd.
+Automatisch bijwerken werkt alleen als HomeWindow met de installer is geïnstalleerd, niet als je hem zelf uit de broncode hebt gebouwd.
 
 ---
 
@@ -342,22 +348,22 @@ Automatisch bijwerken werkt alleen als HomeyBar met de installer is geïnstallee
 | ***Geen toegang*** op één pagina | De API-key mist het recht voor dat onderdeel (zie de tabel bij [Een API-key maken](#een-api-key-maken)). De rest werkt gewoon. |
 | **Lokaal: geen antwoord** | Klopt het IP-adres? Zit je pc in hetzelfde netwerk als je Homey (niet in een gastnetwerk)? Probeer `http://<ip-adres>` in je browser. |
 | **Geen adres of Homey-ID ingesteld** | Vul het IP-adres in, of het Homey-ID voor de cloud. |
-| Werkt thuis, maar onderweg niet | HomeyBar kent het Homey-ID nog niet. Verbind één keer thuis, of vul het ID zelf in. |
+| Werkt thuis, maar onderweg niet | HomeWindow kent het Homey-ID nog niet. Verbind één keer thuis, of vul het ID zelf in. |
 | *Geen releases gevonden op GitHub* bij Updates | Er is nog geen versie uitgebracht, of de repository op GitHub is privé. |
-| Het icoon is niet te zien | Klik op **^** naast de klok en sleep het HomeyBar-icoon naar de taakbalk. |
+| Het icoon is niet te zien | Klik op **^** naast de klok en sleep het HomeWindow-icoon naar de taakbalk. |
 | Ctrl + Alt + H doet niets | Een ander programma gebruikt die combinatie al. Sluit dat programma, of zet de sneltoets uit en weer aan bij Instellingen. |
-| De energietotalen blijven leeg | Geef de API-key het recht om Insights te bekijken. Zonder slimme meter telt HomeyBar alleen apparaten met een eigen kWh-meter. |
+| De energietotalen blijven leeg | Geef de API-key het recht om Insights te bekijken. Zonder slimme meter telt HomeWindow alleen apparaten met een eigen kWh-meter. |
 | Het weer ontbreekt | Geef de API-key het recht om de geolocatie te bekijken, en controleer of je Homey een locatie heeft. |
 | Een schakelaar springt terug | Het apparaat reageerde niet. Kijk in de Homey-app of het bereikbaar is. |
 
-HomeyBar haalt elke 2,5 seconden nieuwe gegevens op als het paneel of het hoofdvenster open is, en elke 15 seconden als alles dicht is. Na een verbroken verbinding probeert hij het steeds opnieuw, eerst snel en daarna elke 30 seconden. **Opnieuw verbinden** in het menu probeert het meteen.
+HomeWindow haalt elke 2,5 seconden nieuwe gegevens op als het paneel of het hoofdvenster open is, en elke 15 seconden als alles dicht is. Na een verbroken verbinding probeert hij het steeds opnieuw, eerst snel en daarna elke 30 seconden. **Opnieuw verbinden** in het menu probeert het meteen.
 
 ---
 
 ## 9. Verwijderen
 
-1. Open **Windows-instellingen → Apps → Geïnstalleerde apps**, zoek **HomeyBar** en kies **Verwijderen**. HomeyBar wordt eerst afgesloten en ook uit het opstarten van Windows gehaald.
-2. Aan het eind vraagt de verwijderaar of je ook je instellingen (Homeys, API-keys, favorieten) wilt wissen. Kies **Ja** als je HomeyBar niet meer gaat gebruiken.
+1. Open **Windows-instellingen → Apps → Geïnstalleerde apps**, zoek **HomeWindow** en kies **Verwijderen**. HomeWindow wordt eerst afgesloten en ook uit het opstarten van Windows gehaald.
+2. Aan het eind vraagt de verwijderaar of je ook je instellingen (Homeys, API-keys, favorieten) wilt wissen. Kies **Ja** als je HomeWindow niet meer gaat gebruiken.
 3. Verwijder de API-key in my.homey.app onder Instellingen → API-sleutels.
 
-Heb je HomeyBar zelf gebouwd in plaats van geïnstalleerd? Zet dan bij Instellingen **Starten met Windows** uit, sluit HomeyBar af, en verwijder de map met HomeyBar en de map `%APPDATA%\HomeyBar`.
+Heb je HomeWindow zelf gebouwd in plaats van geïnstalleerd? Zet dan bij Instellingen **Starten met Windows** uit, sluit HomeWindow af, en verwijder de map met HomeWindow en de map `%APPDATA%\HomeWindow`.

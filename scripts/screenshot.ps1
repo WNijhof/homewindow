@@ -1,4 +1,4 @@
-param([string]$Title = "HomeyBar", [string]$Out = "shot.png", [switch]$Screen)
+param([string]$Title = "HomeWindow", [string]$Out = "shot.png", [switch]$Screen)
 # Development helper: captures a window by its title (or the primary screen) to a PNG
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms

@@ -1,11 +1,11 @@
-# Draws the HomeyBar icon and writes HomeyBar\Assets\HomeyBar.ico with PNG frames of
-# 16, 24, 32, 48, 64 and 256 pixels: a roof chevron above an on/off switch, on an indigo-violet
+# Draws the HomeWindow icon and writes HomeWindow\Assets\HomeWindow.ico with PNG frames of
+# 16, 24, 32, 48, 64 and 256 pixels: a roof chevron above a window with one lit pane, on an indigo-violet
 # rounded square. With -Preview it also writes a PNG with every size next to each other.
 # Run with: powershell -ExecutionPolicy Bypass -File scripts\make-icon.ps1 [-Preview file.png]
 param([string]$Preview)
 Add-Type -AssemblyName System.Drawing
 
-$out = Join-Path $PSScriptRoot '..\HomeyBar\Assets\HomeyBar.ico'
+$out = Join-Path $PSScriptRoot '..\HomeWindow\Assets\HomeWindow.ico'
 $sizes = 16, 24, 32, 48, 64, 256
 
 function New-RoundedPath([single]$x, [single]$y, [single]$w, [single]$h, [single]$r) {
@@ -44,12 +44,24 @@ function New-Bitmap([int]$size) {
     (New-Object System.Drawing.PointF (32 * $s), (14 * $s)),
     (New-Object System.Drawing.PointF (49 * $s), (29 * $s))))
 
-  # Switch: a white pill with the knob on the right ("on")
-  $pill = New-RoundedPath (13 * $s) (36 * $s) (38 * $s) (17 * $s) (8.5 * $s)
-  $g.FillPath((New-Object System.Drawing.SolidBrush $white), $pill)
-  $knob = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 124, 58, 237))
-  $k = 11 * $s
-  $g.FillEllipse($knob, (51 * $s) - 3 * $s - $k, (36 * $s) + (17 * $s - $k) / 2, $k, $k)
+  # Window: a white frame with four panes; the top left one is lit, as if someone is home
+  $fx = 16; $fy = 33; $fw = 32; $fh = 24
+  $frame = New-RoundedPath ($fx * $s) ($fy * $s) ($fw * $s) ($fh * $s) (4.5 * $s)
+  $g.FillPath((New-Object System.Drawing.SolidBrush $white), $frame)
+  $border = if ($size -le 24) { 4 } else { 3.5 }
+  $bar = if ($size -le 24) { 4 } else { 3 }
+  $pw = ($fw - 2 * $border - $bar) / 2
+  $ph = ($fh - 2 * $border - $bar) / 2
+  $dark = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 109, 40, 217))
+  $lit = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 252, 211, 77))
+  foreach ($col in 0, 1) {
+    foreach ($row in 0, 1) {
+      $px = $fx + $border + $col * ($pw + $bar)
+      $py = $fy + $border + $row * ($ph + $bar)
+      $pane = New-RoundedPath ($px * $s) ($py * $s) ($pw * $s) ($ph * $s) (1.5 * $s)
+      $g.FillPath($(if ($col -eq 0 -and $row -eq 0) { $lit } else { $dark }), $pane)
+    }
+  }
 
   $g.Dispose()
   return $bmp
