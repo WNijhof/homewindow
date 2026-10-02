@@ -56,7 +56,7 @@
                                     <TextBlock Style="{StaticResource Icon}" Text="&#xE945;" FontSize="12" Foreground="{DynamicResource GridBrush}" Margin="0,0,6,0" />
                                     <TextBlock Text="{Binding GridLabel}" Style="{StaticResource Sub}" />
                                 </StackPanel>
-                                <TextBlock Text="{Binding GridText}" FontSize="15" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding GridText}" Style="{StaticResource GridValue}" FontSize="15" />
                             </StackPanel>
                         </UniformGrid>
                     </StackPanel>

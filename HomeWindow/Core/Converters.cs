@@ -67,15 +67,6 @@ public sealed class EqualsConverter : IValueConverter
         value is true ? parameter! : Binding.DoNothing;
 }
 
-// Indents nested zones and folders
-public sealed class DepthConverter : IValueConverter
-{
-    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        new Thickness((value is int i ? i : 0) * 14, 0, 0, 0);
-
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotSupportedException();
-}
-
 public sealed class CapTemplateSelector : DataTemplateSelector
 {
     public DataTemplate? Toggle { get; set; }

@@ -134,16 +134,24 @@ Klik met de rechtermuisknop op het icoon bij de klok voor:
 | oranje bolletje | Bezig met verbinden |
 | rood bolletje | Geen verbinding (beweeg de muis over het icoon voor de reden) |
 
+### Energie in de taakbalk
+
+Links van de iconen bij de klok staat het energieverbruik van nu: wat je huis verbruikt (⌂), wat de zon opwekt (☀) en wat er van het net komt (⚡). Lever je terug, dan staat het netvermogen er als negatief getal in het groen, bijvoorbeeld **-1364 W**. Beweeg de muis erover voor de uitleg; klik erop om het paneel te openen.
+
+Het strookje verschijnt alleen als HomeWindow energiegegevens van je Homey heeft. Je zet het uit bij **Instellingen → Uiterlijk → Energie in de taakbalk**. Windows heeft hier geen officiële plek voor, dus HomeWindow zet het strookje zelf in de taakbalk. Na een grote Windows-update kan het daardoor even verkeerd staan of ontbreken.
+
 ---
 
 ## 3. Apparaten bedienen
 
 ### Snel schakelen
 
-- **Tegel**: klik op de tegel en HomeWindow voert de snelle actie uit. Een lamp of stopcontact gaat aan of uit, een slot op slot of open, een speaker speelt of pauzeert, een rolluik gaat op of neer. Heb je in de Homey-app voor een apparaat een snelle actie gekozen, dan gebruikt HomeWindow die.
-- **Lijst**: gebruik de schakelaar rechts in de rij, of klik op de rij voor de snelle actie.
+- **Tegel**: klik op het ronde knopje rechtsboven, net als in de Homey web-app. Een lamp of stopcontact gaat aan of uit, een slot op slot of open, een speaker speelt of pauzeert, een rolluik gaat op of neer. Heb je in de Homey-app voor een apparaat een snelle actie gekozen, dan gebruikt HomeWindow die. Klik je ergens anders op de tegel, dan zie je de details van het apparaat.
+- **Lijst**: gebruik de schakelaar (of het ronde knopje) rechts in de rij. Klik je op de rij zelf, dan zie je de details.
 
-Een apparaat dat aan staat, krijgt een gekleurd icoon en een lichte achtergrond. Een sensor met een alarm (beweging, rook, open deur) krijgt een rood icoon.
+De tegels lijken op die in de Homey-app. Staat een apparaat aan, dan kleurt het ronde knopje: geel voor lampen, paars voor speakers en blauw voor de rest. Voor de status staat een gekleurd tekentje: een bolletje als het apparaat aan staat, een bliksem bij vermogen (groen bij teruglevering), een muzieknoot bij muziek, een oranje pijl als een thermostaat verwarmt en een slotje bij een slot. Een sensor met een alarm (beweging, rook, open deur) krijgt een rood icoon.
+
+Onder de status staat op een tegel een meting, zoals het vermogen van een stopcontact of de luchtvochtigheid bij een thermostaat. Welke meting dat is, kies je zelf in de details van het apparaat onder **Op de tegel**: bij **Detail 1** een andere meting of **Geen**, en bij **Detail 2** eventueel een tweede. HomeWindow onthoudt dat per apparaat. Een rood batterijtje betekent dat de batterij bijna leeg is. In de lijst staan die metingen achter de status.
 
 ### Meer bediening
 
@@ -153,11 +161,11 @@ Een apparaat dat aan staat, krijgt een gekleurd icoon en een lichte achtergrond.
   - een **rolluik**: omhoog, stop, omlaag en de positie
   - een **speaker**: vorige, afspelen/pauze, volgende en het volume
   - een **slot**: vergrendelen of ontgrendelen
-- **Op een tegel**: klik op **…** rechtsboven.
+- **Op een tegel**: klik op de tegel.
 
 ### Alle instellingen van een apparaat
 
-Klik op **…** op een tegel, op **Alle instellingen** onder de bediening, of kies **Alle instellingen** onder de rechtermuisknop. In het hoofdvenster opent het paneel rechts naast de lijst; in het paneel bij de klok schuift het eroverheen (terug met **Terug** of **Esc**).
+Klik op een tegel of rij, op **Alle instellingen** onder de bediening, of kies **Alle instellingen** onder de rechtermuisknop. In het hoofdvenster opent het paneel rechts naast de lijst; in het paneel bij de klok schuift het eroverheen (terug met **Terug** of **Esc**).
 
 <img src="images/apparaten-details.png" width="700" alt="De apparatenpagina met rechts de details van de thermostaat">
 
@@ -223,7 +231,7 @@ De logica-variabelen van je Homey. Een ja/nee-variabele zet je met de schakelaar
 
 <img src="images/energie.png" width="700" alt="De energiepagina">
 
-- **Nu**: wat je huis verbruikt, wat de zonnepanelen opwekken, wat er van het net komt of wordt teruggeleverd, en wat een thuisbatterij laadt of ontlaadt.
+- **Nu**: wat je huis verbruikt, wat de zonnepanelen opwekken, wat er van het net komt of wordt teruggeleverd, en wat een thuisbatterij laadt of ontlaadt. Teruglevering staat er als negatief getal in het groen.
 - **Grootste verbruikers nu**: apparaten met een eigen vermogensmeter. Met een * erachter is het een schatting van Homey Energie (bijvoorbeeld een lamp zonder meter).
 - **Verbruik vandaag per apparaat**: uit de kWh-meters van de apparaten.
 - **Totalen** voor vandaag en deze maand: verbruik, van het net, teruggeleverd, zon opgewekt en gas.
@@ -247,11 +255,11 @@ De tijdlijn van je Homey, per dag. Met de prullenbak verwijder je een melding, o
 
 <img src="images/systeem-donker.png" width="700" alt="De systeempagina in het donkere thema">
 
-Het model en de versie van je Homey, hoe lang hij aan staat, het IP-adres en het wifi-netwerk. Verder het gebruik van processor, geheugen en opslag, en een melding als er een Homey-update klaarstaat.
+Het model en de versie van je Homey, hoe lang hij aan staat, het IP-adres en het wifi-netwerk. Verder het gebruik van geheugen en opslag, en een melding als er een Homey-update klaarstaat.
 
-Onder **Apps** staan al je Homey-apps. Gecrashte apps staan bovenaan in rood, daarna apps met een update. Met **Herstarten** start je een app opnieuw op.
+Onder **Apps** staan al je Homey-apps, met hun eigen icoon. Gecrashte apps staan bovenaan in rood, daarna apps met een update. Met **Herstarten** start je een app opnieuw op.
 
-Deze pagina vernieuwt elke tien seconden zolang hij open is. Het processorgebruik verschijnt na de tweede meting.
+Deze pagina vernieuwt elke tien seconden zolang hij open is.
 
 ---
 
@@ -288,14 +296,15 @@ Hier voeg je een Homey toe, wijzig je hem of verwijder je hem. Met meerdere Home
 | Instelling | Wat het doet |
 |---|---|
 | Thema | Licht, donker, of zoals Windows staat ingesteld |
-| Achtergrond | Papier, Aurora, Schemer, Oceaan of Glas. Glas laat het bureaublad doorschemeren (alleen Windows 11). |
+| Achtergrond | Dashboard (standaard), Papier, Aurora, Schemer, Oceaan of Glas. Dashboard heeft de stijl van het Homey-energiedashboard: effen kaarten en een zachte gloed in de kleur van waar je stroom nu vandaan komt (zon, net of batterij); Intensiteit regelt die gloed. Glas laat het bureaublad doorschemeren (alleen Windows 11). |
 | Intensiteit | Hoe sterk de kleur van de achtergrond is |
-| Dekking kaarten | Hoe doorzichtig de tegels en kaarten zijn |
 | Tekstgrootte | Alles groter of kleiner, van 85 tot 130 % |
 | Schaduwen | Schaduwen onder de kaarten |
+| Tegelgrootte | Klein, Normaal of Groot, voor het hoofdvenster en het paneel. Groot zet in het paneel twee tegels naast elkaar en laat lange namen over twee regels lopen. |
 | Paneel bij de klok | Apparaten als lijst of als tegels |
 | Hoofdvenster | Apparaten als raster of als lijst |
 | Weer / Energie in het paneel | Deze regel bovenin het paneel tonen |
+| Energie in de taakbalk | Het verbruik van nu links van de klok tonen |
 
 De accentkleur (van schakelaars en actieve apparaten) volgt de accentkleur van Windows.
 

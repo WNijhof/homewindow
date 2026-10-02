@@ -121,6 +121,20 @@ public sealed class Demo
         return c;
     }
 
+    // Simple app icons, so the demo shows how real ones look
+    public byte[]? File(string url)
+    {
+        var shape = url switch
+        {
+            _ when url.Contains("sonos") => "<circle cx='32' cy='32' r='20' fill='none' stroke='#000' stroke-width='6'/><circle cx='32' cy='32' r='6'/>",
+            _ when url.Contains("hue") => "<path d='M32 6a18 18 0 0 0-10 33v7h20v-7A18 18 0 0 0 32 6zM24 50h16v4H24zm4 6h8v3h-8z'/>",
+            _ when url.Contains("somfy") => "<path d='M8 12h48v8H8zm0 12h48v6H8zm0 10h48v6H8zm0 10h48v6H8z'/>",
+            _ when url.Contains("danalock") => "<path d='M20 28v-8a12 12 0 0 1 24 0v8h4v28H16V28zm6 0h12v-8a6 6 0 0 0-12 0z'/>",
+            _ => null,
+        };
+        return shape == null ? null : System.Text.Encoding.UTF8.GetBytes($"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>{shape}</svg>");
+    }
+
     public JsonNode? Handle(HttpMethod method, string path, object? body)
     {
         var p = path.Split('?')[0];
@@ -145,7 +159,7 @@ public sealed class Demo
         if (method != HttpMethod.Get) return null;
 
         Wiggle();
-        return p switch
+        var result = p switch
         {
             "/api/manager/system/name" => "Demo Homey",
             "/api/manager/devices/device" => devices.DeepClone(),
@@ -177,10 +191,6 @@ public sealed class Demo
             {
                 ["homeyModelName"] = "Homey Pro (Early 2023)", ["homeyVersion"] = "12.4.1", ["address"] = "192.168.1.50", ["wifiSsid"] = "Thuisnetwerk",
                 ["uptime"] = 1_036_800 + Environment.TickCount64 / 1000.0,
-                ["cpus"] = new JsonArray(Enumerable.Range(0, 4).Select(i => (JsonNode)new JsonObject
-                {
-                    ["times"] = new JsonObject { ["user"] = Environment.TickCount64 / 10.0 * (1 + i * 0.1), ["sys"] = 1000, ["idle"] = Environment.TickCount64 / 2.5 },
-                }).ToArray()),
             },
             "/api/manager/system/memory" => new JsonObject { ["total"] = 4_000_000_000.0, ["free"] = 2_350_000_000.0 },
             "/api/manager/system/storage" => new JsonObject { ["total"] = 32_000_000_000.0, ["free"] = 21_400_000_000.0 },
@@ -190,6 +200,46 @@ public sealed class Demo
             _ when p.StartsWith("/api/manager/insights/log/") => Entries(p, path),
             _ => throw new HomeyApiException(404, "Not found"),
         };
+        return Loc.Lang == "en" ? English(result) : result;
+    }
+
+    // The demo home in English, for screenshots of the English app
+    static readonly Dictionary<string, string> EnglishNames = new()
+    {
+        ["Plafondlamp"] = "Ceiling light", ["Eettafel"] = "Dining table", ["Leeslamp"] = "Reading lamp", ["Rolluik"] = "Blinds",
+        ["Televisie"] = "TV", ["Thermostaat"] = "Thermostat", ["Bewegingssensor"] = "Motion sensor", ["Keukenspots"] = "Kitchen spots",
+        ["Koffiemachine"] = "Coffee machine", ["Vaatwasser"] = "Dishwasher", ["Achterdeur"] = "Back door", ["Bedlampje"] = "Bedside lamp",
+        ["Radiatorkraan"] = "Radiator valve", ["Voordeur"] = "Front door", ["Deurbel"] = "Doorbell", ["Tuinverlichting"] = "Garden lights",
+        ["Slimme meter"] = "Smart meter", ["Omvormer"] = "Inverter", ["Wasmachine"] = "Washing machine", ["Rookmelder"] = "Smoke alarm",
+        ["Gasten aanwezig"] = "Guests over", ["Vakantiemodus"] = "Holiday mode", ["Comforttemperatuur"] = "Comfort temperature",
+        ["Laatste scène"] = "Last scene", ["Film"] = "Movie",
+        ["Thuis"] = "Home", ["Begane grond"] = "Ground floor", ["Woonkamer"] = "Living room", ["Keuken"] = "Kitchen", ["Hal"] = "Hall",
+        ["Meterkast"] = "Utility cupboard", ["Eerste verdieping"] = "First floor", ["Slaapkamer"] = "Bedroom", ["Zolder"] = "Attic", ["Tuin"] = "Garden",
+        ["Verlichting"] = "Lighting", ["Klimaat"] = "Climate", ["Beveiliging"] = "Security",
+        ["Goedemorgen"] = "Good morning", ["Slim verwarmen"] = "Smart heating", ["Filmavond"] = "Movie night", ["Eten"] = "Dinner",
+        ["Welterusten"] = "Good night", ["Iedereen weg"] = "Everyone away", ["Alarm aan"] = "Arm alarm", ["Deur open melding"] = "Door open alert",
+        ["Eco-stand"] = "Eco mode", ["Gezellig"] = "Cosy", ["Helder"] = "Bright", ["Koken"] = "Cooking", ["Nachtlampje"] = "Night light",
+        ["**Achterdeur** is geopend"] = "**Back door** was opened", ["Vaatwasser is klaar"] = "The dishwasher is done",
+        ["De batterij van **Achterdeur** is bijna leeg"] = "The battery of **Back door** is almost empty",
+        ["Iedereen is vertrokken"] = "Everyone has left", ["Zonnepanelen leverden vandaag 18,2 kWh"] = "Solar panels made 18.2 kWh today",
+        ["Sanne de Vries"] = "Emma Brown", ["Joris"] = "Jack",
+    };
+
+    static JsonNode? English(JsonNode? node)
+    {
+        switch (node)
+        {
+            case JsonObject o:
+                foreach (var key in o.Select(p => p.Key).ToList()) o[key] = English(o[key]?.DeepClone());
+                return o;
+            case JsonArray a:
+                for (var i = 0; i < a.Count; i++) a[i] = English(a[i]?.DeepClone());
+                return a;
+            case JsonValue v when v.TryGetValue<string>(out var text) && EnglishNames.TryGetValue(text, out var en):
+                return JsonValue.Create(en);
+            default:
+                return node;
+        }
     }
 
     // Values move a little, so the demo looks alive
@@ -260,6 +310,7 @@ public sealed class Demo
         {
             ["id"] = a.id, ["name"] = a.name, ["version"] = a.version, ["state"] = a.state, ["enabled"] = true, ["crashed"] = a.state == "crashed",
             ["updateAvailable"] = a.update == null ? null : new JsonObject { ["version"] = a.update },
+            ["brandColor"] = a.id switch { "com.sonos" => "#000000", "com.philips.hue.zigbee" => "#0065D3", "com.somfy" => "#F7A41D", "com.danalock" => "#00B2A9", _ => null },
         })));
     }
 

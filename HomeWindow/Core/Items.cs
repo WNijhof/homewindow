@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json.Nodes;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace HomeWindow.Core;
 
@@ -275,12 +276,28 @@ public sealed class AppVM : ObservableObject
     public string Glyph => IsCrashed ? Icons.Warning : Icons.Apps;
     public ICommand RestartCommand { get; }
 
+    // The app's own icon, drawn in white on its brand colour like in the Homey app
+    ImageSource? icon;
+    public ImageSource? Icon { get => icon; set { if (Set(ref icon, value)) OnPropertyChanged(nameof(HasIcon)); } }
+    public bool HasIcon => Icon != null;
+    public bool IconRequested { get; set; }
+    public Brush BrandBrush { get; private set; } = DefaultBrand;
+    static readonly Brush DefaultBrand = Frozen(Color.FromRgb(0x4B, 0x55, 0x63));
+
+    // Where Homey may serve the icon, best guess first
+    public List<string> IconUrls { get; } = [];
+
     public void Update(JsonObject a)
     {
         Name = J.Text(a, "name") ?? Id;
         Version = J.Str(a, "version") ?? "";
         Enabled = J.Bool(a, "enabled") ?? true;
         Origin = J.Str(a, "origin");
+        BrandBrush = ParseColor(J.Str(a, "brandColor") ?? J.Str(a, "color")) is { } brand ? Frozen(brand) : DefaultBrand;
+        IconUrls.Clear();
+        if (J.Str(J.Obj(a, "iconObj"), "url") is { Length: > 0 } iconUrl) IconUrls.Add(iconUrl);
+        var iconPath = J.Str(a, "icon") is { Length: > 0 } i ? i : "/assets/icon.svg";
+        IconUrls.Add(iconPath.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? iconPath : $"/app/{Id}/{iconPath.TrimStart('/')}");
         var crashed = J.Bool(a, "crashed") == true;
         State = crashed ? "crashed" : J.Str(a, "state") ?? (J.Bool(a, "ready") == true ? "running" : "");
         UpdateVersion = a["updateAvailable"] switch
@@ -291,6 +308,19 @@ public sealed class AppVM : ObservableObject
             _ => null,
         };
         OnPropertyChanged(string.Empty);
+    }
+
+    static Color? ParseColor(string? text)
+    {
+        try { return text is { Length: > 0 } ? (Color)ColorConverter.ConvertFromString(text) : null; }
+        catch (FormatException) { return null; }
+    }
+
+    static SolidColorBrush Frozen(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
     }
 }
 
@@ -396,10 +426,27 @@ public sealed class EnergyVM : ObservableObject
 
     public string HomeText => Watts(HomeW);
     public string SolarText => Watts(SolarW);
-    public string GridText => GridW is { } g ? Watts(Math.Abs(g)) : "–";
+    // Negative while returning power, shown in green
+    public string GridText => Watts(GridW);
     public string GridLabel => Loc.T(IsExporting ? "Teruglevering" : "Van het net");
     public string BatteryText => Watts(Math.Abs(BatteryW));
     public string BatteryLabel => Loc.T(BatteryW >= 0 ? "Batterij laadt" : "Batterij ontlaadt");
+
+    // Where the power comes from, as the energy dashboard decides it: "solar", "battery", "grid" or null
+    public string? Mood
+    {
+        get
+        {
+            var gridHome = Math.Max(0, GridW ?? 0);
+            var batteryHome = Math.Max(0, -BatteryW);
+            var solarHome = Math.Max(0, Math.Min(SolarW, HomeW ?? SolarW));
+            if (GridW is < -100 && SolarW > 100) return "solar";
+            if (BatteryW > 100) return "battery";
+            if (solarHome > 100 && solarHome >= gridHome + batteryHome) return "solar";
+            if (batteryHome > 100 && batteryHome >= gridHome) return "battery";
+            return gridHome > 100 ? "grid" : null;
+        }
+    }
 
     public ObservableCollection<ConsumerVM> Consumers { get; } = [];
 
@@ -438,7 +485,6 @@ public sealed class SystemVM : ObservableObject
     public string Uptime { get; set; } = "";
     public string Address { get; set; } = "";
     public string Wifi { get; set; } = "";
-    public double? Cpu { get; set; }
     public double? MemoryUsed { get; set; }
     public double? MemoryTotal { get; set; }
     public double? StorageUsed { get; set; }
@@ -447,8 +493,6 @@ public sealed class SystemVM : ObservableObject
     public bool HasUpdate => UpdateVersion != null;
     public bool Loaded { get; set; }
 
-    public string CpuText => Cpu is { } c ? (c * 100).ToString("0", Loc.Culture) + " %" : "–";
-    public double CpuFraction => Cpu ?? 0;
     public string MemoryText => Bytes(MemoryUsed, MemoryTotal);
     public double MemoryFraction => MemoryTotal is > 0 && MemoryUsed is { } u ? u / MemoryTotal.Value : 0;
     public string StorageText => Bytes(StorageUsed, StorageTotal);

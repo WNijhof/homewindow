@@ -44,11 +44,6 @@
                 <Border Style="{StaticResource Card}" Width="320" Margin="0,0,12,12">
                     <StackPanel>
                         <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="{Binding CpuText}" FontWeight="SemiBold" />
-                            <TextBlock Text="{c:T Processor}" Style="{StaticResource Sub}" />
-                        </DockPanel>
-                        <ProgressBar Style="{StaticResource Meter}" Value="{Binding CpuFraction, Mode=OneWay}" Margin="0,6,0,14" />
-                        <DockPanel>
                             <TextBlock DockPanel.Dock="Right" Text="{Binding MemoryText}" FontWeight="SemiBold" />
                             <TextBlock Text="{c:T Geheugen}" Style="{StaticResource Sub}" />
                         </DockPanel>
@@ -78,7 +73,16 @@
                                 </Button>
                                 <TextBlock DockPanel.Dock="Right" x:Name="Update" Text="{c:T 'Update beschikbaar'}" Style="{StaticResource Sub}" Foreground="{DynamicResource AccentBrush}"
                                            VerticalAlignment="Center" Margin="0,0,14,0" Visibility="{Binding HasUpdate, Converter={StaticResource Visible}}" />
-                                <TextBlock x:Name="Glyph" DockPanel.Dock="Left" Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="15" Margin="0,0,12,0" Foreground="{DynamicResource SubTextBrush}" />
+                                <Grid DockPanel.Dock="Left" Width="32" Height="32" Margin="0,0,12,0">
+                                    <TextBlock x:Name="Glyph" Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="15" Foreground="{DynamicResource SubTextBrush}" />
+                                    <Border x:Name="AppIcon" CornerRadius="16" Background="{Binding BrandBrush}" Visibility="Collapsed">
+                                        <Border Margin="7" Background="White">
+                                            <Border.OpacityMask>
+                                                <ImageBrush ImageSource="{Binding Icon}" Stretch="Uniform" />
+                                            </Border.OpacityMask>
+                                        </Border>
+                                    </Border>
+                                </Grid>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                                     <TextBlock x:Name="State" Style="{StaticResource Sub}">
@@ -88,6 +92,10 @@
                             </DockPanel>
                         </Border>
                         <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding HasIcon}" Value="True">
+                                <Setter TargetName="AppIcon" Property="Visibility" Value="Visible" />
+                                <Setter TargetName="Glyph" Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
                             <DataTrigger Binding="{Binding IsCrashed}" Value="True">
                                 <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource AlarmBrush}" />
                                 <Setter TargetName="State" Property="Foreground" Value="{DynamicResource AlarmBrush}" />

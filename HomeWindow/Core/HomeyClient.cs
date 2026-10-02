@@ -134,6 +134,31 @@ public sealed class HomeyClient(HomeyConfig config)
     public Task<JsonNode?> PostAsync(string path, object? body = null, CancellationToken ct = default) => SendAsync(HttpMethod.Post, path, body ?? new { }, ct);
     public Task<JsonNode?> DeleteAsync(string path, CancellationToken ct = default) => SendAsync(HttpMethod.Delete, path, null, ct);
 
+    // A file such as an app icon; null when Homey does not have it. The key is only sent to Homey itself.
+    public async Task<byte[]?> GetBytesAsync(string url, CancellationToken ct = default)
+    {
+        var baseUrl = BaseUrl ?? throw new HomeyOfflineException(Loc.T("Niet verbonden"));
+        if (demo != null) return demo.File(url);
+        var full = url.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? url : baseUrl + (url.StartsWith('/') ? url : "/" + url);
+        // Only plain web addresses; anything malformed is simply no file
+        if (!Uri.TryCreate(full, UriKind.Absolute, out var target) || target.Scheme is not ("http" or "https")) return null;
+        using var req = new HttpRequestMessage(HttpMethod.Get, target);
+        if (Uri.TryCreate(baseUrl, UriKind.Absolute, out var homey)
+            && Uri.Compare(target, homey, UriComponents.SchemeAndServer, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) == 0)
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Config.Token);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(TimeSpan.FromSeconds(IsCloud ? 20 : 12));
+        try
+        {
+            using var res = await Http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+            // An icon is small; a huge answer is not one
+            if (!res.IsSuccessStatusCode || res.Content.Headers.ContentLength > 2_000_000) return null;
+            var data = await res.Content.ReadAsByteArrayAsync(cts.Token);
+            return data.Length > 2_000_000 ? null : data;
+        }
+        catch (Exception e) when (e is HttpRequestException or OperationCanceledException && !ct.IsCancellationRequested) { return null; }
+    }
+
     async Task<JsonNode?> SendAsync(HttpMethod method, string path, object? body, CancellationToken ct)
     {
         var baseUrl = BaseUrl ?? throw new HomeyOfflineException(Loc.T("Niet verbonden"));

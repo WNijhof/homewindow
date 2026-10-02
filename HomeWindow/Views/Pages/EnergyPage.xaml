@@ -19,8 +19,8 @@
 
             <!-- Now -->
             <TextBlock Text="{c:T Nu}" Style="{StaticResource Heading}" />
-            <WrapPanel>
-                <Border Style="{StaticResource Card}" Width="200" Margin="0,0,12,12">
+            <UniformGrid Rows="1" Margin="0,0,-12,0">
+                <Border Style="{StaticResource Card}" Margin="0,0,12,0">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Icon}" Text="&#xE80F;" FontSize="13" Foreground="{DynamicResource AccentBrush}" Margin="0,0,8,0" />
@@ -29,7 +29,7 @@
                         <TextBlock Text="{Binding HomeText}" Style="{StaticResource Big}" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
-                <Border Style="{StaticResource Card}" Width="200" Margin="0,0,12,12" Visibility="{Binding HasSolar, Converter={StaticResource Visible}}">
+                <Border Style="{StaticResource Card}" Margin="0,0,12,0" Visibility="{Binding HasSolar, Converter={StaticResource Visible}}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Icon}" Text="&#xE706;" FontSize="13" Foreground="{DynamicResource SolarBrush}" Margin="0,0,8,0" />
@@ -38,16 +38,16 @@
                         <TextBlock Text="{Binding SolarText}" Style="{StaticResource Big}" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
-                <Border Style="{StaticResource Card}" Width="200" Margin="0,0,12,12" Visibility="{Binding HasGrid, Converter={StaticResource Visible}}">
+                <Border Style="{StaticResource Card}" Margin="0,0,12,0" Visibility="{Binding HasGrid, Converter={StaticResource Visible}}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Icon}" Text="&#xE945;" FontSize="13" Foreground="{DynamicResource GridBrush}" Margin="0,0,8,0" />
                             <TextBlock Text="{Binding GridLabel}" Style="{StaticResource Sub}" />
                         </StackPanel>
-                        <TextBlock x:Name="GridValue" Text="{Binding GridText}" Style="{StaticResource Big}" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding GridText}" Style="{StaticResource BigGridValue}" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
-                <Border Style="{StaticResource Card}" Width="200" Margin="0,0,12,12" Visibility="{Binding HasBattery, Converter={StaticResource Visible}}">
+                <Border Style="{StaticResource Card}" Margin="0,0,12,0" Visibility="{Binding HasBattery, Converter={StaticResource Visible}}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource Icon}" Text="&#xE83F;" FontSize="13" Foreground="{DynamicResource GoodBrush}" Margin="0,0,8,0" />
@@ -56,48 +56,33 @@
                         <TextBlock Text="{Binding BatteryText}" Style="{StaticResource Big}" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
-            </WrapPanel>
+            </UniformGrid>
 
+            <!-- Totals and the last 14 days, side by side and equally high -->
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" MaxWidth="460" />
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="12" />
-                    <ColumnDefinition Width="*" MaxWidth="460" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="{c:T 'Grootste verbruikers nu'}" Style="{StaticResource Heading}" />
-                    <Border Style="{StaticResource Card}" Padding="14,8">
-                        <StackPanel>
-                            <ItemsControl ItemsSource="{Binding Consumers}" ItemTemplate="{StaticResource ConsumerRow}" />
-                            <TextBlock Text="{c:T '* geschat door Homey Energie'}" Style="{StaticResource Sub}" FontSize="11" Margin="0,6,0,0" />
-                        </StackPanel>
-                    </Border>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
+                    <TextBlock Text="{c:T Totalen}" Style="{StaticResource Heading}" />
+                    <TextBlock Text="{Binding ReportStatus}" Style="{StaticResource Sub}" Margin="12,18,0,8" VerticalAlignment="Bottom"
+                               Visibility="{Binding ReportStatus, Converter={StaticResource Visible}}" />
                 </StackPanel>
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="{c:T 'Verbruik vandaag per apparaat'}" Style="{StaticResource Heading}" />
-                    <Border Style="{StaticResource Card}" Padding="14,8">
-                        <StackPanel>
-                            <ItemsControl ItemsSource="{Binding TodayDevices}" ItemTemplate="{StaticResource ConsumerRow}" />
-                            <TextBlock Text="{c:T 'Wordt geladen zodra het rapport klaar is.'}" Style="{StaticResource Sub}"
-                                       Visibility="{Binding ReportLoaded, Converter={StaticResource Visible}, ConverterParameter=not}" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Grid>
-
-            <!-- Totals -->
-            <TextBlock Text="{c:T Totalen}" Style="{StaticResource Heading}" Margin="2,22,0,8" />
-            <TextBlock Text="{Binding ReportStatus}" Style="{StaticResource Sub}" Margin="0,0,0,8" Visibility="{Binding ReportStatus, Converter={StaticResource Visible}}" />
-            <WrapPanel>
-                <Border Style="{StaticResource Card}" Width="420" Margin="0,0,12,12">
+                <Border Grid.Row="1" Style="{StaticResource Card}">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.2*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" MinWidth="120" />
+                            <ColumnDefinition Width="Auto" MinWidth="96" />
+                            <ColumnDefinition Width="Auto" MinWidth="96" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Column="1" Text="{c:T Vandaag}" Style="{StaticResource Sub}" FontWeight="SemiBold" />
                         <TextBlock Grid.Column="2" Text="{c:T 'Deze maand'}" Style="{StaticResource Sub}" FontWeight="SemiBold" />
@@ -124,8 +109,7 @@
                     </Grid>
                 </Border>
 
-                <!-- Last 14 days -->
-                <Border Style="{StaticResource Card}" Width="460" Margin="0,0,12,12">
+                <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource Card}">
                     <StackPanel>
                         <DockPanel Margin="0,0,0,10">
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
@@ -154,7 +138,35 @@
                         </ItemsControl>
                     </StackPanel>
                 </Border>
-            </WrapPanel>
+            </Grid>
+
+            <!-- Devices now and today -->
+            <Grid Margin="0,6,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="{c:T 'Grootste verbruikers nu'}" Style="{StaticResource Heading}" />
+                <Border Grid.Row="1" Style="{StaticResource Card}" Padding="14,8">
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding Consumers}" ItemTemplate="{StaticResource ConsumerRow}" />
+                        <TextBlock Text="{c:T '* geschat door Homey Energie'}" Style="{StaticResource Sub}" FontSize="11" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+                <TextBlock Grid.Column="2" Text="{c:T 'Verbruik vandaag per apparaat'}" Style="{StaticResource Heading}" />
+                <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource Card}" Padding="14,8">
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding TodayDevices}" ItemTemplate="{StaticResource ConsumerRow}" />
+                        <TextBlock Text="{c:T 'Wordt geladen zodra het rapport klaar is.'}" Style="{StaticResource Sub}"
+                                   Visibility="{Binding ReportLoaded, Converter={StaticResource Visible}, ConverterParameter=not}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

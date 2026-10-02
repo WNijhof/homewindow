@@ -2,8 +2,12 @@ using System.Collections.ObjectModel;
 using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace HomeWindow.Core;
+
+// A measurement that can be shown on a tile; Slot is the picker it belongs to
+public sealed record DetailOption(int Slot, string Id, string Title, string Value, bool IsSelected);
 
 // A window that can show the full controls of a device next to its grid or list
 public interface IDetailsHost
@@ -30,6 +34,7 @@ public sealed class DeviceVM : ObservableObject
         MediaCommand = new RelayCommand(p => Media(p as string));
         IconCommand = new RelayCommand(p => HomeyStore.I.SetCustomIcon(this, p as string));
         ExpandCommand = new RelayCommand(() => IsExpanded = !IsExpanded);
+        ChooseDetailCommand = new RelayCommand(p => ChooseDetail(p as DetailOption));
     }
 
     public string Id { get; }
@@ -72,6 +77,7 @@ public sealed class DeviceVM : ObservableObject
     public ICommand MediaCommand { get; }
     public ICommand IconCommand { get; }
     public ICommand ExpandCommand { get; }
+    public ICommand ChooseDetailCommand { get; }
 
     public CapabilityVM? Cap(string id) => caps.GetValueOrDefault(id);
     public bool Has(string id) => caps.ContainsKey(id);
@@ -123,6 +129,83 @@ public sealed class DeviceVM : ObservableObject
 
     public string Glyph => CustomGlyph ?? Icons.ForClass(Class, Has);
 
+    // The small toggle button on a tile, like in the Homey web app; null when there is nothing to toggle
+    public string? QuickGlyph
+    {
+        get
+        {
+            if (!Available) return null;
+            if ((QuickAction != null && Cap(QuickAction) is { Setable: true, Type: "boolean" }) || HasOnOff) return Icons.Power;
+            if (HasLock) return IsLocked ? Icons.Lock : Icons.Unlock;
+            if (Cap("speaker_playing") is { Setable: true }) return IsPlaying ? Icons.Pause : Icons.Play;
+            if (HasCovering) return Icons.Blinds;
+            // A button device (a doorbell chime, a scene, a gate): the round button presses it
+            if (Capabilities.Any(c => c.Kind == CapKind.Button && !c.Id.StartsWith("speaker_", StringComparison.Ordinal))) return Icons.Play;
+            return null;
+        }
+    }
+
+    // ---- Colours like the Homey app: yellow for lights, purple for media, blue for the rest ----
+
+    static readonly Dictionary<string, (Color light, Color dark)> Palette = new()
+    {
+        ["yellow"] = (Color.FromRgb(0xF5, 0xB4, 0x00), Color.FromRgb(0xFF, 0xC8, 0x3D)),
+        ["blue"] = (Color.FromRgb(0x1F, 0x7A, 0xF0), Color.FromRgb(0x4C, 0x9B, 0xFF)),
+        ["purple"] = (Color.FromRgb(0x8E, 0x3C, 0xF7), Color.FromRgb(0xB3, 0x82, 0xFF)),
+        ["orange"] = (Color.FromRgb(0xF2, 0x7A, 0x00), Color.FromRgb(0xFF, 0x9F, 0x0A)),
+        ["red"] = (Color.FromRgb(0xE5, 0x39, 0x35), Color.FromRgb(0xFF, 0x6B, 0x6B)),
+        ["green"] = (Color.FromRgb(0x2E, 0xB8, 0x4B), Color.FromRgb(0x5E, 0xD3, 0x8A)),
+    };
+
+    static Brush Paint(string name, byte alpha = 0xFF)
+    {
+        var (light, dark) = Palette[name];
+        var c = Theme.IsDark ? dark : light;
+        var brush = new SolidColorBrush(Color.FromArgb(alpha, c.R, c.G, c.B));
+        brush.Freeze();
+        return brush;
+    }
+
+    string Category => Class switch
+    {
+        "light" => "yellow",
+        "speaker" or "amplifier" or "tv" or "settopbox" or "mediaplayer" => "purple",
+        "lock" => "yellow",
+        _ => "blue",
+    };
+
+    // The quick-action button: a soft circle in the device's colour while it is on
+    public Brush? QuickBackground => IsActive ? Paint(Category, (byte)(Theme.IsDark ? 0x40 : 0x2E)) : null;
+    public Brush? QuickForeground => IsActive ? Paint(Category) : null;
+
+    // The little sign before the state on a tile, and whether the state takes its colour
+    public string? StatusGlyph => StatusStyle().glyph;
+    public Brush? StatusBrush => StatusStyle().colour is { } c ? Paint(c) : null;
+    public Brush? StatusTextBrush => StatusStyle() is { tint: true, colour: { } c } ? Paint(c) : null;
+
+    (string? glyph, string? colour, bool tint) StatusStyle()
+    {
+        const string Dot = "";
+        if (!Available) return (null, null, false);
+        if (IsAlarm) return (Dot, "red", true);
+        if (Has("speaker_playing") && IsPlaying) return ("", "purple", true);
+        if (Has("onoff") && IsOn) return (Dot, Category, false);
+        if (HasThermostat && Temperature is { } t && TargetTemperature is { } target)
+        {
+            if (target > t + 0.2) return ("", "orange", true);
+            if (target < t - 0.2) return ("", "blue", true);
+            return (null, null, false);
+        }
+        if (Has("locked")) return IsLocked ? ("", "yellow", false) : ("", "orange", false);
+        if (Cap("alarm_motion") is { Value: true } || Cap("alarm_contact") is { Value: true }) return (Dot, "blue", true);
+        if (!Has("onoff") && !Has("target_temperature") && Cap("measure_power") is { Value: double } && StateText == Cap("measure_power")!.Display)
+            return ("", Cap("measure_power")!.Value is < 0.0 ? "green" : "blue", true);
+        return (null, null, false);
+    }
+
+    // A list row shows a switch for on/off and this button for the other quick actions
+    public bool HasQuickButton => QuickGlyph != null && !HasOnOff;
+
     public string StateText
     {
         get
@@ -132,7 +215,7 @@ public sealed class DeviceVM : ObservableObject
             if (Has("onoff"))
             {
                 if (!IsOn) return Loc.T("Uit");
-                return Number("dim") is { } dim ? $"{dim * 100:0} %" : Loc.T("Aan");
+                return Number("dim") is { } dim ? $"{Loc.T("Aan")} · {dim * 100:0} %" : Loc.T("Aan");
             }
             if (Has("target_temperature"))
                 return Temperature is { } t ? $"{t.ToString("0.0", ci)}° → {TargetText}" : TargetText;
@@ -149,6 +232,78 @@ public sealed class DeviceVM : ObservableObject
             return Capabilities.FirstOrDefault(c => c.Getable && c.Value != null && c.Id != "measure_battery")?.Display ?? "";
         }
     }
+
+    // What a tile shows under the state, like the Homey web app: one automatic measurement,
+    // or up to two the user picked in the details (stored per device in the settings)
+    List<string>? tileDetails;
+    public List<string>? TileDetails { get => tileDetails; set { tileDetails = value; OnPropertyChanged(string.Empty); } }
+
+    // The measurement shown when the user has not chosen: power, then climate, then light
+    string? AutoDetail
+    {
+        get
+        {
+            var state = StateText;
+            return Capabilities
+                .Where(c => c.Getable && !c.Setable && c.Value is double && c.Id.StartsWith("measure_", StringComparison.Ordinal) && c.Id != "measure_battery")
+                .Where(c => !(c.Id == "measure_temperature" && Has("target_temperature")))
+                .OrderBy(c => DetailOrder(c.Id))
+                .FirstOrDefault(c => c.Display.Length > 0 && !state.Contains(c.Display, StringComparison.Ordinal))?.Id;
+        }
+    }
+
+    IEnumerable<string> ChosenDetails => TileDetails ?? (AutoDetail is { } auto ? [auto] : []);
+
+    public string DetailText => !Available ? "" : string.Join(" · ", ChosenDetails
+        .Select(Cap).Where(c => c is { Value: not null }).Select(c => c!.Display).Where(t => t.Length > 0));
+
+    // The two pickers in the details: everything Homey reports a value for, apart from plain buttons
+    public string Detail1Title => DetailTitle(0);
+    public string Detail2Title => DetailTitle(1);
+    List<DetailOption>? options1, options2;
+    public List<DetailOption> Detail1Options => Detail1Open && options1 != null ? options1 : options1 = DetailOptions(0);
+    public List<DetailOption> Detail2Options => Detail2Open && options2 != null ? options2 : options2 = DetailOptions(1);
+    public bool HasDetailOptions => Capabilities.Any(c => c.Getable && c.Kind != CapKind.Button && c.Value != null);
+
+    bool detail1Open, detail2Open;
+    public bool Detail1Open { get => detail1Open; set => Set(ref detail1Open, value); }
+    public bool Detail2Open { get => detail2Open; set => Set(ref detail2Open, value); }
+
+    string? ChosenAt(int slot) => ChosenDetails.ElementAtOrDefault(slot) is { Length: > 0 } id ? id : null;
+
+    string DetailTitle(int slot) => ChosenAt(slot) is { } id && Cap(id) is { } c ? c.Title : Loc.T("Geen");
+
+    List<DetailOption> DetailOptions(int slot)
+    {
+        var chosen = ChosenAt(slot);
+        var list = new List<DetailOption> { new(slot, "", Loc.T("Geen"), "", chosen == null) };
+        list.AddRange(Capabilities
+            .Where(c => c.Getable && c.Kind != CapKind.Button && c.Value != null)
+            .Select(c => new DetailOption(slot, c.Id, c.Title, c.Display, c.Id == chosen)));
+        return list;
+    }
+
+    void ChooseDetail(DetailOption? option)
+    {
+        if (option == null) return;
+        var ids = new[] { ChosenAt(0) ?? "", ChosenAt(1) ?? "" };
+        ids[option.Slot] = option.Id;
+        Detail1Open = Detail2Open = false;
+        HomeyStore.I.SetTileDetails(this, ids.Where(id => id.Length > 0).Distinct().ToList());
+    }
+
+    static int DetailOrder(string id) => id.Split('.')[0] switch
+    {
+        "measure_power" => 0,
+        "measure_temperature" => 1,
+        "measure_humidity" => 2,
+        "measure_luminance" => 3,
+        "measure_co2" => 4,
+        _ => 5,
+    };
+
+    // The state and the extra measurements on one line, for list rows
+    public string SummaryText => DetailText is { Length: > 0 } detail && StateText.Length > 0 ? $"{StateText} · {detail}" : StateText + DetailText;
 
     public void Update(JsonObject d)
     {
@@ -221,7 +376,7 @@ public sealed class DeviceVM : ObservableObject
         if (!updating) OnPropertyChanged(string.Empty);
     }
 
-    // What a click on the tile does: the quick action chosen in Homey, otherwise the obvious one
+    // What the toggle button on a tile does: the quick action chosen in Homey, otherwise the obvious one
     void Quick(object? source)
     {
         if (!Available) { DetailsCommand.Execute(source); return; }
@@ -235,7 +390,7 @@ public sealed class DeviceVM : ObservableObject
         if (HasLock) { Cap("locked")!.Send(!IsLocked); return; }
         if (Has("speaker_playing") && Cap("speaker_playing")!.Setable) { Cap("speaker_playing")!.Send(!IsPlaying); return; }
         if (HasCovering) { Cover(Number("windowcoverings_set") is > 0.5 ? "down" : "up"); return; }
-        if (Capabilities.FirstOrDefault(c => c.Kind == CapKind.Button) is { } button) { button.PressCommand.Execute(null); return; }
+        if (Capabilities.FirstOrDefault(c => c.Kind == CapKind.Button && !c.Id.StartsWith("speaker_", StringComparison.Ordinal)) is { } button) { button.PressCommand.Execute(null); return; }
         DetailsCommand.Execute(source);
     }
 

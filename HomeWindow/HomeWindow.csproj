@@ -11,7 +11,7 @@
     <RootNamespace>HomeWindow</RootNamespace>
     <ApplicationIcon>Assets\HomeWindow.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <Product>HomeWindow</Product>
     <Description>Bedien je Homey Pro vanuit het Windows-systeemvak</Description>
     <SatelliteResourceLanguages>nl;en</SatelliteResourceLanguages>
@@ -27,6 +27,10 @@
 
   <ItemGroup>
     <Resource Include="Assets\HomeWindow.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SharpVectors.Wpf" Version="1.8.6" />
   </ItemGroup>
 
 </Project>

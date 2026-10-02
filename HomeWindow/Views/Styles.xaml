@@ -3,8 +3,13 @@
                     xmlns:c="clr-namespace:HomeWindow.Core"
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
+    <CornerRadius x:Key="CardRadius">12</CornerRadius>
     <sys:Double x:Key="TileWidth">150</sys:Double>
-    <sys:Double x:Key="TileHeight">108</sys:Double>
+    <sys:Double x:Key="TileHeight">134</sys:Double>
+    <sys:Double x:Key="TileNameHeight">36</sys:Double>
+    <sys:Double x:Key="TileNameLine">18</sys:Double>
+    <sys:Double x:Key="TileNameSize">13.5</sys:Double>
+    <sys:Double x:Key="TileIconSize">24</sys:Double>
     <sys:Double x:Key="FlowHeight">56</sys:Double>
     <sys:Double x:Key="FlowWidth">220</sys:Double>
 
@@ -25,6 +30,9 @@
     <SolidColorBrush x:Key="CardBrush" Color="#D0FFFFFF" />
     <SolidColorBrush x:Key="CardHoverBrush" Color="#F7F7F7" />
     <SolidColorBrush x:Key="CardBorderBrush" Color="#14000000" />
+    <SolidColorBrush x:Key="CardEdgeBrush" Color="#14000000" />
+    <SolidColorBrush x:Key="ButtonBrush" Color="#D0FFFFFF" />
+    <SolidColorBrush x:Key="ButtonEdgeBrush" Color="#14000000" />
     <SolidColorBrush x:Key="ActiveCardBrush" Color="#E3EEF9" />
     <SolidColorBrush x:Key="IconBgBrush" Color="#10000000" />
     <SolidColorBrush x:Key="InputBrush" Color="#C0FFFFFF" />
@@ -43,7 +51,6 @@
     <c:StarConverter x:Key="Star" />
     <c:ScaleConverter x:Key="Scale" />
     <c:EqualsConverter x:Key="Equals" />
-    <c:DepthConverter x:Key="Depth" />
 
     <Style x:Key="Icon" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
@@ -55,13 +62,13 @@
 
     <Style x:Key="Title" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
-        <Setter Property="FontSize" Value="26" />
-        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
     </Style>
 
     <Style x:Key="Heading" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontSize" Value="16" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
         <Setter Property="Margin" Value="2,18,0,8" />
@@ -81,16 +88,34 @@
 
     <Style x:Key="Big" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
-        <Setter Property="FontSize" Value="24" />
-        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+    </Style>
+
+    <!-- Grid power, green while returning power to the grid -->
+    <Style x:Key="GridValue" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsExporting}" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource GoodBrush}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="BigGridValue" TargetType="TextBlock" BasedOn="{StaticResource Big}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsExporting}" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource GoodBrush}" />
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="Card" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource CardBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CardEdgeBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="{DynamicResource CardRadius}" />
         <Setter Property="Padding" Value="14" />
         <Setter Property="Effect" Value="{DynamicResource CardShadow}" />
     </Style>
@@ -105,8 +130,8 @@
     <!-- Buttons -->
     <Style x:Key="Btn" TargetType="Button">
         <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
-        <Setter Property="Background" Value="{DynamicResource CardBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource ButtonBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ButtonEdgeBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="14,7" />
         <Setter Property="FontSize" Value="13" />
@@ -157,6 +182,35 @@
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- The on/off button in the corner of a device tile; the tile fills it with the accent colour while on -->
+    <Style x:Key="QuickToggle" TargetType="Button">
+        <Setter Property="Width" Value="30" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Foreground" Value="{DynamicResource SubTextBrush}" />
+        <Setter Property="Background" Value="{DynamicResource IconBgBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="15">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.8" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.6" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

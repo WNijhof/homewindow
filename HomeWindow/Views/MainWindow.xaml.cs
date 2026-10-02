@@ -136,7 +136,7 @@ public partial class MainWindow : Window, IDetailsHost
 
     void CloseDetail_Click(object sender, RoutedEventArgs e) => CloseDetail();
 
-    void CloseDetail()
+    public void CloseDetail()
     {
         DetailPanel.Visibility = Visibility.Collapsed;
         DetailContent.Content = null;

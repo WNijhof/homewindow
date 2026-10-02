@@ -46,7 +46,7 @@
                 <ItemsControl ItemsSource="{Binding Groups}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type c:ZoneGroup}">
-                            <StackPanel Margin="{Binding Depth, Converter={StaticResource Depth}}">
+                            <StackPanel>
                                 <ToggleButton Style="{StaticResource GroupHeader}" IsChecked="{Binding IsExpanded}" HorizontalAlignment="Left" Margin="0,8,0,4">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="15" />

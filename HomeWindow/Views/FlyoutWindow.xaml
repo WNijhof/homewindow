@@ -12,9 +12,7 @@
     </WindowChrome.WindowChrome>
 
     <Window.Resources>
-        <!-- Three tiles per row -->
-        <sys:Double x:Key="TileWidth">108</sys:Double>
-        <sys:Double x:Key="TileHeight">100</sys:Double>
+        <!-- The tile sizes come from Theme.Tiles, see ApplyView -->
         <sys:Double x:Key="FlowHeight">54</sys:Double>
         <sys:Double x:Key="FlowWidth">169</sys:Double>
     </Window.Resources>
@@ -70,7 +68,7 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" ToolTip="{Binding GridLabel}" Visibility="{Binding HasGrid, Converter={StaticResource Visible}}">
                     <TextBlock Style="{StaticResource Icon}" Text="&#xE945;" FontSize="13" Foreground="{DynamicResource GridBrush}" Margin="0,0,5,0" />
-                    <TextBlock x:Name="GridValue" Text="{Binding GridText}" FontSize="12.5" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding GridText}" Style="{StaticResource GridValue}" FontSize="12.5" />
                 </StackPanel>
             </StackPanel>
             <ItemsControl Grid.Column="2" ItemsSource="{Binding Users}" ItemTemplate="{StaticResource UserChip}" VerticalAlignment="Center">

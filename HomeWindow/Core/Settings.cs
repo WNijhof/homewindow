@@ -19,6 +19,8 @@ public sealed class HomeyConfig
     public List<string> FavoriteDevices { get; set; } = [];
     public List<string> FavoriteFlows { get; set; } = [];
     public Dictionary<string, string> CustomIcons { get; set; } = [];
+    // Per device the measurements its tile shows; a device without an entry gets one automatic
+    public Dictionary<string, List<string>> TileDetails { get; set; } = [];
     public List<string> CollapsedZones { get; set; } = [];
     public List<string> CollapsedFolders { get; set; } = [];
 
@@ -43,22 +45,25 @@ public sealed class AppSettings
     public string? ActiveHomeyId { get; set; }
 
     public string Theme { get; set; } = "system";          // system, light, dark
-    public string Backdrop { get; set; } = "glass";        // paper, aurora, dusk, ocean, glass
+    public string Backdrop { get; set; } = "dashboard";    // dashboard, paper, aurora, dusk, ocean, glass
     public double Intensity { get; set; } = 0.6;
-    public double CardOpacity { get; set; } = 0.6;
     public bool Shadows { get; set; } = true;
     public double TextScale { get; set; } = 1.0;
     public string FlyoutView { get; set; } = "list";       // list, grid
     public string MainView { get; set; } = "grid";
+    public string TileSize { get; set; } = "normal";       // small, normal, large
     public string FlyoutTab { get; set; } = "favorites";
     public bool FlyoutEnergy { get; set; } = true;
     public bool FlyoutWeather { get; set; } = true;
+    public bool TaskbarEnergy { get; set; } = true;
     public string? Language { get; set; }
     public bool Hotkey { get; set; } = true;
     public bool Toasts { get; set; } = true;
     public bool AutoUpdate { get; set; } = true;
     // The version that ran last, to say so once after an update
     public string? LastVersion { get; set; }
+    // 1: switched once to the look of the energy dashboard
+    public int StyleVersion { get; set; }
 
     public event Action? Saved;
 
@@ -93,19 +98,52 @@ public sealed class AppSettings
         }
         try
         {
-            if (File.Exists(FilePath)) return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(FilePath), Options) ?? new();
+            if (File.Exists(FilePath)) return Upgrade(JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(FilePath), Options) ?? new());
         }
         catch
         {
             // A damaged file is kept aside so the user can recover it
             try { File.Copy(FilePath, FilePath + ".bak", true); } catch { }
         }
-        return new();
+        return new() { StyleVersion = 1 };
+    }
+
+    // The dashboard look became the default; existing settings move to it once
+    static AppSettings Upgrade(AppSettings s)
+    {
+        if (s.StyleVersion < 1) s.Backdrop = "dashboard";
+        s.StyleVersion = 1;
+
+        // A "null" in a hand-edited file would otherwise crash the app later on
+        s.Homeys ??= [];
+        s.Homeys.RemoveAll(h => h == null);
+        s.Theme ??= "system";
+        s.Backdrop ??= "dashboard";
+        s.FlyoutView ??= "list";
+        s.MainView ??= "grid";
+        s.TileSize ??= "normal";
+        s.FlyoutTab ??= "favorites";
+        foreach (var h in s.Homeys)
+        {
+            h.Id ??= Guid.NewGuid().ToString("N");
+            h.Name ??= "Homey";
+            h.LocalAddress ??= "";
+            h.CloudId ??= "";
+            h.Mode ??= "auto";
+            h.ProtectedToken ??= "";
+            h.FavoriteDevices ??= [];
+            h.FavoriteFlows ??= [];
+            h.CustomIcons ??= [];
+            h.TileDetails ??= [];
+            h.CollapsedZones ??= [];
+            h.CollapsedFolders ??= [];
+        }
+        return s;
     }
 
     // For the snapshot renderer, which must not touch the user's settings
     [JsonIgnore]
-    public bool ReadOnly { get; init; }
+    public bool ReadOnly { get; set; }
 
     public void Save()
     {

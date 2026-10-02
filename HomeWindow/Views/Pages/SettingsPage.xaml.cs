@@ -43,14 +43,15 @@ public partial class SettingsPage : UserControl
         Check(BackdropChoice, S.Backdrop);
         Check(FlyoutViewChoice, S.FlyoutView);
         Check(MainViewChoice, S.MainView);
+        Check(TileSizeChoice, S.TileSize);
         Check(LanguageChoice, S.Language ?? "");
         IntensitySlider.Value = S.Intensity;
-        CardSlider.Value = S.CardOpacity;
         ScaleSlider.Value = S.TextScale;
         ScaleText.Text = $"{S.TextScale * 100:0} %";
         ShadowSwitch.IsChecked = S.Shadows;
         WeatherSwitch.IsChecked = S.FlyoutWeather;
         EnergySwitch.IsChecked = S.FlyoutEnergy;
+        TaskbarSwitch.IsChecked = S.TaskbarEnergy;
         StartupSwitch.IsChecked = AppSettings.StartWithWindows;
         HotkeySwitch.IsChecked = S.Hotkey;
         ToastSwitch.IsChecked = S.Toasts;
@@ -196,6 +197,7 @@ public partial class SettingsPage : UserControl
     void Backdrop_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.Backdrop = v);
     void FlyoutView_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.FlyoutView = v);
     void MainView_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.MainView = v);
+    void TileSize_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TileSize = v);
 
     void Language_Checked(object sender, RoutedEventArgs e)
     {
@@ -216,7 +218,6 @@ public partial class SettingsPage : UserControl
     {
         if (loading) return;
         S.Intensity = IntensitySlider.Value;
-        S.CardOpacity = CardSlider.Value;
         Apply();
     }
 
@@ -251,6 +252,7 @@ public partial class SettingsPage : UserControl
         if (loading) return;
         S.FlyoutWeather = WeatherSwitch.IsChecked == true;
         S.FlyoutEnergy = EnergySwitch.IsChecked == true;
+        S.TaskbarEnergy = TaskbarSwitch.IsChecked == true;
         S.Toasts = ToastSwitch.IsChecked == true;
         var hotkeyChanged = S.Hotkey != (HotkeySwitch.IsChecked == true);
         S.Hotkey = HotkeySwitch.IsChecked == true;

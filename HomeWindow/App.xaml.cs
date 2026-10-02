@@ -17,6 +17,7 @@ public partial class App : Application
     static Mutex? mutex;
     static EventWaitHandle? showSignal;
     Tray? tray;
+    TaskbarStrip? taskbarStrip;
     FlyoutWindow? flyout;
     MainWindow? main;
     HwndSource? messages;
@@ -40,19 +41,21 @@ public partial class App : Application
         if (snapshot != null)
         {
             base.OnStartup(e);
-            _ = SnapshotOrFailAsync(snapshot, args.Contains("--dark"));
+            _ = SnapshotOrFailAsync(snapshot, args.Contains("--dark"), args.Contains("--en") ? "en" : "nl");
             return;
         }
 
-        mutex = new Mutex(true, InstanceName, out var first);
+        // The demo runs beside a real HomeWindow, for trying things out
+        var instance = args.Contains("--demo") ? InstanceName + "-demo" : InstanceName;
+        mutex = new Mutex(true, instance, out var first);
         if (!first)
         {
             // Already running: ask that one to show its window
-            try { EventWaitHandle.OpenExisting(InstanceName + "-show").Set(); } catch { }
+            try { EventWaitHandle.OpenExisting(instance + "-show").Set(); } catch { }
             Shutdown();
             return;
         }
-        showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, InstanceName + "-show");
+        showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, instance + "-show");
         new Thread(() =>
         {
             while (showSignal.WaitOne()) Dispatcher.BeginInvoke(() => ShowMain());
@@ -60,7 +63,9 @@ public partial class App : Application
 
         base.OnStartup(e);
         Settings = AppSettings.Load();
-        AppSettings.MigrateStartup();
+        // The demo can run beside the real HomeWindow; it reads the settings but never saves them
+        if (args.Contains("--demo")) Settings.ReadOnly = true;
+        else AppSettings.MigrateStartup();
         Loc.Init(Settings.Language);
         Theme.Apply();
         SystemEvents.UserPreferenceChanged += (_, args) =>
@@ -82,6 +87,9 @@ public partial class App : Application
 
         flyout = new FlyoutWindow();
         RegisterHotkey();
+        taskbarStrip = new TaskbarStrip();
+        taskbarStrip.Clicked += ToggleFlyout;
+        Settings.Saved += () => taskbarStrip?.Place();
         var demo = args.Contains("--demo");
         HomeyStore.I.Start(demo ? Demo.Config() : Settings.ActiveHomey);
 
@@ -105,9 +113,9 @@ public partial class App : Application
     public void QuitForUpdate() => Quit();
 
     // A failing snapshot leaves error.txt behind and ends, instead of waiting forever
-    async Task SnapshotOrFailAsync(string folder, bool dark)
+    async Task SnapshotOrFailAsync(string folder, bool dark, string language)
     {
-        try { await SnapshotAsync(folder, dark); }
+        try { await SnapshotAsync(folder, dark, language); }
         catch (Exception e)
         {
             Directory.CreateDirectory(folder);
@@ -117,11 +125,11 @@ public partial class App : Application
     }
 
     // Renders every page and the flyout of the demo home to PNG files, off screen.
-    // For checking the design: HomeWindow.exe --snapshot <folder> [--dark]
-    async Task SnapshotAsync(string folder, bool dark)
+    // For checking the design: HomeWindow.exe --snapshot <folder> [--dark] [--en]
+    async Task SnapshotAsync(string folder, bool dark, string language)
     {
-        Settings = new AppSettings { Theme = dark ? "dark" : "light", Backdrop = "aurora", Language = "nl", ReadOnly = true };
-        Loc.Init("nl");
+        Settings = new AppSettings { Theme = dark ? "dark" : "light", Backdrop = "dashboard", Language = language, ReadOnly = true };
+        Loc.Init(language);
         Theme.Apply();
         Directory.CreateDirectory(folder);
         var store = HomeyStore.I;
@@ -150,6 +158,20 @@ public partial class App : Application
             flyout.SelectTab(tab);
             await Task.Delay(400);
             Render((FrameworkElement)flyout.Content, Path.Combine(folder, $"flyout-{tab}-{view}.png"));
+        }
+
+        // Each tile size, to check that names, state and buttons fit
+        Settings.FlyoutView = "grid";
+        main.CloseDetail();
+        main.Navigate("devices");
+        flyout.SelectTab("favorites");
+        foreach (var size in new[] { "small", "normal", "large" })
+        {
+            Settings.TileSize = size;
+            Theme.Apply();
+            await Task.Delay(400);
+            Render((FrameworkElement)main.Content, Path.Combine(folder, $"tiles-{size}-main.png"));
+            Render((FrameworkElement)flyout.Content, Path.Combine(folder, $"tiles-{size}-flyout.png"));
         }
         Shutdown();
     }
@@ -221,12 +243,15 @@ public partial class App : Application
         HomeyStore.I.Stop();
         tray?.Dispose();
         tray = null;
+        taskbarStrip?.Dispose();
+        taskbarStrip = null;
         Shutdown();
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
         tray?.Dispose();
+        taskbarStrip?.Dispose();
         if (messages != null) Native.UnregisterHotKey(messages.Handle, HotkeyId);
         base.OnExit(e);
     }

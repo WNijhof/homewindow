@@ -69,6 +69,7 @@ public partial class FlyoutWindow : Window, IDetailsHost
     public void ApplyView()
     {
         var grid = App.Settings.FlyoutView == "grid";
+        Theme.SetTiles(Resources, Theme.Tiles(App.Settings.TileSize, flyout: true));
         Resources["FlyoutDeviceTemplate"] = FindResource(grid ? "DeviceTile" : "DeviceRow");
         Resources["FlyoutDevicePanel"] = FindResource(grid ? "WrapItems" : "StackItems");
         Resources["FlyoutItemsMargin"] = grid ? new Thickness(-4, 0, -4, 0) : new Thickness(0);

@@ -2,7 +2,11 @@
 
 # HomeWindow – for Homey Pro
 
+**Nederlands** · *[English](README.en.md)*
+
 Bedien je **Homey Pro** vanuit het Windows-systeemvak. Eén klik op het icoon bij de klok en je zet lampen aan, start een flow of kiest een sfeer. Het hoofdvenster laat de rest zien: apparaten per kamer, energie, batterijen, meldingen en de gezondheid van je Homey.
+
+> **Beta.** HomeWindow is nieuw. Het werkt goed op de Homeys waarmee het getest is, maar verwacht nog ruwe randjes. Meld wat je tegenkomt bij de [issues](https://github.com/WNijhof/homewindow/issues).
 
 HomeWindow is geïnspireerd op [HomeBar](https://www.homebar.pro/) voor de Mac, maar is een eigen project zonder band met HomeBar of met Athom. Homey is een merk van Athom. Tot versie 0.1 heette deze app *HomeyBar*.
 
@@ -24,11 +28,12 @@ HomeWindow werkt met de Web API van Homey en een API-key. Die API-keys maak je i
 ## Wat kan het
 
 - **Paneel bij de klok** (klik op het icoon of druk op **Ctrl + Alt + H**): favorieten, kamers, flows en sferen, met het weer, het verbruik van nu en wie er thuis is. Als lijst of als tegels.
+- **Tegels zoals in de Homey-app**: een rond snelknopje, een gekleurde status (aan, vermogen, muziek, verwarmen, op slot) en tot twee metingen die je per apparaat kiest. Drie tegelgroottes.
 - **Bedienen**: aan/uit, dimmen, kleurtemperatuur, thermostaat, rolluiken, speakers en sloten. Per apparaat zijn ook alle andere instellingen en metingen te zien.
-- **Hoofdvenster** met een overzicht en pagina's voor apparaten (zoeken, filteren op soort, kamers inklappen), flows per map, sferen, variabelen, energie, batterijen, meldingen en systeem (apps herstarten).
-- **Energie**: verbruik, zon en net op dit moment, de grootste verbruikers, totalen van vandaag en deze maand, en een grafiek van de laatste 14 dagen.
+- **Hoofdvenster** met een overzicht en pagina's voor apparaten (zoeken, filteren op soort, kamers inklappen), flows per map, sferen, variabelen, energie, batterijen, meldingen en systeem (apps met hun icoon, herstarten).
+- **Energie**: verbruik, zon en net op dit moment (ook in de taakbalk naast de klok, met teruglevering in het groen), de grootste verbruikers, totalen van vandaag en deze maand, en een grafiek van de laatste 14 dagen.
 - **Thuis en onderweg**: lokaal via het IP-adres van je Homey en automatisch via de cloud van Athom als je niet thuis bent. Meerdere Homeys mogelijk.
-- **Uiterlijk**: licht, donker of volgens Windows, vijf achtergronden (Papier, Aurora, Schemer, Oceaan, Glas), eigen pictogrammen per apparaat, tekstgrootte. Nederlands en Engels.
+- **Uiterlijk**: licht, donker of volgens Windows, de stijl van het Homey-energiedashboard of een van vijf andere achtergronden (Papier, Aurora, Schemer, Oceaan, Glas), eigen pictogrammen per apparaat, tekstgrootte. Nederlands en Engels.
 - Nieuwe Homey-meldingen als Windows-melding, starten met Windows, en een **demomodus** om alles te bekijken zonder Homey.
 
 Hoe je alles gebruikt staat in de **[handleiding](docs/HANDLEIDING.md)**.
@@ -58,7 +63,7 @@ HomeWindow valt onder de [GNU General Public License v3.0](LICENSE): je mag het 
 cd HomeWindow
 dotnet run                                    # starten
 dotnet run -- --demo                          # met het voorbeeldhuis
-dotnet run -- --snapshot ..\.shots\x [--dark]  # alle schermen van de demo als PNG
+dotnet run -- --snapshot ..\.shots\x [--dark] [--en]  # alle schermen van de demo als PNG
 ```
 
 Zelf bouwen vraagt de [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). De installer bouw je met [Inno Setup 6](https://jrsoftware.org/isinfo.php) (`winget install JRSoftware.InnoSetup`):
@@ -76,7 +81,7 @@ git tag v0.2.0
 git push origin v0.2.0
 ```
 
-De workflow `.github/workflows/release.yml` bouwt dan de installer (met .NET erin) en zet hem als release op GitHub. Geïnstalleerde exemplaren van HomeWindow vinden die binnen zes uur en werken zichzelf bij. GitHub laat releases alleen zonder inloggen zien bij een **openbare** repository; bij een privé-repository vindt HomeWindow geen updates.
+Staat er een bestand `docs/releases/<versie>.md`, dan worden dat de releasenotes; de eerste regel (`# ...`) is de titel. De workflow `.github/workflows/release.yml` bouwt dan de installer (met .NET erin) en zet hem als release op GitHub. Geïnstalleerde exemplaren van HomeWindow vinden die binnen zes uur en werken zichzelf bij. GitHub laat releases alleen zonder inloggen zien bij een **openbare** repository; bij een privé-repository vindt HomeWindow geen updates.
 
 | Map | Inhoud |
 |---|---|

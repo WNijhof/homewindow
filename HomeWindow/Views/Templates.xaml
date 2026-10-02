@@ -2,24 +2,38 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:c="clr-namespace:HomeWindow.Core">
 
-    <!-- Icon of a device in a circle, filled with the accent colour while it is on -->
+    <!-- Icon of a device: a plain line icon like in the Homey app, red during an alarm -->
     <DataTemplate x:Key="DeviceIcon" DataType="{x:Type c:DeviceVM}">
-        <Border x:Name="Circle" Style="{StaticResource IconCircle}">
-            <TextBlock x:Name="Glyph" Style="{StaticResource Icon}" Text="{Binding Glyph}" />
-        </Border>
+        <TextBlock x:Name="Glyph" Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="24" Width="30" Height="30" TextAlignment="Center" />
         <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding IsActive}" Value="True">
-                <Setter TargetName="Circle" Property="Background" Value="{DynamicResource AccentBrush}" />
-                <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
-            </DataTrigger>
             <DataTrigger Binding="{Binding IsAlarm}" Value="True">
-                <Setter TargetName="Circle" Property="Background" Value="{DynamicResource AlarmBrush}" />
-                <Setter TargetName="Glyph" Property="Foreground" Value="White" />
+                <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource AlarmBrush}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding Available}" Value="False">
-                <Setter TargetName="Circle" Property="Opacity" Value="0.5" />
+                <Setter TargetName="Glyph" Property="Opacity" Value="0.4" />
             </DataTrigger>
         </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- The state of a device with a small coloured sign before it: a dot when on, a bolt for power, a note for music.
+         The text itself comes in through Tag, so tiles and rows can show a shorter or longer version. -->
+    <DataTemplate x:Key="DeviceStatus" DataType="{x:Type c:DeviceVM}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Style="{StaticResource Icon}" Text="{Binding StatusGlyph}" FontSize="10" Foreground="{Binding StatusBrush}" Margin="0,1,5,0"
+                       Visibility="{Binding StatusGlyph, Converter={StaticResource Visible}}" />
+            <TextBlock Text="{Binding Tag, RelativeSource={RelativeSource AncestorType=ContentPresenter}}" FontSize="12" TextTrimming="CharacterEllipsis">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{Binding StatusTextBrush}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding StatusTextBrush}" Value="{x:Null}">
+                                <Setter Property="Foreground" Value="{DynamicResource SubTextBrush}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </StackPanel>
     </DataTemplate>
 
     <ContextMenu x:Key="DeviceMenu" x:Shared="False">
@@ -28,41 +42,58 @@
                   CommandParameter="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
     </ContextMenu>
 
-    <!-- Grid tile: a click runs the quick action, the corner button opens the details -->
+    <!-- Grid tile like the Homey app: icon, name, coloured state; a click opens the details, the round button runs the quick action -->
     <DataTemplate x:Key="DeviceTile" DataType="{x:Type c:DeviceVM}">
         <Grid Width="{DynamicResource TileWidth}" Height="{DynamicResource TileHeight}" Margin="4" ContextMenu="{StaticResource DeviceMenu}">
             <Border x:Name="Card" Style="{StaticResource Card}" Padding="0" />
-            <Button Style="{StaticResource TileBtn}" Command="{Binding QuickCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+            <Button Style="{StaticResource TileBtn}" Command="{Binding DetailsCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
                     ToolTip="{Binding Name}">
-                <Grid Margin="12,11,12,10">
+                <Grid Margin="12,12,12,10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DeviceIcon}" HorizontalAlignment="Left" />
-                    <TextBlock Grid.Row="2" Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}"
-                               TextTrimming="CharacterEllipsis" />
-                    <TextBlock Grid.Row="3" Text="{Binding StateText}" Style="{StaticResource Sub}" Margin="0,1,0,0" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="Glyph" Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="{DynamicResource TileIconSize}" />
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xE850;" FontSize="13" Foreground="{DynamicResource AlarmBrush}" Margin="6,0,0,0"
+                                   ToolTip="{Binding BatteryText}" Visibility="{Binding BatteryLow, Converter={StaticResource Visible}}" />
+                    </StackPanel>
+                    <TextBlock Grid.Row="2" Text="{Binding Name}" FontSize="{DynamicResource TileNameSize}" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}"
+                               TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="{DynamicResource TileNameHeight}" LineHeight="{DynamicResource TileNameLine}"
+                               LineStackingStrategy="BlockLineHeight" />
+                    <ContentPresenter Grid.Row="3" Content="{Binding}" ContentTemplate="{StaticResource DeviceStatus}" Tag="{Binding StateText}" Margin="0,2,0,0" />
+                    <TextBlock Grid.Row="4" Text="{Binding DetailText}" Style="{StaticResource Sub}" FontSize="11.5" Foreground="{DynamicResource FaintTextBrush}"
+                               Visibility="{Binding DetailText, Converter={StaticResource Visible}}" />
                 </Grid>
             </Button>
-            <Button Style="{StaticResource IconBtn}" Content="&#xE712;" FontSize="12" Width="26" Height="26"
-                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,6,0"
-                    Foreground="{DynamicResource SubTextBrush}" ToolTip="{c:T 'Alle instellingen'}"
-                    Command="{Binding DetailsCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}" />
-            <TextBlock Style="{StaticResource Icon}" Text="&#xE735;" FontSize="10" Foreground="{DynamicResource SolarBrush}"
-                       HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,13,36,0"
+            <Button x:Name="Toggle" Style="{StaticResource QuickToggle}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,9,9,0"
+                    Content="{Binding QuickGlyph}" ToolTip="{c:T Aan/uit}" Command="{Binding QuickCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                    Visibility="{Binding QuickGlyph, Converter={StaticResource Visible}}" />
+            <TextBlock x:Name="Star" Style="{StaticResource Icon}" Text="&#xE735;" FontSize="10" Foreground="{DynamicResource SolarBrush}"
+                       HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,18,46,0"
                        Visibility="{Binding IsFavorite, Converter={StaticResource Visible}}" />
         </Grid>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding IsActive}" Value="True">
-                <Setter TargetName="Card" Property="Background" Value="{DynamicResource ActiveCardBrush}" />
+                <Setter TargetName="Toggle" Property="Background" Value="{Binding QuickBackground}" />
+                <Setter TargetName="Toggle" Property="Foreground" Value="{Binding QuickForeground}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding QuickGlyph}" Value="{x:Null}">
+                <Setter TargetName="Star" Property="Margin" Value="0,14,14,0" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsAlarm}" Value="True">
+                <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource AlarmBrush}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Available}" Value="False">
+                <Setter TargetName="Glyph" Property="Opacity" Value="0.4" />
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
 
-    <!-- List row: a click runs the quick action; the chevron opens the controls in place -->
+    <!-- List row: a click opens the details, the switch turns it on or off; the chevron opens the controls in place -->
     <DataTemplate x:Key="DeviceRow" DataType="{x:Type c:DeviceVM}">
         <Grid Margin="0,0,0,6" ContextMenu="{StaticResource DeviceMenu}">
             <Border x:Name="Card" Style="{StaticResource Card}" Padding="0" />
@@ -73,17 +104,22 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Button Style="{StaticResource TileBtn}" Command="{Binding QuickCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}">
+                    <Button Style="{StaticResource TileBtn}" Command="{Binding DetailsCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}">
                         <DockPanel Margin="10,0,6,0" VerticalAlignment="Center">
                             <ContentPresenter DockPanel.Dock="Left" Content="{Binding}" ContentTemplate="{StaticResource DeviceIcon}" Margin="0,0,10,0" />
+                            <TextBlock DockPanel.Dock="Right" Style="{StaticResource Icon}" Text="&#xE850;" FontSize="13" Foreground="{DynamicResource AlarmBrush}" Margin="6,0,0,0"
+                                       ToolTip="{Binding BatteryText}" Visibility="{Binding BatteryLow, Converter={StaticResource Visible}}" />
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="{Binding StateText}" Style="{StaticResource Sub}" />
+                                <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DeviceStatus}" Tag="{Binding SummaryText}" />
                             </StackPanel>
                         </DockPanel>
                     </Button>
                     <ToggleButton Grid.Column="1" Style="{StaticResource Switch}" Margin="4,0,4,0" IsChecked="{Binding IsOn}"
                                   Visibility="{Binding HasOnOff, Converter={StaticResource Visible}}" IsEnabled="{Binding Available}" />
+                    <Button Grid.Column="1" x:Name="Toggle" Style="{StaticResource QuickToggle}" Margin="4,0,4,0" Content="{Binding QuickGlyph}"
+                            Command="{Binding QuickCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
+                            Visibility="{Binding HasQuickButton, Converter={StaticResource Visible}}" />
                     <Button Grid.Column="2" x:Name="Expand" Style="{StaticResource IconBtn}" FontSize="11" Margin="2,0,8,0" Content="&#xE70D;"
                             Foreground="{DynamicResource SubTextBrush}" ToolTip="{c:T Bediening}" Command="{Binding ExpandCommand}" />
                 </Grid>
@@ -92,7 +128,8 @@
         </Grid>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding IsActive}" Value="True">
-                <Setter TargetName="Card" Property="Background" Value="{DynamicResource ActiveCardBrush}" />
+                <Setter TargetName="Toggle" Property="Background" Value="{Binding QuickBackground}" />
+                <Setter TargetName="Toggle" Property="Foreground" Value="{Binding QuickForeground}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding IsExpanded}" Value="True">
                 <Setter TargetName="Controls" Property="Visibility" Value="Visible" />
@@ -258,6 +295,45 @@
     <c:CapTemplateSelector x:Key="CapSelector" Toggle="{StaticResource CapToggle}" Slider="{StaticResource CapSlider}"
                            Enum="{StaticResource CapEnum}" Button="{StaticResource CapButton}" Value="{StaticResource CapValue}" />
 
+    <!-- One choice in the tile-detail picker: the measurement and its value now -->
+    <DataTemplate x:Key="DetailOptionItem" DataType="{x:Type c:DetailOption}">
+        <Button Style="{StaticResource TileBtn}" Padding="0" Command="{Binding DataContext.ChooseDetailCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                CommandParameter="{Binding}">
+            <Border x:Name="Bd" CornerRadius="8" Padding="10,7" Background="Transparent">
+                <DockPanel>
+                    <TextBlock x:Name="Check" DockPanel.Dock="Left" Style="{StaticResource Icon}" Text="&#xE73E;" FontSize="11" Width="16" Margin="0,0,8,0"
+                               Foreground="{DynamicResource AccentTextBrush}" Visibility="Hidden" />
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding Value}" Style="{StaticResource Sub}" Margin="12,0,0,0" VerticalAlignment="Center" />
+                    <TextBlock x:Name="Name" Text="{Binding Title}" FontSize="13" Foreground="{DynamicResource TextBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                </DockPanel>
+            </Border>
+        </Button>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                <Setter TargetName="Check" Property="Visibility" Value="Visible" />
+                <Setter TargetName="Name" Property="FontWeight" Value="SemiBold" />
+            </DataTrigger>
+            <Trigger SourceName="Bd" Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource IconBgBrush}" />
+            </Trigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- The button that opens a tile-detail picker -->
+    <ControlTemplate x:Key="PickerButton" TargetType="ToggleButton">
+        <Border x:Name="Bd" Background="{DynamicResource ButtonBrush}" BorderBrush="{DynamicResource ButtonEdgeBrush}" BorderThickness="1" CornerRadius="8" Padding="10,5">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Right" Style="{StaticResource Icon}" Text="&#xE70D;" FontSize="10" Margin="10,0,0,0" Foreground="{DynamicResource SubTextBrush}" />
+                <ContentPresenter VerticalAlignment="Center" TextElement.FontSize="13" />
+            </DockPanel>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CardHoverBrush}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
     <!-- Everything about one device, for the side panel and the flyout overlay -->
     <DataTemplate x:Key="DeviceDetail" DataType="{x:Type c:DeviceVM}">
         <StackPanel>
@@ -312,6 +388,44 @@
 
             <Border Style="{StaticResource Card}" Margin="0,14,0,0" Visibility="{Binding HasQuickControls, Converter={StaticResource Visible}}">
                 <ContentPresenter Content="{Binding}" ContentTemplate="{DynamicResource QuickControls}" />
+            </Border>
+
+            <TextBlock Text="{c:T 'Op de tegel'}" Style="{StaticResource Heading}" Visibility="{Binding HasDetailOptions, Converter={StaticResource Visible}}" />
+            <Border Style="{StaticResource Card}" Padding="14,10" Visibility="{Binding HasDetailOptions, Converter={StaticResource Visible}}">
+                <StackPanel>
+                    <DockPanel Margin="0,4,0,0">
+                        <TextBlock DockPanel.Dock="Left" Text="{c:T 'Detail 1'}" Style="{StaticResource Body}" Width="80" VerticalAlignment="Center" Foreground="{DynamicResource SubTextBrush}" />
+                        <Grid>
+                            <ToggleButton x:Name="Pick1" Template="{StaticResource PickerButton}" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                          IsChecked="{Binding Detail1Open}" Content="{Binding Detail1Title}" Foreground="{DynamicResource TextBrush}"
+                                          IsHitTestVisible="{Binding IsOpen, ElementName=Popup1, Converter={StaticResource Not}}" />
+                            <Popup x:Name="Popup1" IsOpen="{Binding Detail1Open}" StaysOpen="False" PlacementTarget="{Binding ElementName=Pick1}" Placement="Bottom"
+                                   AllowsTransparency="True">
+                                <Border MinWidth="{Binding ActualWidth, ElementName=Pick1}" Background="{DynamicResource PopupBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="4" Margin="0,4,0,0">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="320">
+                                        <ItemsControl ItemsSource="{Binding Detail1Options}" ItemTemplate="{StaticResource DetailOptionItem}" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </DockPanel>
+                    <DockPanel Margin="0,8,0,0">
+                        <TextBlock DockPanel.Dock="Left" Text="{c:T 'Detail 2'}" Style="{StaticResource Body}" Width="80" VerticalAlignment="Center" Foreground="{DynamicResource SubTextBrush}" />
+                        <Grid>
+                            <ToggleButton x:Name="Pick2" Template="{StaticResource PickerButton}" Cursor="Hand" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                          IsChecked="{Binding Detail2Open}" Content="{Binding Detail2Title}" Foreground="{DynamicResource TextBrush}"
+                                          IsHitTestVisible="{Binding IsOpen, ElementName=Popup2, Converter={StaticResource Not}}" />
+                            <Popup x:Name="Popup2" IsOpen="{Binding Detail2Open}" StaysOpen="False" PlacementTarget="{Binding ElementName=Pick2}" Placement="Bottom"
+                                   AllowsTransparency="True">
+                                <Border MinWidth="{Binding ActualWidth, ElementName=Pick2}" Background="{DynamicResource PopupBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="4" Margin="0,4,0,0">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="320">
+                                        <ItemsControl ItemsSource="{Binding Detail2Options}" ItemTemplate="{StaticResource DetailOptionItem}" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </DockPanel>
+                </StackPanel>
             </Border>
 
             <TextBlock Text="{c:T Bediening}" Style="{StaticResource Heading}" Visibility="{Binding Controls, Converter={StaticResource Visible}}" />

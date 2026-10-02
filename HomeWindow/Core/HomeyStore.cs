@@ -27,12 +27,12 @@ public sealed class HomeyStore : ObservableObject
     DateTime? lastNotification;
     JsonNode? insightLogs;
     DateTime insightLogsAt;
-    double[]? cpuTimes;
 
     HomeyStore()
     {
         errorTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(6) };
         errorTimer.Tick += (_, _) => { errorTimer.Stop(); Error = null; };
+        Theme.Changed += () => { foreach (var d in Devices) d.Refresh(); };
     }
 
     public ObservableCollection<DeviceVM> Devices { get; } = [];
@@ -126,10 +126,10 @@ public sealed class HomeyStore : ObservableObject
         Users.Clear(); Apps.Clear(); Notifications.Clear(); FavoriteDevices.Clear(); FavoriteFlows.Clear();
         FlowGroups.Clear(); BatteryDevices.Clear(); Energy.Consumers.Clear(); Energy.Days.Clear(); Energy.TodayDevices.Clear();
         Energy.ReportLoaded = false;
+        Theme.SetMood(null);
         featureErrors.Clear();
         lastNotification = null;
         insightLogs = null;
-        cpuTimes = null;
         DevicesChanged?.Invoke();
     }
 
@@ -324,6 +324,7 @@ public sealed class HomeyStore : ObservableObject
                 {
                     IsFavorite = cfg.FavoriteDevices.Contains(id),
                     CustomGlyph = cfg.CustomIcons.GetValueOrDefault(id),
+                    TileDetails = cfg.TileDetails.GetValueOrDefault(id),
                 };
                 devices[id] = vm;
                 Devices.Add(vm);
@@ -637,6 +638,7 @@ public sealed class HomeyStore : ObservableObject
             foreach (var x in list) e.Consumers.Add(x);
         }
         e.Changed();
+        Theme.SetMood(e.Mood);
     }
 
     // ---- Energy history from Insights ----
@@ -779,24 +781,6 @@ public sealed class HomeyStore : ObservableObject
             s.Uptime = t.TotalDays >= 1 ? Loc.F("{0} d {1} u", (int)t.TotalDays, t.Hours) : Loc.F("{0} u {1} min", t.Hours, t.Minutes);
         }
 
-        // CPU use from the change in the processor times since the previous poll
-        if (J.Arr(info, "cpus") is { Count: > 0 } cpus)
-        {
-            double total = 0, idle = 0;
-            foreach (var cpu in cpus.OfType<JsonObject>())
-            {
-                var times = J.Obj(cpu, "times");
-                foreach (var p in times ?? []) if (J.Raw(p.Value) is double v) total += v;
-                idle += J.Num(times, "idle") ?? 0;
-            }
-            if (cpuTimes is { } prev && total > prev[0]) s.Cpu = Math.Clamp(1 - (idle - prev[1]) / (total - prev[0]), 0, 1);
-            cpuTimes = [total, idle];
-        }
-        else if (J.Arr(info, "loadavg") is { Count: > 0 } load && J.Raw(load[0]) is double l)
-        {
-            s.Cpu = Math.Clamp(l / Math.Max(1, J.Num(info, "cpuCount") ?? 4), 0, 1);
-        }
-
         (s.MemoryUsed, s.MemoryTotal) = Usage(memory);
         (s.StorageUsed, s.StorageTotal) = Usage(storage);
 
@@ -831,6 +815,34 @@ public sealed class HomeyStore : ObservableObject
             list.Add(vm);
         }
         Sync(Apps, list.OrderByDescending(a => a.IsCrashed).ThenByDescending(a => a.HasUpdate).ThenBy(a => a.Name, StringComparer.CurrentCultureIgnoreCase).ToList());
+        _ = LoadAppIcons(c, list.Where(a => !a.IconRequested).ToList());
+    }
+
+    // Each icon once per app, one after the other so Homey is not flooded
+    static async Task LoadAppIcons(HomeyClient c, List<AppVM> list)
+    {
+        // Claimed up front, so the next poll does not start on the same apps while this one runs
+        foreach (var app in list) app.IconRequested = true;
+        for (var i = 0; i < list.Count; i++)
+        {
+            foreach (var url in list[i].IconUrls)
+            {
+                byte[]? data;
+                try { data = await c.GetBytesAsync(url); }
+                catch (HomeyOfflineException)
+                {
+                    // Gone offline: the rest get another try after reconnecting
+                    for (var j = i; j < list.Count; j++) list[j].IconRequested = false;
+                    return;
+                }
+                catch (Exception e)
+                {
+                    Log.Error("App icon " + url, e);
+                    continue;
+                }
+                if (data is { Length: > 0 } && Icons.FromFile(data) is { } image) { list[i].Icon = image; break; }
+            }
+        }
     }
 
     // ---- Actions ----
@@ -945,6 +957,15 @@ public sealed class HomeyStore : ObservableObject
         if (Config == null) return;
         if (string.IsNullOrEmpty(glyph)) Config.CustomIcons.Remove(d.Id); else Config.CustomIcons[d.Id] = glyph;
         d.CustomGlyph = string.IsNullOrEmpty(glyph) ? null : glyph;
+        App.Settings.Save();
+    }
+
+    // The user's choice of tile details; an empty list means none at all
+    public void SetTileDetails(DeviceVM d, List<string> ids)
+    {
+        if (Config == null) return;
+        Config.TileDetails[d.Id] = ids;
+        d.TileDetails = ids;
         App.Settings.Save();
     }
 

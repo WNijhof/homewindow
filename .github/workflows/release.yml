@@ -54,4 +54,12 @@ jobs:
           # HomeyBar 0.1.0, the app under its old name, only looks for HomeyBar-Setup-*.exe;
           # the same installer under that name lets it update itself to HomeWindow
           Copy-Item "installer/Output/HomeWindow-Setup-$v.exe" "installer/Output/HomeyBar-Setup-$v.exe"
-          gh release create "v$v" "installer/Output/HomeWindow-Setup-$v.exe" "installer/Output/HomeyBar-Setup-$v.exe" --title "HomeWindow $v" --generate-notes
+          $files = "installer/Output/HomeWindow-Setup-$v.exe", "installer/Output/HomeyBar-Setup-$v.exe"
+          # Written release notes when there are any (docs/releases/<version>.md, its first line the title)
+          $notes = "docs/releases/$v.md"
+          if (Test-Path $notes) {
+            $title = (Get-Content $notes -TotalCount 1) -replace '^#\s*', ''
+            gh release create "v$v" @files --title $title --notes-file $notes
+          } else {
+            gh release create "v$v" @files --title "HomeWindow $v" --generate-notes
+          }
