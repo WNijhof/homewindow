@@ -29,6 +29,8 @@ public sealed class DeviceVM : ObservableObject
             if (p is DependencyObject d && Window.GetWindow(d) is IDetailsHost host) host.ShowDetails(this);
         });
         FavoriteCommand = new RelayCommand(() => HomeyStore.I.ToggleFavorite(this));
+        MoveUpCommand = new RelayCommand(() => HomeyStore.I.MoveFavorite(this, -1), _ => HomeyStore.I.CanMoveFavorite(this, -1));
+        MoveDownCommand = new RelayCommand(() => HomeyStore.I.MoveFavorite(this, 1), _ => HomeyStore.I.CanMoveFavorite(this, 1));
         StepCommand = new RelayCommand(p => StepTarget(p));
         CoverCommand = new RelayCommand(p => Cover(p as string));
         MediaCommand = new RelayCommand(p => Media(p as string));
@@ -52,6 +54,9 @@ public sealed class DeviceVM : ObservableObject
     public bool IsHomeBattery { get; private set; }
     public string? ImportCapability { get; private set; }
     public string? ExportCapability { get; private set; }
+    // A home battery's kWh counters for charging and discharging
+    public string? ChargedCapability { get; private set; }
+    public string? DischargedCapability { get; private set; }
 
     string zoneName = "";
     public string ZoneName { get => zoneName; set => Set(ref zoneName, value); }
@@ -72,6 +77,8 @@ public sealed class DeviceVM : ObservableObject
     public ICommand QuickCommand { get; }
     public ICommand DetailsCommand { get; }
     public ICommand FavoriteCommand { get; }
+    public ICommand MoveUpCommand { get; }
+    public ICommand MoveDownCommand { get; }
     public ICommand StepCommand { get; }
     public ICommand CoverCommand { get; }
     public ICommand MediaCommand { get; }
@@ -124,6 +131,7 @@ public sealed class DeviceVM : ObservableObject
     public string? MediaText => string.Join(" – ", new[] { Cap("speaker_track")?.Value as string, Cap("speaker_artist")?.Value as string }.Where(s => !string.IsNullOrWhiteSpace(s)));
 
     public bool IsAlarm => Capabilities.Any(c => c.IsAlarm && c.Id != "alarm_battery" && c.Value is true);
+    public IReadOnlySet<string> ActiveAlarms => Capabilities.Where(c => c.IsAlarm && c.Value is true).Select(c => c.Id).ToHashSet();
 
     public bool IsActive => Available && (IsOn || IsPlaying || IsAlarm || (Number("windowcoverings_set") is > 0.01 && !Has("onoff")));
 
@@ -336,6 +344,8 @@ public sealed class DeviceVM : ObservableObject
                 : null;
 
             var order = J.Arr(d, "capabilities")?.Select(c => c?.ToString()).OfType<string>().ToList() ?? [];
+            ChargedCapability = IsHomeBattery ? J.Str(energy, "meterPowerImportedCapability") ?? (order.Contains("meter_power.charged") ? "meter_power.charged" : null) : null;
+            DischargedCapability = IsHomeBattery ? J.Str(energy, "meterPowerExportedCapability") ?? (order.Contains("meter_power.discharged") ? "meter_power.discharged" : null) : null;
             var objs = J.Obj(d, "capabilitiesObj");
             if (objs != null)
             {

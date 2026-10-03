@@ -208,6 +208,20 @@
                         </StackPanel>
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">
+                        <ToggleButton x:Name="AlarmSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" Click="General_Click" />
+                        <StackPanel>
+                            <TextBlock Text="{c:T 'Melding bij een alarm'}" Style="{StaticResource Body}" />
+                            <TextBlock Text="{c:T 'Een Windows-melding als een rookmelder, watersensor of ander alarm afgaat.'}" Style="{StaticResource Sub}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
+                        <ToggleButton x:Name="ActivitySwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" Click="General_Click" />
+                        <StackPanel>
+                            <TextBlock Text="{c:T 'Ook bij beweging en deuren'}" Style="{StaticResource Body}" />
+                            <TextBlock Text="{c:T 'Ook een melding als een bewegingssensor iets ziet of een deur of raam opengaat.'}" Style="{StaticResource Sub}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
                         <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T Taal}" Style="{StaticResource Label}" />
                         <StackPanel>
                             <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
@@ -240,6 +254,13 @@
                             <TextBlock x:Name="VersionText" Style="{StaticResource Body}" />
                             <TextBlock Text="{Binding Status, Source={x:Static c:Updater.I}}" Style="{StaticResource Sub}" TextWrapping="Wrap"
                                        Visibility="{Binding Status, Source={x:Static c:Updater.I}, Converter={StaticResource Visible}}" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource Btn}" Content="{c:T 'Log openen'}" Click="Log_Click" />
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{c:T Logbestand}" Style="{StaticResource Body}" />
+                            <TextBlock Text="{c:T 'Onverwachte fouten komen in dit bestand. Stuur het mee als je een probleem meldt.'}" Style="{StaticResource Sub}" TextWrapping="Wrap" />
                         </StackPanel>
                     </DockPanel>
                 </StackPanel>

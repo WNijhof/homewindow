@@ -22,8 +22,8 @@ public sealed class TaskbarStrip : IDisposable
     readonly EnergyVM energy = HomeyStore.I.Energy;
     readonly DispatcherTimer timer;
     readonly Border root;
-    readonly TextBlock home, solar, grid, solarIcon, gridIcon;
-    readonly StackPanel solarPart, gridPart;
+    readonly TextBlock home, solar, grid, battery, solarIcon, gridIcon, batteryIcon;
+    readonly StackPanel solarPart, gridPart, batteryPart;
     HwndSource? source;
     IntPtr taskbar, failedOn;
     (int x, int width, int height, string text) last;
@@ -45,19 +45,21 @@ public sealed class TaskbarStrip : IDisposable
             Orientation = Orientation.Horizontal, Margin = new Thickness(left, 0, 0, 0), Children = { icon, value },
         };
 
-        home = Value(); solar = Value(); grid = Value();
+        home = Value(); solar = Value(); grid = Value(); battery = Value();
         var homeIcon = Glyph(Icons.Home);
         solarIcon = Glyph(Icons.Sun);
         gridIcon = Glyph(Icons.Energy);
+        batteryIcon = Glyph(Icons.Battery);
         solarPart = Part(solarIcon, solar, 12);
         gridPart = Part(gridIcon, grid, 12);
+        batteryPart = Part(batteryIcon, battery, 12);
         root = new Border
         {
             // Nearly transparent, so the whole strip takes clicks
             Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)),
             Padding = new Thickness(8, 0, 8, 0),
             Cursor = Cursors.Hand,
-            Child = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { Part(homeIcon, home, 0), solarPart, gridPart } },
+            Child = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { Part(homeIcon, home, 0), solarPart, gridPart, batteryPart } },
         };
         root.MouseLeftButtonUp += (_, _) => Clicked?.Invoke();
         TextOptions.SetTextFormattingMode(root, TextFormattingMode.Display);
@@ -109,7 +111,7 @@ public sealed class TaskbarStrip : IDisposable
         root.Width = width / scale;
         root.Height = height / scale;
         // Explorer can put its own content on top again; every tenth tick (20 s) the strip moves back to the top anyway
-        var now = (x, width, height, energy.HomeText + energy.SolarText + energy.GridText);
+        var now = (x, width, height, energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText);
         if (now == last && ++ticks % 10 != 0) return;
         last = now;
         SetWindowPos(source.Handle, IntPtr.Zero, x, 0, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
@@ -153,13 +155,18 @@ public sealed class TaskbarStrip : IDisposable
         solar.Text = energy.SolarText;
         grid.Text = energy.GridText;
         grid.Foreground = energy.IsExporting ? good : text;
+        battery.Text = energy.BatteryPercentText;
+        // Green while charging, so the direction shows without the watts
+        batteryIcon.Foreground = energy.BatteryW > 50 ? good : text;
         solarPart.Visibility = energy.HasSolar ? Visibility.Visible : Visibility.Collapsed;
         gridPart.Visibility = energy.HasGrid ? Visibility.Visible : Visibility.Collapsed;
+        batteryPart.Visibility = energy.BatteryPercent != null ? Visibility.Visible : Visibility.Collapsed;
         root.ToolTip = string.Join("\n", new[]
         {
             $"{Loc.T("Huis")}: {energy.HomeText}",
             energy.HasSolar ? $"{Loc.T("Zon")}: {energy.SolarText}" : null,
             energy.HasGrid ? $"{energy.GridLabel}: {energy.GridText}" : null,
+            energy.HasBattery ? $"{energy.BatteryLabel}: {energy.BatteryText}" + (energy.BatteryPercent != null ? $" · {energy.BatteryPercentText}" : "") : null,
         }.Where(s => s != null));
     }
 

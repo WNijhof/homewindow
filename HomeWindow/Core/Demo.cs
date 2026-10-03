@@ -43,6 +43,9 @@ public sealed class Demo
         Device("p1", "Slimme meter", "meterkast", "sensor", [Measure("measure_power", "Power", -1450, "W", 0), Measure("meter_power.imported", "Imported", 5123.4, "kWh", 2), Measure("meter_power.exported", "Exported", 2210.8, "kWh", 2), Measure("meter_gas", "Gas", 3011.2, "m³", 3)],
             energy: new JsonObject { ["cumulative"] = true, ["cumulativeImportedCapability"] = "meter_power.imported", ["cumulativeExportedCapability"] = "meter_power.exported" });
         Device("solar", "Omvormer", "meterkast", "solarpanel", [Measure("measure_power", "Power", 3480, "W", 0), Measure("meter_power", "Energy", 9811.0, "kWh", 2)]);
+        Device("home-battery", "Thuisbatterij", "meterkast", "battery", [Measure("measure_power", "Power", 850, "W", 0), Measure("measure_battery", "Battery", 62, "%", 0),
+                Measure("meter_power.charged", "Charged", 1210.5, "kWh", 2), Measure("meter_power.discharged", "Discharged", 1088.2, "kWh", 2)],
+            energy: new JsonObject { ["homeBattery"] = true, ["meterPowerImportedCapability"] = "meter_power.charged", ["meterPowerExportedCapability"] = "meter_power.discharged" });
         Device("washer", "Wasmachine", "attic", "socket", [OnOff(false), Measure("measure_power", "Power", 0, "W", 0)]);
         Device("smoke", "Rookmelder", "attic", "sensor", [Alarm("alarm_smoke", "Smoke", false), Bool("alarm_battery", "Battery alarm", false, false)], ["9V"]);
 
@@ -210,7 +213,7 @@ public sealed class Demo
         ["Televisie"] = "TV", ["Thermostaat"] = "Thermostat", ["Bewegingssensor"] = "Motion sensor", ["Keukenspots"] = "Kitchen spots",
         ["Koffiemachine"] = "Coffee machine", ["Vaatwasser"] = "Dishwasher", ["Achterdeur"] = "Back door", ["Bedlampje"] = "Bedside lamp",
         ["Radiatorkraan"] = "Radiator valve", ["Voordeur"] = "Front door", ["Deurbel"] = "Doorbell", ["Tuinverlichting"] = "Garden lights",
-        ["Slimme meter"] = "Smart meter", ["Omvormer"] = "Inverter", ["Wasmachine"] = "Washing machine", ["Rookmelder"] = "Smoke alarm",
+        ["Slimme meter"] = "Smart meter", ["Omvormer"] = "Inverter", ["Wasmachine"] = "Washing machine", ["Thuisbatterij"] = "Home battery", ["Rookmelder"] = "Smoke alarm",
         ["Gasten aanwezig"] = "Guests over", ["Vakantiemodus"] = "Holiday mode", ["Comforttemperatuur"] = "Comfort temperature",
         ["Laatste scène"] = "Last scene", ["Film"] = "Movie",
         ["Thuis"] = "Home", ["Begane grond"] = "Ground floor", ["Woonkamer"] = "Living room", ["Keuken"] = "Kitchen", ["Hal"] = "Hall",
@@ -254,6 +257,18 @@ public sealed class Demo
         Nudge("solar", "measure_power", 90);
         Nudge("coffee", "measure_power", 30);
         Nudge("dishwasher", "measure_power", 40);
+        Nudge("home-battery", "measure_power", 60);
+
+        // The back door opens for a short while now and then, to show what an alarm looks like
+        if (devices["contact-back"]?["capabilitiesObj"]?["alarm_contact"] is JsonObject door)
+        {
+            var open = DateTime.Now.Second is >= 40 and < 50 && DateTime.Now.Minute % 3 == 0;
+            if (J.Bool(door, "value") != open)
+            {
+                door["value"] = open;
+                door["lastUpdated"] = DateTime.UtcNow.ToString("o");
+            }
+        }
     }
 
     static JsonObject Folders() => new()
@@ -317,7 +332,7 @@ public sealed class Demo
     static JsonObject Logs()
     {
         var logs = new JsonObject();
-        foreach (var (device, cap) in new[] { ("p1", "meter_power.imported"), ("p1", "meter_power.exported"), ("p1", "meter_gas"), ("solar", "meter_power"), ("coffee", "meter_power"), ("dishwasher", "meter_power") })
+        foreach (var (device, cap) in new[] { ("p1", "meter_power.imported"), ("p1", "meter_power.exported"), ("p1", "meter_gas"), ("solar", "meter_power"), ("home-battery", "meter_power.charged"), ("home-battery", "meter_power.discharged"), ("coffee", "meter_power"), ("dishwasher", "meter_power") })
         {
             var id = $"homey:device:{device}:{cap}";
             logs[id] = new JsonObject { ["id"] = id, ["ownerUri"] = $"homey:device:{device}", ["ownerId"] = cap };
@@ -338,6 +353,8 @@ public sealed class Demo
             ("p1", "meter_power.exported") => 9.0,
             ("p1", "meter_gas") => 2.1,
             ("solar", _) => 14.0,
+            ("home-battery", "meter_power.charged") => 4.2,
+            ("home-battery", "meter_power.discharged") => 3.6,
             ("coffee", _) => 0.4,
             _ => 1.1,
         };
@@ -346,7 +363,7 @@ public sealed class Demo
         var rnd = new Random(cap.Length * 31 + device.Length);
         for (var t = start; t <= DateTime.Now; t = t.AddHours(1))
         {
-            var shape = cap.Contains("exported") || device == "solar"
+            var shape = cap.Contains("exported") || cap.Contains(".charged") || device == "solar"
                 ? Math.Max(0, Math.Sin((t.Hour - 6) / 14.0 * Math.PI)) * 2.4
                 : t.Hour is >= 7 and <= 22 ? 1.4 : 0.35;
             v += perDay / 24 * shape * (0.6 + rnd.NextDouble() * 0.8);

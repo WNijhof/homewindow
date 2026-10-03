@@ -30,6 +30,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="HomeWindow.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="SharpVectors.Wpf" Version="1.8.6" />
   </ItemGroup>
 

@@ -19,10 +19,18 @@ public sealed class ZoneVM(string id) : ObservableObject
 public sealed class ZoneGroup(string key, string title, int depth, bool expanded, Action<ZoneGroup> persist) : ObservableObject
 {
     public string Key { get; } = key;
-    public string Title { get; } = title;
-    public int Depth { get; } = depth;
-    public List<DeviceVM> Items { get; } = [];
+    string title = title;
+    public string Title { get => title; set => Set(ref title, value); }
+    int depth = depth;
+    public int Depth { get => depth; set => Set(ref depth, value); }
+    // Kept from one rebuild to the next, so the tiles on screen stay when little changes
+    public System.Collections.ObjectModel.ObservableCollection<DeviceVM> Items { get; } = [];
     public int Count => Items.Count;
+
+    public void SetItems(IReadOnlyList<DeviceVM> items)
+    {
+        if (Collections.SyncInPlace(Items, items)) { OnPropertyChanged(nameof(Count)); OnPropertyChanged(nameof(ActiveCount)); }
+    }
     public int ActiveCount => Items.Count(d => d.IsActive);
 
     bool isExpanded = expanded;
@@ -33,6 +41,9 @@ public sealed class ZoneGroup(string key, string title, int depth, bool expanded
     }
 
     public ICommand ToggleCommand => new RelayCommand(() => IsExpanded = !IsExpanded);
+
+    // Opened or closed by a search, which must not be remembered as the user's choice
+    public void SetExpandedQuietly(bool value) => Set(ref isExpanded, value, nameof(IsExpanded));
 }
 
 public sealed class FolderVM(string id) : ObservableObject
@@ -68,6 +79,8 @@ public sealed class FlowVM : ObservableObject
         IsAdvanced = advanced;
         RunCommand = new RelayCommand(() => _ = HomeyStore.I.RunFlowAsync(this), _ => CanRun);
         FavoriteCommand = new RelayCommand(() => HomeyStore.I.ToggleFavorite(this));
+        MoveUpCommand = new RelayCommand(() => HomeyStore.I.MoveFavorite(this, -1), _ => HomeyStore.I.CanMoveFavorite(this, -1));
+        MoveDownCommand = new RelayCommand(() => HomeyStore.I.MoveFavorite(this, 1), _ => HomeyStore.I.CanMoveFavorite(this, 1));
     }
 
     public string Id { get; }
@@ -95,6 +108,8 @@ public sealed class FlowVM : ObservableObject
 
     public ICommand RunCommand { get; }
     public ICommand FavoriteCommand { get; }
+    public ICommand MoveUpCommand { get; }
+    public ICommand MoveDownCommand { get; }
 
     public bool Update(JsonObject f)
     {
@@ -431,6 +446,10 @@ public sealed class EnergyVM : ObservableObject
     public string GridLabel => Loc.T(IsExporting ? "Teruglevering" : "Van het net");
     public string BatteryText => Watts(Math.Abs(BatteryW));
     public string BatteryLabel => Loc.T(BatteryW >= 0 ? "Batterij laadt" : "Batterij ontlaadt");
+    // The charge of the home batteries, in percent
+    public double? BatteryPercent { get; set; }
+    public string BatteryPercentText => BatteryPercent is { } p ? p.ToString("0", Loc.Culture) + " %" : "";
+    public string BatteryChargeText => BatteryPercent != null ? Loc.F("Laadstand {0}", BatteryPercentText) : "";
 
     // Where the power comes from, as the energy dashboard decides it: "solar", "battery", "grid" or null
     public string? Mood
@@ -462,6 +481,11 @@ public sealed class EnergyVM : ObservableObject
     public string MonthUse { get; set; } = "–";
     public string MonthGas { get; set; } = "";
     public bool HasGas => TodayGas.Length > 0;
+    public bool HasBatteryTotals { get; set; }
+    public string TodayCharged { get; set; } = "–";
+    public string TodayDischarged { get; set; } = "–";
+    public string MonthCharged { get; set; } = "–";
+    public string MonthDischarged { get; set; } = "–";
     public string ReportStatus { get; set; } = "";
     public bool ReportLoaded { get; set; }
     public ObservableCollection<BarVM> Days { get; } = [];

@@ -35,6 +35,15 @@ public partial class SettingsPage : UserControl
         CheckButton.IsEnabled = true;
     }
 
+    // Shows the log in Explorer, selected, so it can be attached to an issue
+    void Log_Click(object sender, RoutedEventArgs e)
+    {
+        var folder = System.IO.Path.GetDirectoryName(Log.FilePath)!;
+        System.IO.Directory.CreateDirectory(folder);
+        if (System.IO.File.Exists(Log.FilePath)) Process.Start("explorer.exe", $"/select,\"{Log.FilePath}\"");
+        else Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true });
+    }
+
     void Load()
     {
         loading = true;
@@ -55,6 +64,8 @@ public partial class SettingsPage : UserControl
         StartupSwitch.IsChecked = AppSettings.StartWithWindows;
         HotkeySwitch.IsChecked = S.Hotkey;
         ToastSwitch.IsChecked = S.Toasts;
+        AlarmSwitch.IsChecked = S.AlarmToasts;
+        ActivitySwitch.IsChecked = S.ActivityToasts;
         UpdateSwitch.IsChecked = S.AutoUpdate;
         loading = false;
         if (S.Homeys.Count == 0) OpenEditor(null);
@@ -254,6 +265,8 @@ public partial class SettingsPage : UserControl
         S.FlyoutEnergy = EnergySwitch.IsChecked == true;
         S.TaskbarEnergy = TaskbarSwitch.IsChecked == true;
         S.Toasts = ToastSwitch.IsChecked == true;
+        S.AlarmToasts = AlarmSwitch.IsChecked == true;
+        S.ActivityToasts = ActivitySwitch.IsChecked == true;
         var hotkeyChanged = S.Hotkey != (HotkeySwitch.IsChecked == true);
         S.Hotkey = HotkeySwitch.IsChecked == true;
         S.Save();

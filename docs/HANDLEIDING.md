@@ -136,7 +136,7 @@ Klik met de rechtermuisknop op het icoon bij de klok voor:
 
 ### Energie in de taakbalk
 
-Links van de iconen bij de klok staat het energieverbruik van nu: wat je huis verbruikt (⌂), wat de zon opwekt (☀) en wat er van het net komt (⚡). Lever je terug, dan staat het netvermogen er als negatief getal in het groen, bijvoorbeeld **-1364 W**. Beweeg de muis erover voor de uitleg; klik erop om het paneel te openen.
+Links van de iconen bij de klok staat het energieverbruik van nu: wat je huis verbruikt (⌂), wat de zon opwekt (☀), wat er van het net komt (⚡) en, met een thuisbatterij, zijn laadstand (het batterijtje is groen als hij laadt). Lever je terug, dan staat het netvermogen er als negatief getal in het groen, bijvoorbeeld **-1364 W**. Beweeg de muis erover voor de uitleg, ook van wat de batterij laadt of ontlaadt; klik erop om het paneel te openen.
 
 Het strookje verschijnt alleen als HomeWindow energiegegevens van je Homey heeft. Je zet het uit bij **Instellingen → Uiterlijk → Energie in de taakbalk**. Windows heeft hier geen officiële plek voor, dus HomeWindow zet het strookje zelf in de taakbalk. Na een grote Windows-update kan het daardoor even verkeerd staan of ontbreken.
 
@@ -182,7 +182,7 @@ Rechtsboven staan twee knoppen:
 
 ### Favorieten
 
-Een apparaat zet je bij je favorieten met de ster in zijn instellingen, of met de rechtermuisknop → **Favoriet**. Bij een flow klik je op het sterretje rechtsboven op de tegel. Favorieten verschijnen in het paneel bij de klok, op het overzicht en (flows) in het menu onder de rechtermuisknop. Ze worden per Homey bewaard, in de volgorde waarin je ze toevoegt.
+Een apparaat zet je bij je favorieten met de ster in zijn instellingen, of met de rechtermuisknop → **Favoriet**. Bij een flow klik je op het sterretje rechtsboven op de tegel. Favorieten verschijnen in het paneel bij de klok, op het overzicht en (flows) in het menu onder de rechtermuisknop. Ze worden per Homey bewaard, in de volgorde waarin je ze toevoegt. Een andere volgorde kies je met de rechtermuisknop op een favoriet → **Eerder in favorieten** of **Later in favorieten**; dat werkt ook bij flows.
 
 > Een wijziging is meteen te zien. Komt Homey binnen een paar seconden met een andere waarde (omdat het apparaat niet reageerde), dan toont HomeWindow weer de echte stand en verschijnt er een rode melding onderaan.
 
@@ -231,10 +231,10 @@ De logica-variabelen van je Homey. Een ja/nee-variabele zet je met de schakelaar
 
 <img src="images/energie.png" width="700" alt="De energiepagina">
 
-- **Nu**: wat je huis verbruikt, wat de zonnepanelen opwekken, wat er van het net komt of wordt teruggeleverd, en wat een thuisbatterij laadt of ontlaadt. Teruglevering staat er als negatief getal in het groen.
+- **Nu**: wat je huis verbruikt, wat de zonnepanelen opwekken, wat er van het net komt of wordt teruggeleverd, en wat een thuisbatterij laadt of ontlaadt, met zijn laadstand. Teruglevering staat er als negatief getal in het groen.
 - **Grootste verbruikers nu**: apparaten met een eigen vermogensmeter. Met een * erachter is het een schatting van Homey Energie (bijvoorbeeld een lamp zonder meter).
 - **Verbruik vandaag per apparaat**: uit de kWh-meters van de apparaten.
-- **Totalen** voor vandaag en deze maand: verbruik, van het net, teruggeleverd, zon opgewekt en gas.
+- **Totalen** voor vandaag en deze maand: verbruik, van het net, teruggeleverd, zon opgewekt, wat de thuisbatterij laadde en ontlaadde, en gas. Het verbruik is van het net + zon − teruggeleverd − geladen + ontladen, dus energie die alleen even in de batterij zat, telt niet dubbel.
 - **Afgelopen 14 dagen**: per dag wat er van het net kwam en wat de zon opwekte. Beweeg de muis over een dag voor de getallen.
 
 HomeWindow vindt je slimme meter (P1), zonnepanelen en thuisbatterij zelf, aan de hand van hoe ze in Homey Energie staan. De totalen en de grafiek komen uit Insights. Ze worden geladen als je de pagina opent en daarna elke vijf minuten; **Rapport vernieuwen** laadt ze meteen opnieuw.
@@ -315,6 +315,8 @@ De accentkleur (van schakelaars en actieve apparaten) volgt de accentkleur van W
 | Starten met Windows | HomeWindow start stil in het systeemvak als je inlogt |
 | Sneltoets | Ctrl + Alt + H opent het paneel |
 | Meldingen van Homey tonen | Nieuwe meldingen uit de tijdlijn verschijnen als Windows-melding. Klik erop om HomeWindow te openen. |
+| Melding bij een alarm | Een Windows-melding als een rookmelder, watersensor, deurbel of ander alarm afgaat (standaard aan). Een bijna lege batterij telt hier niet mee. |
+| Ook bij beweging en deuren | Ook een melding als een bewegingssensor iets ziet of een deur of raam opengaat (standaard uit, omdat dat vaak gebeurt). |
 | Taal | Automatisch (volgt Windows), Nederlands of English. Start HomeWindow opnieuw om te wisselen. |
 
 ### Updates
@@ -364,8 +366,9 @@ Automatisch bijwerken werkt alleen als HomeWindow met de installer is geïnstall
 | De energietotalen blijven leeg | Geef de API-key het recht om Insights te bekijken. Zonder slimme meter telt HomeWindow alleen apparaten met een eigen kWh-meter. |
 | Het weer ontbreekt | Geef de API-key het recht om de geolocatie te bekijken, en controleer of je Homey een locatie heeft. |
 | Een schakelaar springt terug | Het apparaat reageerde niet. Kijk in de Homey-app of het bereikbaar is. |
+| Iets anders gaat mis | Meld het bij de [issues](https://github.com/WNijhof/homewindow/issues). **Instellingen → Updates → Log openen** toont het logbestand met onverwachte fouten; stuur dat mee. |
 
-HomeWindow haalt elke 2,5 seconden nieuwe gegevens op als het paneel of het hoofdvenster open is, en elke 15 seconden als alles dicht is. Na een verbroken verbinding probeert hij het steeds opnieuw, eerst snel en daarna elke 30 seconden. **Opnieuw verbinden** in het menu probeert het meteen.
+HomeWindow haalt elke 2,5 seconden nieuwe gegevens op als het paneel of het hoofdvenster open is, en elke 15 seconden als alles dicht is. Een alarm zie je dus binnen 15 seconden. Na een verbroken verbinding probeert hij het steeds opnieuw, eerst snel en daarna elke 30 seconden. **Opnieuw verbinden** in het menu probeert het meteen.
 
 ---
 

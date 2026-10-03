@@ -59,6 +59,9 @@ public sealed class AppSettings
     public string? Language { get; set; }
     public bool Hotkey { get; set; } = true;
     public bool Toasts { get; set; } = true;
+    // A Windows notification when a smoke, water or other safety alarm goes off, and when motion or a door does
+    public bool AlarmToasts { get; set; } = true;
+    public bool ActivityToasts { get; set; }
     public bool AutoUpdate { get; set; } = true;
     // The version that ran last, to say so once after an update
     public string? LastVersion { get; set; }
@@ -109,7 +112,7 @@ public sealed class AppSettings
     }
 
     // The dashboard look became the default; existing settings move to it once
-    static AppSettings Upgrade(AppSettings s)
+    internal static AppSettings Upgrade(AppSettings s)
     {
         if (s.StyleVersion < 1) s.Backdrop = "dashboard";
         s.StyleVersion = 1;

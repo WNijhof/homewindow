@@ -84,6 +84,11 @@ public partial class App : Application
         {
             if (Settings.Toasts) tray.Notify(n.Owner.Length > 0 ? n.Owner : HomeyStore.I.HomeyName, n.Text);
         };
+        HomeyStore.I.AlarmStarted += (device, cap) =>
+        {
+            if (!Alarms.ShouldNotify(Alarms.Kind(cap.Id), Settings.AlarmToasts, Settings.ActivityToasts)) return;
+            tray.Notify(device.Name, device.ZoneName.Length > 0 ? $"{cap.Title} · {device.ZoneName}" : cap.Title);
+        };
 
         flyout = new FlyoutWindow();
         RegisterHotkey();

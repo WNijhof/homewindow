@@ -20,7 +20,7 @@ public sealed class DeviceBrowser : ObservableObject
 
     public DeviceBrowser()
     {
-        store.DevicesChanged += Rebuild;
+        store.DevicesChanged += ScheduleRebuild;
         SelectClassCommand = new RelayCommand(p => ClassFilter = (p as ClassFilter)?.Id);
         ExpandAllCommand = new RelayCommand(() => { foreach (var g in Groups) g.IsExpanded = true; });
         CollapseAllCommand = new RelayCommand(() => { foreach (var g in Groups) g.IsExpanded = false; });
@@ -43,8 +43,35 @@ public sealed class DeviceBrowser : ObservableObject
     public int Count { get => count; private set { if (Set(ref count, value)) OnPropertyChanged(nameof(IsEmpty)); } }
     public bool IsEmpty => Count == 0;
 
+    // A poll can report several changes at once; they lead to one rebuild, after the poll
+    bool rebuildPending;
+    void ScheduleRebuild()
+    {
+        if (rebuildPending) return;
+        rebuildPending = true;
+        System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () =>
+        {
+            rebuildPending = false;
+            Rebuild();
+        });
+    }
+
+    readonly Dictionary<string, ZoneGroup> known = [];
+
+    ZoneGroup GroupFor(string key, string title, int depth, bool expanded)
+    {
+        if (known.TryGetValue(key, out var g))
+        {
+            g.Title = title;
+            g.Depth = depth;
+            return g;
+        }
+        return known[key] = new ZoneGroup(key, title, depth, expanded, Persist);
+    }
+
     public void Rebuild()
     {
+        rebuildPending = false;
         var cfg = store.Config;
         var collapsed = cfg?.CollapsedZones ?? [];
         var words = Search.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -58,28 +85,43 @@ public sealed class DeviceBrowser : ObservableObject
         {
             var items = store.Devices.Where(d => d.ZoneId == zone.Id && Match(d)).OrderBy(d => d.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
             if (items.Count == 0) continue;
-            var g = new ZoneGroup(zone.Id, zone.Name, zone.Depth, searching || !collapsed.Contains(zone.Id), Persist);
-            g.Items.AddRange(items);
+            var g = GroupFor(zone.Id, zone.Name, zone.Depth, searching || !collapsed.Contains(zone.Id));
+            g.SetItems(items);
             groups.Add(g);
         }
         var loose = store.Devices.Where(d => store.Zone(d.ZoneId) == null && Match(d)).OrderBy(d => d.Name).ToList();
         if (loose.Count > 0)
         {
-            var g = new ZoneGroup("", Loc.T("Overig"), 0, searching || !collapsed.Contains(""), Persist);
-            g.Items.AddRange(loose);
+            var g = GroupFor("", Loc.T("Overig"), 0, searching || !collapsed.Contains(""));
+            g.SetItems(loose);
             groups.Add(g);
         }
 
-        Groups.Clear();
-        foreach (var g in groups) Groups.Add(g);
+        // While searching every group opens, without changing what the user collapsed
+        if (searching != wasSearching)
+        {
+            foreach (var g in known.Values) g.SetExpandedQuietly(searching || !collapsed.Contains(g.Key));
+            wasSearching = searching;
+        }
+        foreach (var gone in known.Keys.Where(k => store.Zone(k) == null && k != "").ToList()) known.Remove(gone);
+        Collections.SyncInPlace(Groups, groups);
         Count = groups.Sum(g => g.Count);
 
-        var classes = store.Devices.GroupBy(d => Group(d.Class, d)).OrderByDescending(g => g.Count()).ToList();
-        Classes.Clear();
-        Classes.Add(new ClassFilter(null, Loc.T("Alles"), Icons.Home, store.Devices.Count) { IsSelected = ClassFilter == null });
-        foreach (var c in classes)
-            Classes.Add(new ClassFilter(c.Key, ClassTitle(c.Key), Icons.ForClass(c.Key, _ => false), c.Count()) { IsSelected = ClassFilter == c.Key });
+        // The filter buttons only change when the numbers per type change
+        var classes = store.Devices.GroupBy(d => Group(d.Class, d)).OrderByDescending(g => g.Count())
+            .Select(c => (id: (string?)c.Key, count: c.Count())).Prepend((null, store.Devices.Count)).ToList();
+        if (!Classes.Select(c => (c.Id, c.Count)).SequenceEqual(classes))
+        {
+            Classes.Clear();
+            foreach (var (id, n) in classes)
+                Classes.Add(id == null
+                    ? new ClassFilter(null, Loc.T("Alles"), Icons.Home, n)
+                    : new ClassFilter(id, ClassTitle(id), Icons.ForClass(id, _ => false), n));
+        }
+        foreach (var c in Classes) c.IsSelected = c.Id == ClassFilter;
     }
+
+    bool wasSearching;
 
     void Persist(ZoneGroup g)
     {

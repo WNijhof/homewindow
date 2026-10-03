@@ -54,6 +54,8 @@
                             <TextBlock Text="{Binding BatteryLabel}" Style="{StaticResource Sub}" />
                         </StackPanel>
                         <TextBlock Text="{Binding BatteryText}" Style="{StaticResource Big}" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding BatteryChargeText}" Style="{StaticResource Sub}" Margin="0,2,0,0"
+                                   Visibility="{Binding BatteryChargeText, Converter={StaticResource Visible}}" />
                     </StackPanel>
                 </Border>
             </UniformGrid>
@@ -82,7 +84,7 @@
                             <ColumnDefinition Width="Auto" MinWidth="96" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Column="1" Text="{c:T Vandaag}" Style="{StaticResource Sub}" FontWeight="SemiBold" />
                         <TextBlock Grid.Column="2" Text="{c:T 'Deze maand'}" Style="{StaticResource Sub}" FontWeight="SemiBold" />
@@ -103,9 +105,17 @@
                         <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding TodaySolar}" Margin="0,6,0,0" />
                         <TextBlock Grid.Row="4" Grid.Column="2" Text="{Binding MonthSolar}" Margin="0,6,0,0" />
 
-                        <TextBlock Grid.Row="5" Text="{c:T Gas}" Style="{StaticResource Body}" Margin="0,6,0,0" Visibility="{Binding HasGas, Converter={StaticResource Visible}}" />
-                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding TodayGas}" Margin="0,6,0,0" />
-                        <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding MonthGas}" Margin="0,6,0,0" />
+                        <TextBlock Grid.Row="5" Text="{c:T 'Batterij geladen'}" Style="{StaticResource Body}" Margin="0,6,0,0" Visibility="{Binding HasBatteryTotals, Converter={StaticResource Visible}}" />
+                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding TodayCharged}" Margin="0,6,0,0" Visibility="{Binding HasBatteryTotals, Converter={StaticResource Visible}}" />
+                        <TextBlock Grid.Row="5" Grid.Column="2" Text="{Binding MonthCharged}" Margin="0,6,0,0" Visibility="{Binding HasBatteryTotals, Converter={StaticResource Visible}}" />
+
+                        <TextBlock Grid.Row="6" Text="{c:T 'Batterij ontladen'}" Style="{StaticResource Body}" Margin="0,6,0,0" Visibility="{Binding HasBatteryTotals, Converter={StaticResource Visible}}" />
+                        <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding TodayDischarged}" Margin="0,6,0,0" Visibility="{Binding HasBatteryTotals, Converter={StaticResource Visible}}" />
+                        <TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding MonthDischarged}" Margin="0,6,0,0" Visibility="{Binding HasBatteryTotals, Converter={StaticResource Visible}}" />
+
+                        <TextBlock Grid.Row="7" Text="{c:T Gas}" Style="{StaticResource Body}" Margin="0,6,0,0" Visibility="{Binding HasGas, Converter={StaticResource Visible}}" />
+                        <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding TodayGas}" Margin="0,6,0,0" />
+                        <TextBlock Grid.Row="7" Grid.Column="2" Text="{Binding MonthGas}" Margin="0,6,0,0" />
                     </Grid>
                 </Border>
 

@@ -38,8 +38,17 @@
 
     <ContextMenu x:Key="DeviceMenu" x:Shared="False">
         <MenuItem Header="{c:T Favoriet}" IsCheckable="True" IsChecked="{Binding IsFavorite, Mode=OneWay}" Command="{Binding FavoriteCommand}" />
+        <MenuItem Header="{c:T 'Eerder in favorieten'}" Command="{Binding MoveUpCommand}" Visibility="{Binding IsFavorite, Converter={StaticResource Visible}}" />
+        <MenuItem Header="{c:T 'Later in favorieten'}" Command="{Binding MoveDownCommand}" Visibility="{Binding IsFavorite, Converter={StaticResource Visible}}" />
         <MenuItem Header="{c:T 'Alle instellingen'}" Command="{Binding DetailsCommand}"
                   CommandParameter="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+    </ContextMenu>
+
+    <ContextMenu x:Key="FlowMenu" x:Shared="False">
+        <MenuItem Header="{c:T Starten}" Command="{Binding RunCommand}" />
+        <MenuItem Header="{c:T Favoriet}" IsCheckable="True" IsChecked="{Binding IsFavorite, Mode=OneWay}" Command="{Binding FavoriteCommand}" />
+        <MenuItem Header="{c:T 'Eerder in favorieten'}" Command="{Binding MoveUpCommand}" Visibility="{Binding IsFavorite, Converter={StaticResource Visible}}" />
+        <MenuItem Header="{c:T 'Later in favorieten'}" Command="{Binding MoveDownCommand}" Visibility="{Binding IsFavorite, Converter={StaticResource Visible}}" />
     </ContextMenu>
 
     <!-- Grid tile like the Homey app: icon, name, coloured state; a click opens the details, the round button runs the quick action -->
@@ -457,7 +466,7 @@
 
     <!-- Flows -->
     <DataTemplate x:Key="FlowTile" DataType="{x:Type c:FlowVM}">
-        <Grid Width="{DynamicResource FlowWidth}" Height="{DynamicResource FlowHeight}" Margin="4">
+        <Grid Width="{DynamicResource FlowWidth}" Height="{DynamicResource FlowHeight}" Margin="4" ContextMenu="{StaticResource FlowMenu}">
             <Border Style="{StaticResource Card}" Padding="0" />
             <Button Style="{StaticResource TileBtn}" Command="{Binding RunCommand}" ToolTip="{Binding Name}">
                 <DockPanel Margin="10,0">

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="HomeWindow.Tests/HomeWindow.Tests.csproj" />
+  <Project Path="HomeWindow/HomeWindow.csproj" />
+</Solution>

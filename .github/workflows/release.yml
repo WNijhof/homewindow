@@ -19,11 +19,15 @@ jobs:
   installer:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
+
+      # A release with failing tests does not go out
+      - name: Test
+        run: dotnet test HomeWindow.slnx --nologo
 
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
@@ -39,7 +43,7 @@ jobs:
         shell: pwsh
         run: ./scripts/build-installer.ps1 -Version ${{ steps.version.outputs.value }} -SelfContained -Iscc "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: HomeWindow-Setup-${{ steps.version.outputs.value }}
           path: installer/Output/HomeWindow-Setup-*.exe
@@ -58,8 +62,12 @@ jobs:
           # Written release notes when there are any (docs/releases/<version>.md, its first line the title)
           $notes = "docs/releases/$v.md"
           if (Test-Path $notes) {
-            $title = (Get-Content $notes -TotalCount 1) -replace '^#\s*', ''
-            gh release create "v$v" @files --title $title --notes-file $notes
+            $lines = Get-Content $notes -Encoding utf8
+            $title = $lines[0] -replace '^#\s*', ''
+            # The title line goes into the title only, not a second time at the top of the notes
+            $body = "installer/Output/notes.md"
+            ($lines | Select-Object -Skip 1) -join "`n" | ForEach-Object { $_.Trim() } | Set-Content $body -Encoding utf8
+            gh release create "v$v" @files --title $title --notes-file $body
           } else {
             gh release create "v$v" @files --title "HomeWindow $v" --generate-notes
           }

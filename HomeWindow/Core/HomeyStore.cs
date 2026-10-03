@@ -55,6 +55,8 @@ public sealed class HomeyStore : ObservableObject
     // Fired when devices are added, removed, renamed or moved, so lists regroup
     public event Action? DevicesChanged;
     public event Action<NotificationVM>? NewNotification;
+    // An alarm of a device that went on since the last poll; not for devices seen for the first time
+    public event Action<DeviceVM, CapabilityVM>? AlarmStarted;
 
     public HomeyConfig? Config { get; private set; }
 
@@ -290,6 +292,9 @@ public sealed class HomeyStore : ObservableObject
         // Zones whose parent is missing still show up
         foreach (var z in all.Where(z => !ordered.Any(o => o.id == z.id))) ordered.Add((z.id!, z.name ?? "", z.parent, 0));
 
+        // Unchanged zones (the usual case every two minutes) leave the lists alone
+        if (Zones.Select(z => (z.Id, z.Name, z.ParentId, z.Depth)).SequenceEqual(ordered.Select(z => (z.id, z.name, z.parent, z.depth)))) return;
+
         Zones.Clear();
         zones.Clear();
         var order = 0;
@@ -314,11 +319,14 @@ public sealed class HomeyStore : ObservableObject
         var seen = new HashSet<string>();
         var membership = false;
         var cfg = Config!;
+        var started = new List<(DeviceVM device, string capability)>();
         foreach (var d in J.Items(node))
         {
             if (J.Str(d, "id") is not { } id) continue;
             seen.Add(id);
-            if (!devices.TryGetValue(id, out var vm))
+            IReadOnlySet<string>? alarmsBefore = null;
+            if (devices.TryGetValue(id, out var vm)) alarmsBefore = vm.ActiveAlarms;
+            else
             {
                 vm = new DeviceVM(id)
                 {
@@ -334,6 +342,7 @@ public sealed class HomeyStore : ObservableObject
             vm.Update(d);
             vm.ZoneName = ZoneName(vm.ZoneId);
             membership |= zone != vm.ZoneId || name != vm.Name;
+            if (alarmsBefore != null) started.AddRange(Alarms.Started(alarmsBefore, vm.ActiveAlarms).Select(a => (vm, a)));
         }
         foreach (var gone in devices.Keys.Where(k => !seen.Contains(k)).ToList())
         {
@@ -349,6 +358,8 @@ public sealed class HomeyStore : ObservableObject
         }
         RebuildBatteries();
         ComputeLiveEnergy(null);
+        foreach (var (device, capability) in started)
+            if (device.Cap(capability) is { } cap) AlarmStarted?.Invoke(device, cap);
     }
 
     void RebuildFavorites()
@@ -606,6 +617,7 @@ public sealed class HomeyStore : ObservableObject
         e.SolarW = solar.Sum(d => Math.Abs(d.PowerW ?? 0));
         e.HasBattery = batteries.Count > 0;
         e.BatteryW = batteries.Sum(d => d.PowerW ?? 0);
+        e.BatteryPercent = EnergyMath.StateOfCharge(batteries.Select(d => d.BatteryLevel));
 
         var consumers = Devices
             .Where(d => !d.IsGridMeter && !d.IsSolar && !d.IsHomeBattery && d.Class != "battery" && d.PowerW is > 0.5)
@@ -665,21 +677,8 @@ public sealed class HomeyStore : ObservableObject
             .ToList();
     }
 
-    // The increase of a kWh counter, per day; drops (a reset meter) are skipped
-    static Dictionary<DateTime, double> PerDay(List<(DateTime t, double v)> entries)
-    {
-        var days = new Dictionary<DateTime, double>();
-        for (var i = 1; i < entries.Count; i++)
-        {
-            var delta = entries[i].v - entries[i - 1].v;
-            if (delta <= 0 || delta > 500) continue;
-            var day = entries[i].t.Date;
-            days[day] = days.GetValueOrDefault(day) + delta;
-        }
-        return days;
-    }
-
-    static double Sum(Dictionary<DateTime, double> days, Func<DateTime, bool> pick) => days.Where(p => pick(p.Key)).Sum(p => p.Value);
+    static Dictionary<DateTime, double> PerDay(List<(DateTime t, double v)> entries) => EnergyMath.PerDay(entries);
+    static double Sum(Dictionary<DateTime, double> days, Func<DateTime, bool> pick) => EnergyMath.Sum(days, pick);
 
     async Task LoadEnergyReport(HomeyClient c, CancellationToken ct)
     {
@@ -698,6 +697,16 @@ public sealed class HomeyStore : ObservableObject
         foreach (var panel in Devices.Where(d => d.IsSolar && d.Has("meter_power")))
             foreach (var (day, kwh) in PerDay(await Entries(c, panel.Id, "meter_power", "last31Days", ct)))
                 solar[day] = solar.GetValueOrDefault(day) + kwh;
+        // Home batteries count their charged and discharged kWh; without them, charging would read as use
+        Dictionary<DateTime, double> charged = [], discharged = [];
+        var homeBatteries = Devices.Where(d => d.IsHomeBattery && d.ChargedCapability != null && d.DischargedCapability != null).ToList();
+        foreach (var battery in homeBatteries)
+        {
+            foreach (var (day, kwh) in PerDay(await Entries(c, battery.Id, battery.ChargedCapability!, "last31Days", ct)))
+                charged[day] = charged.GetValueOrDefault(day) + kwh;
+            foreach (var (day, kwh) in PerDay(await Entries(c, battery.Id, battery.DischargedCapability!, "last31Days", ct)))
+                discharged[day] = discharged.GetValueOrDefault(day) + kwh;
+        }
         ct.ThrowIfCancellationRequested();
 
         var today = DateTime.Today;
@@ -708,11 +717,18 @@ public sealed class HomeyStore : ObservableObject
         e.TodayImport = hasMeter ? EnergyVM.Kwh(Sum(import, IsToday)) : "–";
         e.TodayExport = exportCap != null ? EnergyVM.Kwh(Sum(export, IsToday)) : "–";
         e.TodaySolar = solar.Count > 0 ? EnergyVM.Kwh(Sum(solar, IsToday)) : "–";
-        e.TodayUse = hasMeter ? EnergyVM.Kwh(Sum(import, IsToday) + Sum(solar, IsToday) - Sum(export, IsToday)) : "–";
+        double Use(Func<DateTime, bool> pick) =>
+            EnergyMath.Use(Sum(import, pick), Sum(solar, pick), Sum(export, pick), Sum(charged, pick), Sum(discharged, pick));
+        e.TodayUse = hasMeter ? EnergyVM.Kwh(Use(IsToday)) : "–";
         e.MonthImport = hasMeter ? EnergyVM.Kwh(Sum(import, IsMonth)) : "–";
         e.MonthExport = exportCap != null ? EnergyVM.Kwh(Sum(export, IsMonth)) : "–";
         e.MonthSolar = solar.Count > 0 ? EnergyVM.Kwh(Sum(solar, IsMonth)) : "–";
-        e.MonthUse = hasMeter ? EnergyVM.Kwh(Sum(import, IsMonth) + Sum(solar, IsMonth) - Sum(export, IsMonth)) : "–";
+        e.MonthUse = hasMeter ? EnergyVM.Kwh(Use(IsMonth)) : "–";
+        e.HasBatteryTotals = homeBatteries.Count > 0;
+        e.TodayCharged = EnergyVM.Kwh(Sum(charged, IsToday));
+        e.TodayDischarged = EnergyVM.Kwh(Sum(discharged, IsToday));
+        e.MonthCharged = EnergyVM.Kwh(Sum(charged, IsMonth));
+        e.MonthDischarged = EnergyVM.Kwh(Sum(discharged, IsMonth));
         e.TodayGas = gas.Count > 0 ? Sum(gas, IsToday).ToString("0.00", Loc.Culture) + " m³" : "";
         e.MonthGas = gas.Count > 0 ? Sum(gas, IsMonth).ToString("0.0", Loc.Culture) + " m³" : "";
 
@@ -724,10 +740,13 @@ public sealed class HomeyStore : ObservableObject
         {
             var imp = import.GetValueOrDefault(day);
             var sol = solar.GetValueOrDefault(day);
+            var tooltip = $"{day.ToString("ddd d MMM", Loc.Culture)}\n{Loc.T("Van het net")}: {EnergyVM.Kwh(imp)}\n{Loc.T("Zon")}: {EnergyVM.Kwh(sol)}";
+            if (homeBatteries.Count > 0)
+                tooltip += $"\n{Loc.T("Batterij geladen")}: {EnergyVM.Kwh(charged.GetValueOrDefault(day))}\n{Loc.T("Batterij ontladen")}: {EnergyVM.Kwh(discharged.GetValueOrDefault(day))}";
             e.Days.Add(new BarVM
             {
                 Label = day.ToString("dd", Loc.Culture),
-                Tooltip = $"{day.ToString("ddd d MMM", Loc.Culture)}\n{Loc.T("Van het net")}: {EnergyVM.Kwh(imp)}\n{Loc.T("Zon")}: {EnergyVM.Kwh(sol)}",
+                Tooltip = tooltip,
                 Import = imp,
                 Solar = sol,
                 ImportHeight = imp / maxDay * 120,
@@ -942,15 +961,20 @@ public sealed class HomeyStore : ObservableObject
 
     public void MoveFavorite(DeviceVM d, int delta)
     {
-        if (Config == null) return;
-        var list = Config.FavoriteDevices;
-        var i = list.IndexOf(d.Id);
-        var j = i + delta;
-        if (i < 0 || j < 0 || j >= list.Count) return;
-        (list[i], list[j]) = (list[j], list[i]);
+        if (Config == null || !Favorites.Move(Config.FavoriteDevices, devices.ContainsKey, d.Id, delta)) return;
         App.Settings.Save();
         RebuildFavorites();
     }
+
+    public void MoveFavorite(FlowVM f, int delta)
+    {
+        if (Config == null || !Favorites.Move(Config.FavoriteFlows, flows.ContainsKey, f.Id, delta)) return;
+        App.Settings.Save();
+        RebuildFavorites();
+    }
+
+    public bool CanMoveFavorite(DeviceVM d, int delta) => Config != null && Favorites.CanMove(Config.FavoriteDevices, devices.ContainsKey, d.Id, delta);
+    public bool CanMoveFavorite(FlowVM f, int delta) => Config != null && Favorites.CanMove(Config.FavoriteFlows, flows.ContainsKey, f.Id, delta);
 
     public void SetCustomIcon(DeviceVM d, string? glyph)
     {
