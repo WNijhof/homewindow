@@ -10,8 +10,9 @@ using HomeWindow.Core;
 
 namespace HomeWindow.Views;
 
-// Live energy on the taskbar, just left of the notification area. Windows 11 has no API for this,
-// so the strip is a child window of the taskbar, the way tools such as TrafficMonitor do it.
+// Live energy on the taskbar, just left of the notification area, or at the far left when the taskbar
+// icons are centred. Windows 11 has no API for this, so the strip is a child window of the taskbar,
+// the way tools such as TrafficMonitor do it.
 public sealed class TaskbarStrip : IDisposable
 {
     const int WS_CHILD = 0x40000000, WS_VISIBLE = 0x10000000, WS_CLIPSIBLINGS = 0x04000000;
@@ -29,6 +30,12 @@ public sealed class TaskbarStrip : IDisposable
     (int x, int width, int height, string text) last;
     int ticks;
     bool light;
+    // Free room at the left of the taskbar, in pixels from its left edge: from the end of the buttons there
+    // (Widgets) to the Start button. Looked up in the background now and then; null when there is none.
+    (int from, int to)? leftRoom;
+    IntPtr roomBar;
+    DateTime roomChecked;
+    bool checkingRoom;
 
     public event Action? Clicked;
 
@@ -106,7 +113,11 @@ public sealed class TaskbarStrip : IDisposable
         var right = notify != IntPtr.Zero && GetWindowRect(notify, out var nr) && nr.Left > tb.Left && nr.Left < tb.Right
             ? nr.Left - tb.Left
             : tb.Right - tb.Left - (int)(260 * scale);
-        var x = Math.Max(0, right - width - (int)(Gap * scale));
+        var gap = (int)(Gap * scale);
+        var x = Math.Max(0, right - width - gap);
+        // At the far left when chosen and when it fits before the Start button; otherwise on the right after all
+        if (App.Settings.TaskbarPosition == "left" && LeftRoom(bar, tb) is { } room && room.to - room.from >= width + 2 * gap)
+            x = room.from + gap;
         // The root does not stretch to the child window by itself; size it so the text sits in the middle
         root.Width = width / scale;
         root.Height = height / scale;
@@ -115,6 +126,61 @@ public sealed class TaskbarStrip : IDisposable
         if (now == last && ++ticks % 10 != 0) return;
         last = now;
         SetWindowPos(source.Handle, IntPtr.Zero, x, 0, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
+    }
+
+    // The last known free room at the left; starts a new lookup when it is old or the taskbar is new.
+    // UI Automation asks Explorer, which can be slow or hang, so it runs off the UI thread.
+    (int from, int to)? LeftRoom(IntPtr bar, RECT tb)
+    {
+        if (!checkingRoom && (bar != roomBar || DateTime.UtcNow - roomChecked > TimeSpan.FromSeconds(30)))
+        {
+            checkingRoom = true;
+            roomBar = bar;
+            roomChecked = DateTime.UtcNow;
+            var left = tb.Left;
+            Task.Run(() => FindLeftRoom(bar, left)).ContinueWith(t =>
+            {
+                checkingRoom = false;
+                var found = t.IsCompletedSuccessfully ? t.Result : null;
+                if (found != leftRoom)
+                {
+                    leftRoom = found;
+                    last = default;
+                    Place();
+                }
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+        return leftRoom;
+    }
+
+    // From the right edge of the buttons left of Start (Widgets, if shown) to the Start button.
+    // None when Start sits at the left itself (taskbar alignment: Left).
+    static (int from, int to)? FindLeftRoom(IntPtr bar, int taskbarLeft)
+    {
+        try
+        {
+            var taskbar = System.Windows.Automation.AutomationElement.FromHandle(bar);
+            var start = taskbar.FindFirst(System.Windows.Automation.TreeScope.Descendants,
+                new System.Windows.Automation.PropertyCondition(System.Windows.Automation.AutomationElement.AutomationIdProperty, "StartButton"));
+            if (start == null) return null;
+            var startLeft = (int)start.Current.BoundingRectangle.Left - taskbarLeft;
+            if (startLeft < 200) return null;
+            var buttons = taskbar.FindAll(System.Windows.Automation.TreeScope.Descendants,
+                new System.Windows.Automation.PropertyCondition(System.Windows.Automation.AutomationElement.ControlTypeProperty, System.Windows.Automation.ControlType.Button));
+            var from = 0;
+            foreach (System.Windows.Automation.AutomationElement b in buttons)
+            {
+                var r = b.Current.BoundingRectangle;
+                if (r.IsEmpty || r.Width <= 0) continue;
+                var bRight = (int)r.Right - taskbarLeft;
+                if (bRight <= startLeft && bRight > from) from = bRight;
+            }
+            return (from, startLeft);
+        }
+        catch (Exception e) when (e is System.Windows.Automation.ElementNotAvailableException or InvalidOperationException or COMException)
+        {
+            return null;
+        }
     }
 
     void Create(IntPtr bar)

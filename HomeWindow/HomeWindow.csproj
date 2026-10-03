@@ -11,7 +11,7 @@
     <RootNamespace>HomeWindow</RootNamespace>
     <ApplicationIcon>Assets\HomeWindow.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.4.0</Version>
+    <Version>0.4.1</Version>
     <Product>HomeWindow</Product>
     <Description>Bedien je Homey Pro vanuit het Windows-systeemvak</Description>
     <SatelliteResourceLanguages>nl;en</SatelliteResourceLanguages>

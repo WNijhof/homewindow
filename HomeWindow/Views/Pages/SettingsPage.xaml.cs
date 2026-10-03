@@ -53,6 +53,7 @@ public partial class SettingsPage : UserControl
         Check(FlyoutViewChoice, S.FlyoutView);
         Check(MainViewChoice, S.MainView);
         Check(TileSizeChoice, S.TileSize);
+        Check(TaskbarPositionChoice, S.TaskbarPosition);
         Check(LanguageChoice, S.Language ?? "");
         IntensitySlider.Value = S.Intensity;
         ScaleSlider.Value = S.TextScale;
@@ -209,6 +210,7 @@ public partial class SettingsPage : UserControl
     void FlyoutView_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.FlyoutView = v);
     void MainView_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.MainView = v);
     void TileSize_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TileSize = v);
+    void TaskbarPosition_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TaskbarPosition = v);
 
     void Language_Checked(object sender, RoutedEventArgs e)
     {

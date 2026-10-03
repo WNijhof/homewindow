@@ -56,6 +56,8 @@ public sealed class AppSettings
     public bool FlyoutEnergy { get; set; } = true;
     public bool FlyoutWeather { get; set; } = true;
     public bool TaskbarEnergy { get; set; } = true;
+    // right: next to the notification area; left: at the start of the taskbar, for centred taskbar icons
+    public string TaskbarPosition { get; set; } = "right";
     public string? Language { get; set; }
     public bool Hotkey { get; set; } = true;
     public bool Toasts { get; set; } = true;
@@ -128,6 +130,7 @@ public sealed class AppSettings
         s.MainView ??= "grid";
         s.TileSize ??= "normal";
         s.FlyoutTab ??= "favorites";
+        s.TaskbarPosition ??= "right";
         foreach (var h in s.Homeys)
         {
             h.Id ??= Guid.NewGuid().ToString("N");

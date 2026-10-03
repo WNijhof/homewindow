@@ -179,6 +179,18 @@
                         <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Energie in de taakbalk'}" Style="{StaticResource Label}" />
                         <ToggleButton x:Name="TaskbarSwitch" Style="{StaticResource Switch}" HorizontalAlignment="Left" Click="General_Click" />
                     </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Plaats in de taakbalk'}" Style="{StaticResource Label}" />
+                        <StackPanel>
+                            <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal" x:Name="TaskbarPositionChoice">
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="TaskbarPosition" Tag="left" Content="{c:T Links}" Checked="TaskbarPosition_Checked" />
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="TaskbarPosition" Tag="right" Content="{c:T Rechts}" Checked="TaskbarPosition_Checked" />
+                                </StackPanel>
+                            </Border>
+                            <TextBlock Text="{c:T 'Links past bij taakbalk-iconen in het midden. Staan die links, dan blijft de energie rechts.'}" Style="{StaticResource Sub}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </DockPanel>
                 </StackPanel>
             </Border>
 
