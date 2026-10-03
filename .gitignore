@@ -6,3 +6,4 @@ installer/Output/
 *.user
 .vs/
 beta-posts/
+alpha-posts/

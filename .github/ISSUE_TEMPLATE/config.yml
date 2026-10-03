@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Manual / Handleiding
+    url: https://github.com/WNijhof/homewindow/blob/main/docs/HANDLEIDING.md
+    about: How to set up and use HomeWindow. / Hoe je HomeWindow instelt en gebruikt.

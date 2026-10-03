@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HomeWindow – Homey Pro in your Windows taskbar</title>
+  <meta name="description" content="Control your Homey Pro from the Windows taskbar. Switch lights, start flows and see your energy without leaving what you are doing. Free for personal use.">
+  <meta name="theme-color" content="#5D49E8">
+  <link rel="icon" href="img/favicon-64.png">
+  <link rel="apple-touch-icon" href="img/icon-256.png">
+  <meta property="og:title" content="HomeWindow – Homey Pro in your Windows taskbar">
+  <meta property="og:description" content="Switch lights, start flows and see your energy, one click from the clock. Free, for Windows 10 and 11.">
+  <meta property="og:image" content="https://wnijhof.github.io/homewindow/img/og.png">
+  <meta property="og:url" content="https://wnijhof.github.io/homewindow/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // Language and theme before the first paint, so nothing flickers
+    (function () {
+      var d = document.documentElement, l = null, t = null;
+      try { l = localStorage.getItem('hw-lang'); t = localStorage.getItem('hw-theme'); } catch (e) {}
+      var q = new URLSearchParams(location.search).get('lang');
+      if (q === 'nl' || q === 'en') l = q;
+      d.lang = l || ((navigator.language || '').toLowerCase().indexOf('nl') === 0 ? 'nl' : 'en');
+      var qt = new URLSearchParams(location.search).get('theme');
+      if (qt === 'light' || qt === 'dark') t = qt;
+      if (t === 'light' || t === 'dark') d.dataset.theme = t;
+    })();
+  </script>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="hw-grad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#5D49E8" /><stop offset="1" stop-color="#9A52F4" />
+      </linearGradient>
+      <symbol id="logo" viewBox="0 0 64 64">
+        <rect width="64" height="64" rx="15" fill="url(#hw-grad)" />
+        <path d="M13 29 32 13l19 16" fill="none" stroke="#fff" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" />
+        <rect x="18" y="28" width="28" height="24" rx="5" fill="#fff" />
+        <rect x="21.5" y="31.5" width="9.5" height="7.5" rx="1.6" fill="#FCD34D" />
+        <rect x="33" y="31.5" width="9.5" height="7.5" rx="1.6" fill="#6D28D9" />
+        <rect x="21.5" y="41" width="9.5" height="7.5" rx="1.6" fill="#6D28D9" />
+        <rect x="33" y="41" width="9.5" height="7.5" rx="1.6" fill="#6D28D9" />
+      </symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7M5.5 9.5V20h13V9.5" /></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" /></symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2.5 5 13.5h6l-1 8 8-11h-6z" /></symbol>
+      <symbol id="i-battery" viewBox="0 0 24 24"><rect x="2.5" y="7" width="17" height="10" rx="2.5" /><path d="M21.5 10.5v3" /><rect x="5" y="9.5" width="8" height="5" rx="1" fill="currentColor" /></symbol>
+      <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" /><path d="M3 16h18M8 7.5h3M8 11h8" /></symbol>
+      <symbol id="i-tiles" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2.5" /><rect x="13" y="3" width="8" height="8" rx="2.5" /><rect x="3" y="13" width="8" height="8" rx="2.5" /><circle cx="17" cy="17" r="3.5" /></symbol>
+      <symbol id="i-window" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="3" /><path d="M8.5 4v16M11.5 9h6.5M11.5 13h4" /></symbol>
+      <symbol id="i-alarm" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 21h4" /></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9S9.5 5.5 12 3z" /></symbol>
+      <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 1.5-2.2-.6-1.3.3-2.8 1.8-2.8H18a3 3 0 0 0 3-3c0-5.5-4-10-9-10z" /><circle cx="7.5" cy="11" r="1.2" fill="currentColor" /><circle cx="10.5" cy="7.5" r="1.2" fill="currentColor" /><circle cx="15" cy="7.8" r="1.2" fill="currentColor" /></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.5-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.5 4.5L20 16M20 20v-4h-4" /></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5" /><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" /></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" /></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="m6.5 6.5 11 11M17.5 6.5l-11 11" /></symbol>
+      <symbol id="i-maybe" viewBox="0 0 24 24"><path d="M7 12h10" /></symbol>
+      <symbol id="i-github" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.4-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .8.1-.7.4-1.1.6-1.4-2.2-.2-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2z" /></symbol>
+      <symbol id="i-windows" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M3 5.3 10.4 4.3v7.1H3zm8.4-1.1L21 3v8.4h-9.6zM3 12.6h7.4v7.1L3 18.7zm8.4 0H21V21l-9.6-1.3z" /></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3.5v12M7 11l5 5 5-5M4.5 20.5h15" /></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" /></symbol>
+      <symbol id="i-sunsmall" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.6 5.6l1 1M17.4 17.4l1 1M5.6 18.4l1-1M17.4 6.6l1-1" /></symbol>
+      <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" /><path fill="currentColor" stroke="none" d="M12 3.5a8.5 8.5 0 0 1 0 17z" /></symbol>
+      <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M3 9.5a13 13 0 0 1 18 0M6 13a8.5 8.5 0 0 1 12 0M9 16.5a4 4 0 0 1 6 0" /><circle cx="12" cy="19.5" r="1" fill="currentColor" /></symbol>
+      <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" /></symbol>
+      <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m7 14.5 5-5 5 5" /></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></symbol>
+    </defs>
+  </svg>
+
+  <header class="nav" id="top">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top" aria-label="HomeWindow">
+        <svg class="brand-logo"><use href="#logo" /></svg>
+        <span>HomeWindow</span>
+      </a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#features"><span class="nl">Functies</span><span class="en">Features</span></a>
+        <a href="#screens"><span class="nl">Schermen</span><span class="en">Screens</span></a>
+        <a href="#install"><span class="nl">Installeren</span><span class="en">Install</span></a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="nav-tools">
+        <button class="chip" id="lang" type="button" aria-label="Taal / Language"><span class="nl">EN</span><span class="en">NL</span></button>
+        <button class="chip icon" id="theme" type="button" aria-label="Theme"><svg class="ico"><use href="#i-auto" /></svg></button>
+        <a class="chip icon" href="https://github.com/WNijhof/homewindow" aria-label="GitHub"><svg class="ico"><use href="#i-github" /></svg></a>
+        <a class="btn btn-small download-link" href="https://github.com/WNijhof/homewindow/releases/latest">
+          <svg class="ico"><use href="#i-download" /></svg><span class="nl">Download</span><span class="en">Download</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="glow glow-a"></div><div class="glow glow-b"></div><div class="glow glow-c"></div>
+      <div class="wrap hero-inner">
+        <p class="eyebrow reveal">
+          <span class="pill">Alpha</span>
+          <span class="nl">Gratis · voor Windows 10 en 11</span><span class="en">Free · for Windows 10 and 11</span>
+        </p>
+        <h1 class="reveal">
+          <span class="nl">Je Homey Pro.<br><span class="grad">Gewoon in je taakbalk.</span></span>
+          <span class="en">Your Homey Pro.<br><span class="grad">Right in your taskbar.</span></span>
+        </h1>
+        <p class="lead reveal">
+          <span class="nl">Lampen aan, een flow starten, zien wat de zonnepanelen doen: één klik op het icoon bij de klok. Zonder je telefoon te pakken en zonder je werk te onderbreken.</span>
+          <span class="en">Lights on, start a flow, see what the solar panels are doing: one click on the icon by the clock. Without reaching for your phone, and without leaving what you are doing.</span>
+        </p>
+        <div class="cta reveal">
+          <a class="btn btn-big download-link" href="https://github.com/WNijhof/homewindow/releases/latest">
+            <svg class="ico"><use href="#i-windows" /></svg>
+            <span><span class="nl">Download voor Windows</span><span class="en">Download for Windows</span>
+              <small class="download-meta"><span class="nl">Nieuwste versie · gratis</span><span class="en">Latest version · free</span></small></span>
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/WNijhof/homewindow">
+            <svg class="ico"><use href="#i-github" /></svg><span class="nl">Bekijk op GitHub</span><span class="en">View on GitHub</span>
+          </a>
+        </div>
+        <p class="works reveal">
+          <span class="nl">Voor Homey Pro (2023), Homey Pro mini en Homey Self-Hosted Server</span>
+          <span class="en">For Homey Pro (2023), Homey Pro mini and Homey Self-Hosted Server</span>
+        </p>
+
+        <!-- A Windows desktop with HomeWindow on it -->
+        <div class="desktop reveal" aria-label="HomeWindow on a Windows desktop">
+          <div class="wallpaper"></div>
+          <img class="shot-main" data-shot="overview" alt="The HomeWindow main window" width="1600" height="1020">
+          <img class="shot-panel" data-shot="panel" alt="The HomeWindow panel by the clock" width="672" height="1120">
+          <div class="taskbar">
+            <div class="tb-apps">
+              <span class="tb-app win"><svg><use href="#i-windows" /></svg></span>
+              <span class="tb-app search"><svg><use href="#i-search" /></svg></span>
+              <span class="tb-app a1"></span><span class="tb-app a2"></span><span class="tb-app a3"></span>
+            </div>
+            <div class="tb-right">
+              <div class="strip" title="HomeWindow">
+                <span><svg><use href="#i-home" /></svg><b data-live="home">1411 W</b></span>
+                <span><svg class="sun"><use href="#i-sun" /></svg><b data-live="solar">3667 W</b></span>
+                <span><svg><use href="#i-bolt" /></svg><b class="green" data-live="grid">-1417 W</b></span>
+                <span><svg class="green"><use href="#i-battery" /></svg><b data-live="battery">62 %</b></span>
+              </div>
+              <svg class="tb-icon"><use href="#i-chevron" /></svg>
+              <span class="tb-hw"><svg><use href="#logo" /></svg></span>
+              <svg class="tb-icon"><use href="#i-wifi" /></svg>
+              <svg class="tb-icon"><use href="#i-speaker" /></svg>
+              <span class="tb-clock"><b class="clock-time">14:05</b><small class="clock-date">3-10-2026</small></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section" id="features">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="kicker"><span class="nl">Wat het doet</span><span class="en">What it does</span></p>
+          <h2><span class="nl">Alles van je Homey, één klik verderop</span><span class="en">All of your Homey, one click away</span></h2>
+          <p class="sub"><span class="nl">Een klein paneel voor snel schakelen, en een volledig venster als je meer wilt zien.</span>
+            <span class="en">A small panel for a quick switch, and a full window when you want to see more.</span></p>
+        </div>
+        <div class="features">
+          <article class="card feature reveal">
+            <span class="f-icon c-purple"><svg class="ico"><use href="#i-panel" /></svg></span>
+            <h3><span class="nl">Paneel bij de klok</span><span class="en">A panel by the clock</span></h3>
+            <p><span class="nl">Klik op het icoon of druk op <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>H</kbd>. Favorieten, kamers, flows en sferen, met het weer en wie er thuis is.</span>
+              <span class="en">Click the icon or press <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>H</kbd>. Favourites, rooms, flows and moods, with the weather and who is home.</span></p>
+          </article>
+          <article class="card feature reveal">
+            <span class="f-icon c-yellow"><svg class="ico"><use href="#i-tiles" /></svg></span>
+            <h3><span class="nl">Tegels zoals in de Homey-app</span><span class="en">Tiles like the Homey app</span></h3>
+            <p><span class="nl">Een rond snelknopje, een gekleurde status en tot twee metingen per apparaat. Dimmen, thermostaat, rolluiken, speakers en sloten.</span>
+              <span class="en">A round quick button, a coloured state and up to two readings per device. Dimmers, thermostats, blinds, speakers and locks.</span></p>
+          </article>
+          <article class="card feature reveal">
+            <span class="f-icon c-green"><svg class="ico"><use href="#i-bolt" /></svg></span>
+            <h3><span class="nl">Energie in de taakbalk</span><span class="en">Energy on the taskbar</span></h3>
+            <p><span class="nl">Verbruik, zon, net en de laadstand van je thuisbatterij, altijd naast de klok. Teruglevering staat er in het groen.</span>
+              <span class="en">Use, solar, grid and the charge of your home battery, always next to the clock. Power going back to the grid shows in green.</span></p>
+          </article>
+          <article class="card feature reveal">
+            <span class="f-icon c-blue"><svg class="ico"><use href="#i-window" /></svg></span>
+            <h3><span class="nl">Een volledig venster</span><span class="en">A full window</span></h3>
+            <p><span class="nl">Apparaten per kamer, flows per map, sferen, variabelen, energie, batterijen, meldingen en de gezondheid van je Homey.</span>
+              <span class="en">Devices per room, flows per folder, moods, variables, energy, batteries, notifications and the health of your Homey.</span></p>
+          </article>
+          <article class="card feature reveal">
+            <span class="f-icon c-red"><svg class="ico"><use href="#i-alarm" /></svg></span>
+            <h3><span class="nl">Meldingen bij alarmen</span><span class="en">Alarm notifications</span></h3>
+            <p><span class="nl">Rookmelder, waterlek of de deurbel? Je krijgt een Windows-melding. Ook bij beweging en deuren, als je dat wilt.</span>
+              <span class="en">Smoke, a water leak or the doorbell? You get a Windows notification. For motion and doors too, if you like.</span></p>
+          </article>
+          <article class="card feature reveal">
+            <span class="f-icon c-blue"><svg class="ico"><use href="#i-globe" /></svg></span>
+            <h3><span class="nl">Thuis en onderweg</span><span class="en">At home and away</span></h3>
+            <p><span class="nl">Rechtstreeks via je eigen netwerk, en vanzelf via de cloud van Athom als je niet thuis bent. Meerdere Homeys kan ook.</span>
+              <span class="en">Straight over your own network, and through Athom's cloud by itself when you are out. More than one Homey works too.</span></p>
+          </article>
+          <article class="card feature reveal">
+            <span class="f-icon c-purple"><svg class="ico"><use href="#i-palette" /></svg></span>
+            <h3><span class="nl">Zoals jij het wilt</span><span class="en">The way you like it</span></h3>
+            <p><span class="nl">Licht, donker of volgens Windows. Zes achtergronden, drie tegelgroottes, eigen pictogrammen, Nederlands en Engels.</span>
+              <span class="en">Light, dark or like Windows. Six backdrops, three tile sizes, your own icons, English and Dutch.</span></p>
+          </article>
+          <article class="card feature reveal">
+            <span class="f-icon c-yellow"><svg class="ico"><use href="#i-refresh" /></svg></span>
+            <h3><span class="nl">Werkt zichzelf bij</span><span class="en">Keeps itself up to date</span></h3>
+            <p><span class="nl">Nieuwe versies komen stil binnen, op een moment dat je HomeWindow niet gebruikt.</span>
+              <span class="en">New versions arrive quietly, at a moment you are not using HomeWindow.</span></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screens -->
+    <section class="section section-tint" id="screens">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="kicker"><span class="nl">Rondkijken</span><span class="en">Have a look</span></p>
+          <h2><span class="nl">Het hoofdvenster</span><span class="en">The main window</span></h2>
+          <p class="sub"><span class="nl">Volgt het thema van deze pagina: probeer licht en donker rechtsboven.</span>
+            <span class="en">Follows the theme of this page: try light and dark at the top right.</span></p>
+        </div>
+        <div class="tabs reveal" role="tablist">
+          <button role="tab" class="tab" data-tab="overview" aria-selected="true"><span class="nl">Overzicht</span><span class="en">Overview</span></button>
+          <button role="tab" class="tab" data-tab="devices"><span class="nl">Apparaten</span><span class="en">Devices</span></button>
+          <button role="tab" class="tab" data-tab="energy"><span class="nl">Energie</span><span class="en">Energy</span></button>
+          <button role="tab" class="tab" data-tab="flows">Flows</button>
+          <button role="tab" class="tab" data-tab="batteries"><span class="nl">Batterijen</span><span class="en">Batteries</span></button>
+          <button role="tab" class="tab" data-tab="system"><span class="nl">Systeem</span><span class="en">System</span></button>
+        </div>
+        <figure class="showcase reveal">
+          <div class="frame">
+            <div class="frame-bar"><i></i><i></i><i></i><span>HomeWindow</span></div>
+            <img id="showcase" data-shot="overview" alt="HomeWindow" width="1600" height="1020">
+          </div>
+          <figcaption id="caption"></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Energy spotlight -->
+    <section class="section" id="energy">
+      <div class="wrap split">
+        <div class="split-text reveal">
+          <p class="kicker"><span class="nl">Energie</span><span class="en">Energy</span></p>
+          <h2><span class="nl">Weet wat je huis doet</span><span class="en">Know what your home is doing</span></h2>
+          <ul class="ticks">
+            <li><svg class="ico"><use href="#i-check" /></svg><span><span class="nl"><b>Nu</b>: verbruik, zon, net en thuisbatterij, live bijgewerkt.</span><span class="en"><b>Now</b>: use, solar, grid and home battery, updated live.</span></span></li>
+            <li><svg class="ico"><use href="#i-check" /></svg><span><span class="nl"><b>Vandaag en deze maand</b>, met gas, uit Homey Insights.</span><span class="en"><b>Today and this month</b>, gas included, from Homey Insights.</span></span></li>
+            <li><svg class="ico"><use href="#i-check" /></svg><span><span class="nl"><b>Thuisbatterij telt eerlijk mee</b>: laden is geen verbruik, ontladen wel.</span><span class="en"><b>Home batteries count fairly</b>: charging is not use, discharging is.</span></span></li>
+            <li><svg class="ico"><use href="#i-check" /></svg><span><span class="nl"><b>Grootste verbruikers</b> van dit moment en van vandaag.</span><span class="en"><b>Biggest users</b> right now and today.</span></span></li>
+          </ul>
+        </div>
+        <div class="split-media reveal">
+          <img class="rounded-shot" data-shot="energy" alt="The energy page" width="1600" height="1020" loading="lazy">
+        </div>
+      </div>
+    </section>
+
+    <!-- Install -->
+    <section class="section section-tint" id="install">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="kicker"><span class="nl">Aan de slag</span><span class="en">Get started</span></p>
+          <h2><span class="nl">In drie stappen klaar</span><span class="en">Ready in three steps</span></h2>
+        </div>
+        <ol class="steps">
+          <li class="card step reveal">
+            <span class="step-n">1</span>
+            <h3><span class="nl">Installeer</span><span class="en">Install</span></h3>
+            <p><span class="nl">Download en start de installer. Geen beheerdersrechten nodig, .NET zit erin. Zegt Windows dat de uitgever onbekend is? Kies <b>Meer informatie → Toch uitvoeren</b>.</span>
+              <span class="en">Download and run the installer. No admin rights needed, .NET is included. Windows says the publisher is unknown? Choose <b>More info → Run anyway</b>.</span></p>
+          </li>
+          <li class="card step reveal">
+            <span class="step-n">2</span>
+            <h3><span class="nl">Maak een API-key</span><span class="en">Create an API key</span></h3>
+            <p><span class="nl">Op <a href="https://my.homey.app">my.homey.app</a>: kies je Homey → Instellingen → API-sleutels. De <a href="https://github.com/WNijhof/homewindow/blob/main/docs/HANDLEIDING.md#een-api-key-maken">handleiding</a> zegt welke rechten.</span>
+              <span class="en">At <a href="https://my.homey.app">my.homey.app</a>: pick your Homey → Settings → API Keys. The <a href="https://github.com/WNijhof/homewindow/blob/main/README.en.md">readme</a> lists the rights it needs.</span></p>
+          </li>
+          <li class="card step reveal">
+            <span class="step-n">3</span>
+            <h3><span class="nl">Koppel</span><span class="en">Connect</span></h3>
+            <p><span class="nl">Vul het IP-adres van je Homey en de key in. HomeWindow zoekt de rest zelf uit, ook de weg via de cloud.</span>
+              <span class="en">Fill in your Homey's IP address and the key. HomeWindow works out the rest, including the way through the cloud.</span></p>
+          </li>
+        </ol>
+
+        <div class="compat card reveal">
+          <h3><span class="nl">Welke Homey?</span><span class="en">Which Homey?</span></h3>
+          <ul>
+            <li class="yes"><svg class="ico"><use href="#i-check" /></svg>Homey Pro (2023)</li>
+            <li class="yes"><svg class="ico"><use href="#i-check" /></svg>Homey Pro mini</li>
+            <li class="maybe"><svg class="ico"><use href="#i-maybe" /></svg>Homey Self-Hosted Server <small><span class="nl">zelfde API, nog niet getest</span><span class="en">same API, not tested yet</span></small></li>
+            <li class="no"><svg class="ico"><use href="#i-x" /></svg>Homey + Homey Bridge <small><span class="nl">geen API-keys</span><span class="en">no API keys</span></small></li>
+            <li class="no"><svg class="ico"><use href="#i-x" /></svg><span class="nl">Homey Pro van vóór 2023</span><span class="en">Homey Pro before 2023</span> <small><span class="nl">oudere API</span><span class="en">older API</span></small></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Privacy -->
+    <section class="section" id="privacy">
+      <div class="wrap privacy reveal">
+        <span class="f-icon big c-green"><svg class="ico"><use href="#i-lock" /></svg></span>
+        <div>
+          <h2><span class="nl">Je huis blijft van jou</span><span class="en">Your home stays yours</span></h2>
+          <p><span class="nl">Geen account, geen tracking, geen tussenpartij. HomeWindow praat rechtstreeks met je eigen Homey, of via de cloud-doorgang van Athom als je weg bent, en vraagt GitHub of er een nieuwe versie is. Je API-key staat versleuteld met je Windows-account op je eigen pc.</span>
+            <span class="en">No account, no tracking, nobody in between. HomeWindow talks straight to your own Homey, or through Athom's cloud relay when you are away, and asks GitHub whether there is a new version. Your API key is stored on your own PC, encrypted with your Windows account.</span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section section-tint" id="faq">
+      <div class="wrap narrow">
+        <div class="section-head reveal">
+          <p class="kicker">FAQ</p>
+          <h2><span class="nl">Vragen</span><span class="en">Questions</span></h2>
+        </div>
+        <div class="faq reveal">
+          <details>
+            <summary><span class="nl">Kost het iets?</span><span class="en">Does it cost anything?</span></summary>
+            <p><span class="nl">Nee. HomeWindow is gratis voor persoonlijk gebruik en voor non-profits, onder de <a href="https://github.com/WNijhof/homewindow/blob/main/LICENSE">PolyForm Noncommercial License</a>. De broncode staat op GitHub.</span>
+              <span class="en">No. HomeWindow is free for personal use and for non-profits, under the <a href="https://github.com/WNijhof/homewindow/blob/main/LICENSE">PolyForm Noncommercial License</a>. The source is on GitHub.</span></p>
+          </details>
+          <details>
+            <summary><span class="nl">Wat betekent alpha?</span><span class="en">What does alpha mean?</span></summary>
+            <p><span class="nl">Dat HomeWindow jong is. Het werkt goed op de Homeys waarmee het getest is, maar er kan nog iets misgaan en er verandert nog van alles. Loop je ergens tegenaan? Meld het bij de <a href="https://github.com/WNijhof/homewindow/issues/new/choose">issues</a> en stuur het log mee (Instellingen → Updates → Log openen).</span>
+              <span class="en">That HomeWindow is young. It works well on the Homeys it was tested with, but things can still go wrong and a lot will still change. Run into something? Report it in the <a href="https://github.com/WNijhof/homewindow/issues/new/choose">issues</a> and attach the log (Settings → Updates → Open log).</span></p>
+          </details>
+          <details>
+            <summary><span class="nl">Waarom waarschuwt Windows bij het installeren?</span><span class="en">Why does Windows warn me when installing?</span></summary>
+            <p><span class="nl">De installer is nog niet digitaal ondertekend; dat kost geld en tijd die er voor een alpha nog niet in zitten. Kies <b>Meer informatie → Toch uitvoeren</b>. De installer wordt openbaar gebouwd door GitHub, uit de code die je zelf kunt inzien.</span>
+              <span class="en">The installer is not code-signed yet; that takes money and time an alpha does not have yet. Choose <b>More info → Run anyway</b>. The installer is built in the open by GitHub, from code you can read yourself.</span></p>
+          </details>
+          <details>
+            <summary><span class="nl">Is dit een app van Athom?</span><span class="en">Is this an Athom app?</span></summary>
+            <p><span class="nl">Nee. HomeWindow is een eigen project zonder band met Athom. Homey is een merk van Athom.</span>
+              <span class="en">No. HomeWindow is an independent project, not affiliated with Athom. Homey is a trademark of Athom.</span></p>
+          </details>
+          <details>
+            <summary><span class="nl">Ik heb een Mac</span><span class="en">I have a Mac</span></summary>
+            <p><span class="nl">Kijk dan naar <a href="https://www.homebar.pro/">HomeBar</a>, de app voor de menubalk van de Mac die HomeWindow op het idee bracht.</span>
+              <span class="en">Then have a look at <a href="https://www.homebar.pro/">HomeBar</a>, the app for the Mac menu bar that gave HomeWindow the idea.</span></p>
+          </details>
+          <details>
+            <summary><span class="nl">Hoe verwijder ik het?</span><span class="en">How do I remove it?</span></summary>
+            <p><span class="nl">Via Windows-instellingen → Apps. Aan het eind vraagt de verwijderaar of je ook je instellingen wilt wissen.</span>
+              <span class="en">Through Windows Settings → Apps. At the end the uninstaller asks whether to wipe your settings too.</span></p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Closing call to action -->
+    <section class="section closing">
+      <div class="glow glow-a"></div><div class="glow glow-c"></div>
+      <div class="wrap closing-inner reveal">
+        <svg class="closing-logo"><use href="#logo" /></svg>
+        <h2><span class="nl">Probeer HomeWindow</span><span class="en">Give HomeWindow a try</span></h2>
+        <p class="sub"><span class="nl">Gratis, in een minuut geïnstalleerd, en weer weg via Windows-instellingen als het niets voor je is.</span>
+          <span class="en">Free, installed in a minute, and gone again through Windows Settings if it is not for you.</span></p>
+        <a class="btn btn-big download-link" href="https://github.com/WNijhof/homewindow/releases/latest">
+          <svg class="ico"><use href="#i-windows" /></svg>
+          <span><span class="nl">Download voor Windows</span><span class="en">Download for Windows</span>
+            <small class="download-meta"><span class="nl">Nieuwste versie · gratis</span><span class="en">Latest version · free</span></small></span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="brand"><svg class="brand-logo"><use href="#logo" /></svg><span>HomeWindow</span></div>
+      <nav>
+        <a href="https://github.com/WNijhof/homewindow"><span class="nl">Broncode</span><span class="en">Source</span></a>
+        <a href="https://github.com/WNijhof/homewindow/blob/main/docs/HANDLEIDING.md"><span class="nl">Handleiding</span><span class="en">Manual (Dutch)</span></a>
+        <a href="https://github.com/WNijhof/homewindow/releases"><span class="nl">Versies</span><span class="en">Releases</span></a>
+        <a href="https://github.com/WNijhof/homewindow/issues/new/choose"><span class="nl">Probleem melden</span><span class="en">Report a problem</span></a>
+        <a href="https://github.com/WNijhof/homewindow/blob/main/LICENSE"><span class="nl">Licentie</span><span class="en">License</span></a>
+      </nav>
+      <p class="fine"><span class="nl">HomeWindow is niet verbonden met Athom B.V. Homey is een merk van Athom. Deze site gebruikt geen cookies.</span>
+        <span class="en">HomeWindow is not affiliated with Athom B.V. Homey is a trademark of Athom. This site uses no cookies.</span></p>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+name: Something does not work / Er gaat iets mis
+description: Report a bug in HomeWindow. Meld een fout in HomeWindow.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing HomeWindow! Dutch or English are both fine. / Bedankt voor het testen! Nederlands of Engels mag allebei.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened? / Wat gebeurde er?
+      description: What did you do, what did you expect, and what happened instead? A screenshot helps. / Wat deed je, wat verwachtte je en wat gebeurde er? Een schermafbeelding helpt.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: HomeWindow version / versie
+      description: Settings → Updates / Instellingen → Updates
+      placeholder: "0.4.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: homey
+    attributes:
+      label: Homey
+      options:
+        - Homey Pro (2023)
+        - Homey Pro mini
+        - Homey Self-Hosted Server
+        - Other / Anders
+    validations:
+      required: true
+  - type: dropdown
+    id: connection
+    attributes:
+      label: Connection / Verbinding
+      options:
+        - Local / Lokaal
+        - Cloud
+        - Both / Allebei
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version / versie
+      placeholder: "Windows 11 24H2"
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: Settings → Updates → Open log, then drag HomeWindow.log here. It holds no API key. / Instellingen → Updates → Log openen, en sleep HomeWindow.log hierheen. Er staat geen API-key in.

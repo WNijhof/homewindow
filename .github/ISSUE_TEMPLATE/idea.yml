@@ -1,0 +1,11 @@
+name: Idea / Idee
+description: Suggest a feature or improvement. Stel een functie of verbetering voor.
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like? / Wat zou je willen?
+      description: And what would you use it for? / En waarvoor zou je het gebruiken?
+    validations:
+      required: true
