@@ -56,8 +56,19 @@ Want to look around first? Run `HomeWindow.exe --demo`.
 
 HomeWindow only talks to your own Homey: directly on your network, or through Athom's cloud relay (`<homey-id>.connect.athom.com`) when you are away. It also asks GitHub whether there is a new version. Nothing about your Homey goes anywhere else. Your settings are in `%APPDATA%\HomeWindow\settings.json`; the API key in it is encrypted with your Windows account.
 
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+- Committers and reviewers: [WNijhof](https://github.com/WNijhof)
+- Approvers: [WNijhof](https://github.com/WNijhof)
+
+Only what GitHub Actions builds from this repository is signed, and the maintainer approves each release separately. See [docs/SIGNING.md](docs/SIGNING.md).
+
+Privacy: HomeWindow will not transfer any information to other networked systems unless specifically requested by the user, apart from what [Privacy](#privacy) above describes: your own Homey, and GitHub to check for a new version (you can turn that off under Settings → Updates).
+
 ## License
 
-HomeWindow is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). The source is open: you may use, change and share HomeWindow for free, but not for commercial purposes. Personal, hobby, study and non-profit use is all fine; making money with HomeWindow or a changed version needs permission. Pass on the license and its `Required Notice` line when you share it.
+HomeWindow is open source under the [GNU General Public License v3.0](LICENSE): you may use, change and share it, as long as changed versions are also shared under the GPL-3.0, with their source.
 
-Versions up to and including 0.3.0 were released under the GNU GPL v3.0; anyone who has those versions keeps those rights for them.
+Version 0.4.0 was released under the PolyForm Noncommercial License 1.0.0; from 0.4.1 on it is GPL-3.0 again.

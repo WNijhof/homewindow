@@ -39,9 +39,76 @@ jobs:
           $v = if ('${{ github.event_name }}' -eq 'push') { '${{ github.ref_name }}'.TrimStart('v') } else { '${{ inputs.version }}' }
           "value=$v" >> $env:GITHUB_OUTPUT
 
+      # Code signing by SignPath (docs/SIGNING.md). It switches on once the repository variable
+      # SIGNPATH_ORGANIZATION_ID is set; until then the installer goes out unsigned, as before.
+      # Tag builds use the release certificate, which needs an approval in SignPath for each
+      # release; a manual run uses the test certificate.
+      - name: Publish app
+        shell: pwsh
+        run: ./scripts/build-installer.ps1 -Version ${{ steps.version.outputs.value }} -SelfContained -PublishOnly
+
+      - name: Upload app for signing
+        id: upload-app
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: HomeWindow-app-unsigned-${{ steps.version.outputs.value }}
+          path: publish/
+
+      - name: Sign app
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: homewindow
+          signing-policy-slug: ${{ github.event_name == 'push' && 'release-signing' || 'test-signing' }}
+          artifact-configuration-slug: app
+          github-artifact-id: ${{ steps.upload-app.outputs.artifact-id }}
+          parameters: |
+            version: "${{ steps.version.outputs.value }}"
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: publish-signed
+
+      # The installer is built from the signed app
+      - name: Use signed app
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        shell: pwsh
+        run: |
+          Remove-Item publish -Recurse -Force
+          Move-Item publish-signed publish
+
       - name: Build installer
         shell: pwsh
-        run: ./scripts/build-installer.ps1 -Version ${{ steps.version.outputs.value }} -SelfContained -Iscc "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+        run: ./scripts/build-installer.ps1 -Version ${{ steps.version.outputs.value }} -SelfContained -InstallerOnly -Iscc "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+
+      - name: Upload installer for signing
+        id: upload-setup
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: HomeWindow-Setup-unsigned-${{ steps.version.outputs.value }}
+          path: installer/Output/HomeWindow-Setup-${{ steps.version.outputs.value }}.exe
+
+      - name: Sign installer
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: homewindow
+          signing-policy-slug: ${{ github.event_name == 'push' && 'release-signing' || 'test-signing' }}
+          artifact-configuration-slug: setup
+          github-artifact-id: ${{ steps.upload-setup.outputs.artifact-id }}
+          parameters: |
+            version: "${{ steps.version.outputs.value }}"
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: installer/Signed
+
+      - name: Use signed installer
+        if: vars.SIGNPATH_ORGANIZATION_ID != ''
+        shell: pwsh
+        run: Move-Item "installer/Signed/HomeWindow-Setup-${{ steps.version.outputs.value }}.exe" installer/Output -Force
 
       - uses: actions/upload-artifact@v7
         with:

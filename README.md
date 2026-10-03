@@ -53,11 +53,22 @@ Eerst rondkijken zonder Homey? Start `HomeWindow.exe --demo`.
 
 HomeWindow praat met je eigen Homey: rechtstreeks in je netwerk, of via de cloud-doorgang van Athom (`<homey-id>.connect.athom.com`) als je niet thuis bent. Daarnaast vraagt hij bij GitHub of er een nieuwe versie is. Er gaat geen informatie over je Homey naar andere partijen. Je instellingen staan in `%APPDATA%\HomeWindow\settings.json`; de API-key is daarin versleuteld met je Windows-account.
 
+## Code signing policy
+
+Gratis code signing door [SignPath.io](https://about.signpath.io), certificaat van [SignPath Foundation](https://signpath.org).
+
+- Auteurs en reviewers: [WNijhof](https://github.com/WNijhof)
+- Goedkeuring van releases: [WNijhof](https://github.com/WNijhof)
+
+Alleen wat GitHub Actions uit deze repository bouwt wordt ondertekend; elke release keurt de beheerder apart goed. Zie [docs/SIGNING.md](docs/SIGNING.md).
+
+Privacy: HomeWindow stuurt geen informatie naar andere systemen in het netwerk, behalve waar je er zelf om vraagt of wat hierboven bij [Privacy](#privacy) staat: je eigen Homey, en GitHub om te zien of er een nieuwe versie is (uit te zetten bij Instellingen → Updates).
+
 ## Licentie
 
-HomeWindow valt onder de [PolyForm Noncommercial License 1.0.0](LICENSE). De broncode is openbaar: je mag HomeWindow gratis gebruiken, aanpassen en verder verspreiden, maar niet voor commerciële doeleinden. Thuis, als hobby, voor studie of bij een non-profitorganisatie mag alles; geld verdienen met HomeWindow of een aangepaste versie mag niet zonder toestemming. Geef bij verspreiden de licentie en de regel `Required Notice` door.
+HomeWindow is open source onder de [GNU General Public License v3.0](LICENSE): je mag het gebruiken, aanpassen en verder verspreiden, zolang je aangepaste versies ook onder GPL-3.0 en met broncode deelt.
 
-Versies tot en met 0.3.0 zijn uitgebracht onder de GNU GPL v3.0; wie die versies heeft, houdt die rechten voor die versies.
+Versie 0.4.0 is uitgebracht onder de PolyForm Noncommercial License 1.0.0; vanaf 0.4.1 is het weer GPL-3.0.
 
 ## Ontwikkelen
 
