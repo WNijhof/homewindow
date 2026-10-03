@@ -55,8 +55,21 @@ public sealed class Updater : ObservableObject
             Status = Loc.T("Automatisch bijwerken werkt alleen als HomeWindow met de installer is geïnstalleerd.");
             return;
         }
+        RemoveOldDownloads();
         // The first check waits a little, so start-up and connecting to Homey come first
         Schedule(TimeSpan.FromSeconds(30));
+    }
+
+    static string Downloads => Path.Combine(Path.GetDirectoryName(Log.FilePath)!, "Updates");
+
+    // The setup of the last update has done its work by the time HomeWindow starts again
+    static void RemoveOldDownloads()
+    {
+        if (!Directory.Exists(Downloads)) return;
+        foreach (var file in Directory.EnumerateFiles(Downloads))
+        {
+            try { File.Delete(file); } catch { }
+        }
     }
 
     void Schedule(TimeSpan after)
@@ -129,7 +142,9 @@ public sealed class Updater : ObservableObject
     async Task InstallAsync(Release release)
     {
         Status = Loc.F("Versie {0} wordt gedownload…", release.Version.ToString(3));
-        var file = Path.Combine(Path.GetTempPath(), release.Name);
+        // In HomeWindow's own folder rather than %TEMP%: virus scanners distrust programs started from there
+        Directory.CreateDirectory(Downloads);
+        var file = Path.Combine(Downloads, release.Name);
         var bytes = await Http.GetByteArrayAsync(release.Url);
         // GitHub publishes a checksum of each file; a damaged or altered download is not run
         if (release.Sha256 != null && !Convert.ToHexString(SHA256.HashData(bytes)).Equals(release.Sha256, StringComparison.OrdinalIgnoreCase))

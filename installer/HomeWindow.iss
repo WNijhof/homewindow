@@ -26,6 +26,13 @@ AppVerName={#AppName} {#AppVersion}
 AppPublisher=WNijhof
 AppPublisherURL=https://github.com/WNijhof/homewindow
 AppSupportURL=https://github.com/WNijhof/homewindow/blob/main/docs/HANDLEIDING.md
+AppCopyright=Copyright 2026 WNijhof
+; Version information on the setup itself; a setup without it looks suspicious to virus scanners
+VersionInfoVersion={#AppVersion}
+VersionInfoCompany=WNijhof
+VersionInfoDescription={#AppName} Setup
+VersionInfoProductName={#AppName}
+VersionInfoProductTextVersion={#AppVersion}
 ; Installs for the current user, without administrator rights; the user may choose all users instead
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
@@ -76,6 +83,10 @@ Type: files; Name: "{autodesktop}\HomeyBar.lnk"
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Excludes: "*.pdb"; Flags: ignoreversion recursesubdirs createallsubdirs
 
+[UninstallDelete]
+; Setups that HomeWindow downloaded to update itself
+Type: filesandordirs; Name: "{localappdata}\{#AppName}\Updates"
+
 [Icons]
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
@@ -90,14 +101,53 @@ Filename: "{app}\{#AppExe}"; Description: "{cm:Launch}"; Flags: nowait postinsta
 Filename: "{app}\{#AppExe}"; Parameters: "--tray"; Flags: nowait; Check: ShouldRestart
 
 [Code]
-// HomeWindow keeps running in the tray; stop it so its files can be replaced or removed
+const
+  EVENT_MODIFY_STATE = $0002;
+  // The names HomeWindow (App.xaml.cs, InstanceName) and the demo give their mutex and quit signal
+  Instance = '{#AppName}-7d1c5e2a';
+  Running = '{#AppName}-7d1c5e2a,{#AppName}-7d1c5e2a-demo';
+  // Including the app under its old name, and versions before 0.4.1 that have no quit signal
+  AnyRunning = '{#AppName}-7d1c5e2a,{#AppName}-7d1c5e2a-demo,HomeyBar-7d1c5e2a,HomeyBar-7d1c5e2a-demo';
+
+function OpenEvent(Access: Cardinal; Inherit: Boolean; Name: String): THandle;
+  external 'OpenEventW@kernel32.dll stdcall';
+function SetEvent(Event: THandle): Boolean;
+  external 'SetEvent@kernel32.dll stdcall';
+function CloseHandle(Handle: THandle): Boolean;
+  external 'CloseHandle@kernel32.dll stdcall';
+
+procedure SignalQuit(Name: String);
+var
+  Event: THandle;
+begin
+  Event := OpenEvent(EVENT_MODIFY_STATE, False, Name + '-quit');
+  if Event <> 0 then
+  begin
+    SetEvent(Event);
+    CloseHandle(Event);
+  end;
+end;
+
+// HomeWindow keeps running in the tray; stop it so its files can be replaced or removed.
+// It is asked to close itself first; only one that does not respond is ended with taskkill.
 procedure StopHomeWindow();
 var
-  Code: Integer;
+  Code, Waited: Integer;
 begin
-  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM {#AppExe}', '', SW_HIDE, ewWaitUntilTerminated, Code);
-  // The app under its old name
-  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM HomeyBar.exe', '', SW_HIDE, ewWaitUntilTerminated, Code);
+  SignalQuit(Instance);
+  SignalQuit(Instance + '-demo');
+  Waited := 0;
+  while CheckForMutexes(Running) and (Waited < 5000) do
+  begin
+    Sleep(100);
+    Waited := Waited + 100;
+  end;
+  if CheckForMutexes(AnyRunning) then
+  begin
+    Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM {#AppExe}', '', SW_HIDE, ewWaitUntilTerminated, Code);
+    Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM HomeyBar.exe', '', SW_HIDE, ewWaitUntilTerminated, Code);
+  end;
+  // Windows releases the files a moment after the process has ended
   Sleep(500);
 end;
 

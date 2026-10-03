@@ -16,6 +16,7 @@ public partial class App : Application
 
     static Mutex? mutex;
     static EventWaitHandle? showSignal;
+    static EventWaitHandle? quitSignal;
     Tray? tray;
     TaskbarStrip? taskbarStrip;
     FlyoutWindow? flyout;
@@ -56,9 +57,15 @@ public partial class App : Application
             return;
         }
         showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, instance + "-show");
+        // The setup sets this to close HomeWindow neatly before it replaces or removes the files
+        quitSignal = new EventWaitHandle(false, EventResetMode.AutoReset, instance + "-quit");
         new Thread(() =>
         {
-            while (showSignal.WaitOne()) Dispatcher.BeginInvoke(() => ShowMain());
+            while (true)
+            {
+                if (WaitHandle.WaitAny([showSignal, quitSignal]) == 0) Dispatcher.BeginInvoke(() => ShowMain());
+                else { Dispatcher.BeginInvoke(Quit); return; }
+            }
         }) { IsBackground = true }.Start();
 
         base.OnStartup(e);

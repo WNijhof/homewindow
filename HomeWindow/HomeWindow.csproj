@@ -13,6 +13,13 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Version>0.4.1</Version>
     <Product>HomeWindow</Product>
+    <!-- Version information in the exe and dll; files without it look suspicious to virus scanners -->
+    <AssemblyTitle>HomeWindow</AssemblyTitle>
+    <Company>WNijhof</Company>
+    <Authors>WNijhof</Authors>
+    <Copyright>Copyright © 2026 WNijhof</Copyright>
+    <!-- The product version is just the version, without the commit; code signing checks it -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Description>Bedien je Homey Pro vanuit het Windows-systeemvak</Description>
     <SatelliteResourceLanguages>nl;en</SatelliteResourceLanguages>
     <!-- WPF reads the DPI awareness from the manifest; the Windows Forms analyzer does not know that -->
