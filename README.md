@@ -31,7 +31,7 @@ HomeWindow werkt met de Web API van Homey en een API-key. Die API-keys maak je i
 - **Tegels zoals in de Homey-app**: een rond snelknopje, een gekleurde status (aan, vermogen, muziek, verwarmen, op slot) en tot twee metingen die je per apparaat kiest. Drie tegelgroottes.
 - **Bedienen**: aan/uit, dimmen, kleurtemperatuur, thermostaat, rolluiken, speakers en sloten. Per apparaat zijn ook alle andere instellingen en metingen te zien.
 - **Hoofdvenster** met een overzicht en pagina's voor apparaten (zoeken, filteren op soort, kamers inklappen), flows per map, sferen, variabelen, energie, batterijen, meldingen en systeem (apps met hun icoon, herstarten).
-- **Energie**: verbruik, zon, net en thuisbatterij op dit moment (ook in de taakbalk naast de klok, met teruglevering in het groen), de grootste verbruikers, totalen van vandaag en deze maand, en een grafiek van de laatste 14 dagen.
+- **Energie**: verbruik, zon, net en thuisbatterij op dit moment (ook in de taakbalk, met teruglevering in het groen), de grootste verbruikers, totalen van vandaag en deze maand, en een grafiek van de laatste 14 dagen.
 - **Thuis en onderweg**: lokaal via het IP-adres van je Homey en automatisch via de cloud van Athom als je niet thuis bent. Meerdere Homeys mogelijk.
 - **Uiterlijk**: licht, donker of volgens Windows, de stijl van het Homey-energiedashboard of een van vijf andere achtergronden (Papier, Aurora, Schemer, Oceaan, Glas), eigen pictogrammen per apparaat, tekstgrootte. Nederlands en Engels.
 - Nieuwe Homey-meldingen en alarmen (rook, water, en als je wilt ook beweging en deuren) als Windows-melding, starten met Windows, en een **demomodus** om alles te bekijken zonder Homey.

@@ -199,8 +199,8 @@ h1 { font-size: clamp(42px, 7.2vw, 84px); line-height: 1.02; font-weight: 700; l
 :root[data-theme="light"] .taskbar, :root[data-theme="auto"] .taskbar { background: rgba(243, 243, 247, .86); color: #111; border-top-color: rgba(0, 0, 0, .06); }
 @media (prefers-color-scheme: dark) { :root[data-theme="auto"] .taskbar { background: rgba(22, 20, 32, .82); color: #fff; border-top-color: rgba(255, 255, 255, .08); } }
 .taskbar svg { width: 1.4cqw; height: 1.4cqw; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-/* Icons on the left, as with "Taskbar alignment: Left", so the energy strip has room */
-.tb-apps { display: flex; gap: .5cqw; }
+/* Icons in the centre, as Windows 11 has them; the energy strip sits at the start of the taskbar */
+.tb-apps { position: absolute; left: 50%; transform: translateX(-50%); display: flex; gap: .5cqw; }
 .tb-app { width: 3.2cqw; height: 3.2cqw; border-radius: .6cqw; display: grid; place-items: center; }
 .tb-app.win svg { width: 1.8cqw; height: 1.8cqw; color: #2f7ef7; }
 .tb-app.a1, .tb-app.a2, .tb-app.a3 { position: relative; }
@@ -351,7 +351,7 @@ figcaption { text-align: center; color: var(--sub); margin-top: 18px; font-size:
   .taskbar { height: 9%; font-size: 2.6cqw; }
   .taskbar svg { width: 3cqw; height: 3cqw; }
   .tb-apps, .tb-icon, .tb-hw { display: none; }
-  .tb-right { margin: 0 auto; }
+  .tb-right { margin-left: auto; }
   .strip { gap: 2.4cqw; }
   .tb-clock { font-size: 2.4cqw; }
   .btn-big { width: 100%; justify-content: center; }

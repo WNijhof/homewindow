@@ -136,9 +136,9 @@ Klik met de rechtermuisknop op het icoon bij de klok voor:
 
 ### Energie in de taakbalk
 
-Links van de iconen bij de klok staat het energieverbruik van nu: wat je huis verbruikt (⌂), wat de zon opwekt (☀), wat er van het net komt (⚡) en, met een thuisbatterij, zijn laadstand (het batterijtje is groen als hij laadt). Lever je terug, dan staat het netvermogen er als negatief getal in het groen, bijvoorbeeld **-1364 W**. Beweeg de muis erover voor de uitleg, ook van wat de batterij laadt of ontlaadt; klik erop om het paneel te openen.
+Helemaal links in de taakbalk staat het energieverbruik van nu: wat je huis verbruikt (⌂), wat de zon opwekt (☀), wat er van het net komt (⚡) en, met een thuisbatterij, zijn laadstand (het batterijtje is groen als hij laadt). Lever je terug, dan staat het netvermogen er als negatief getal in het groen, bijvoorbeeld **-1364 W**. Beweeg de muis erover voor de uitleg, ook van wat de batterij laadt of ontlaadt; klik erop om het paneel te openen.
 
-Het strookje verschijnt alleen als HomeWindow energiegegevens van je Homey heeft. Je zet het uit bij **Instellingen → Uiterlijk → Energie in de taakbalk**. Staan je taakbalk-iconen in het midden (de standaard van Windows 11), dan kun je het strookje bij **Plaats in de taakbalk** ook **Links** zetten, helemaal aan het begin van de taakbalk (na de Widgets-knop). Past het daar niet, of staan je iconen links, dan blijft het rechts. Windows heeft hier geen officiële plek voor, dus HomeWindow zet het strookje zelf in de taakbalk. Na een grote Windows-update kan het daardoor even verkeerd staan of ontbreken.
+Het strookje verschijnt alleen als HomeWindow energiegegevens van je Homey heeft. Je zet het uit bij **Instellingen → Uiterlijk → Energie in de taakbalk**. Het strookje staat standaard aan het begin van de taakbalk (na de Widgets-knop), uit de buurt van de iconen in het midden. Wil je het liever naast de klok, kies dan bij **Plaats in de taakbalk** voor **Rechts**. Staan je taakbalk-iconen links uitgelijnd, of past het strookje links niet, dan staat het vanzelf rechts. Windows heeft hier geen officiële plek voor, dus HomeWindow zet het strookje zelf in de taakbalk. Na een grote Windows-update kan het daardoor even verkeerd staan of ontbreken.
 
 ---
 
