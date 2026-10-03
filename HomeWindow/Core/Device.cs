@@ -115,6 +115,20 @@ public sealed class DeviceVM : ObservableObject
         set => OnOff?.Send(value);
     }
 
+    // Homey's "Always on" energy setting: Homey refuses to turn the device off. Read from the device,
+    // or learned when Homey refused, so the switch is no longer offered.
+    bool alwaysOnSetting, alwaysOnLearned;
+    public bool AlwaysOn => alwaysOnSetting || alwaysOnLearned;
+    public bool CanSwitch => Available && !(AlwaysOn && IsOn);
+
+    public void LearnAlwaysOn()
+    {
+        if (alwaysOnLearned) return;
+        alwaysOnLearned = true;
+        foreach (var c in Capabilities) c.OnPropertyChanged(nameof(CapabilityVM.CanSet));
+        OnPropertyChanged(string.Empty);
+    }
+
     public bool IsPlaying => Flag("speaker_playing") == true;
     public bool IsLocked => Flag("locked") == true;
     public double? Temperature => Number("measure_temperature");
@@ -143,6 +157,8 @@ public sealed class DeviceVM : ObservableObject
         get
         {
             if (!Available) return null;
+            // Always on and on: there is nothing to switch
+            if (AlwaysOn && IsOn && QuickAction is null or "onoff") return null;
             if ((QuickAction != null && Cap(QuickAction) is { Setable: true, Type: "boolean" }) || HasOnOff) return Icons.Power;
             if (HasLock) return IsLocked ? Icons.Lock : Icons.Unlock;
             if (Cap("speaker_playing") is { Setable: true }) return IsPlaying ? Icons.Pause : Icons.Play;
@@ -223,6 +239,7 @@ public sealed class DeviceVM : ObservableObject
             if (Has("onoff"))
             {
                 if (!IsOn) return Loc.T("Uit");
+                if (AlwaysOn) return Loc.T("Altijd aan");
                 return Number("dim") is { } dim ? $"{Loc.T("Aan")} · {dim * 100:0} %" : Loc.T("Aan");
             }
             if (Has("target_temperature"))
@@ -337,6 +354,13 @@ public sealed class DeviceVM : ObservableObject
             IsGridMeter = J.Bool(energy, "cumulative") == true || Regex(name);
             IsSolar = cls == "solarpanel";
             IsHomeBattery = J.Bool(energy, "homeBattery") == true;
+            var alwaysOn = Core.AlwaysOn.In(d);
+            if (alwaysOn != alwaysOnSetting)
+            {
+                alwaysOnSetting = alwaysOn;
+                dirty = true;
+                foreach (var c in Capabilities) c.OnPropertyChanged(nameof(CapabilityVM.CanSet));
+            }
             ImportCapability = J.Str(energy, "cumulativeImportedCapability");
             ExportCapability = J.Str(energy, "cumulativeExportedCapability");
             BatteryTypes = J.Arr(energy, "batteries") is { Count: > 0 } batteries

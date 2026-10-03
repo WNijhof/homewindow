@@ -33,6 +33,9 @@ public sealed class Demo
         Device("motion-living", "Bewegingssensor", "living", "sensor", [Alarm("alarm_motion", "Motion", false), Measure("measure_battery", "Battery", 64, "%", 0), Measure("measure_luminance", "Light", 220, "lx", 0)], ["CR2450"]);
         Device("light-kitchen", "Keukenspots", "kitchen", "light", [OnOff(false), Dim(1)]);
         Device("coffee", "Koffiemachine", "kitchen", "socket", [OnOff(true), Measure("measure_power", "Power", 1240, "W", 0), Measure("meter_power", "Energy", 312.4, "kWh", 2)]);
+        Device("fridge", "Koelkast", "kitchen", "socket", [OnOff(true), Measure("measure_power", "Power", 85, "W", 0), Measure("meter_power", "Energy", 410.3, "kWh", 2)]);
+        // Set to "Always on" in Homey: turning it off is refused
+        devices["fridge"]!["settings"] = new JsonObject { ["energy_alwayson"] = true };
         Device("dishwasher", "Vaatwasser", "kitchen", "socket", [OnOff(true), Measure("measure_power", "Power", 1870, "W", 0), Measure("meter_power", "Energy", 802.1, "kWh", 2)]);
         Device("contact-back", "Achterdeur", "kitchen", "sensor", [Alarm("alarm_contact", "Contact", false), Measure("measure_battery", "Battery", 12, "%", 0)], ["CR2032"]);
         Device("light-bed", "Bedlampje", "bedroom", "light", [OnOff(false), Dim(0.2)]);
@@ -148,6 +151,8 @@ public sealed class Demo
             if (cap != null && body != null)
             {
                 var value = JsonSerializer.SerializeToNode(body)?["value"]?.DeepClone();
+                if (J.Str(cap, "id") == "onoff" && J.Bool(J.Obj(devices[parts[5]], "settings"), "energy_alwayson") == true && J.Raw(value) is false)
+                    throw new HomeyApiException(400, "This device is set to Always On and cannot be turned off");
                 if (J.Str(cap, "type") == "boolean" && J.Bool(cap, "getable") == false) return null;
                 cap["value"] = value;
                 cap["lastUpdated"] = DateTime.UtcNow.ToString("o");
@@ -211,7 +216,7 @@ public sealed class Demo
     {
         ["Plafondlamp"] = "Ceiling light", ["Eettafel"] = "Dining table", ["Leeslamp"] = "Reading lamp", ["Rolluik"] = "Blinds",
         ["Televisie"] = "TV", ["Thermostaat"] = "Thermostat", ["Bewegingssensor"] = "Motion sensor", ["Keukenspots"] = "Kitchen spots",
-        ["Koffiemachine"] = "Coffee machine", ["Vaatwasser"] = "Dishwasher", ["Achterdeur"] = "Back door", ["Bedlampje"] = "Bedside lamp",
+        ["Koffiemachine"] = "Coffee machine", ["Vaatwasser"] = "Dishwasher", ["Koelkast"] = "Fridge", ["Achterdeur"] = "Back door", ["Bedlampje"] = "Bedside lamp",
         ["Radiatorkraan"] = "Radiator valve", ["Voordeur"] = "Front door", ["Deurbel"] = "Doorbell", ["Tuinverlichting"] = "Garden lights",
         ["Slimme meter"] = "Smart meter", ["Omvormer"] = "Inverter", ["Wasmachine"] = "Washing machine", ["Thuisbatterij"] = "Home battery", ["Rookmelder"] = "Smoke alarm",
         ["Gasten aanwezig"] = "Guests over", ["Vakantiemodus"] = "Holiday mode", ["Comforttemperatuur"] = "Comfort temperature",

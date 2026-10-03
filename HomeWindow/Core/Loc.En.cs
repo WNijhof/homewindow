@@ -25,6 +25,7 @@ public static partial class Loc
         ["Alles"] = "All",
         ["Alles inklappen"] = "Collapse all",
         ["Alles uitklappen"] = "Expand all",
+        ["Altijd aan"] = "Always on",
         ["Ander pictogram"] = "Change icon",
         ["Annuleren"] = "Cancel",
         ["Apparaat"] = "Device",
@@ -281,5 +282,6 @@ public static partial class Loc
         ["{0} u {1} min"] = "{0} h {1} min",
         ["{0} uur geleden"] = "{0} h ago",
         ["{0} verwijderen uit HomeWindow?"] = "Remove {0} from HomeWindow?",
+        ["‘{0}’ staat in Homey op ‘Altijd aan’ en kan niet uit. Je wijzigt dat bij de energie-instellingen van het apparaat in Homey."] = "‘{0}’ is set to ‘Always on’ in Homey and cannot be turned off. You can change that in the device's energy settings in Homey.",
     };
 }

@@ -130,8 +130,19 @@ public sealed class CapabilityVM(DeviceVM device, string id) : ObservableObject
         Device.Refresh();
     }
 
+    // Off is not on offer for a device that Homey keeps always on
+    public bool CanSet => !(Id == "onoff" && Device.AlwaysOn && value is true);
+
     public void Send(object v)
     {
+        if (Id == "onoff" && v is false && Device.AlwaysOn)
+        {
+            HomeyStore.I.ShowError(AlwaysOn.Message(Device.Name));
+            // The switch that was flipped reads the real value again
+            OnPropertyChanged(nameof(BoolValue));
+            Device.Refresh();
+            return;
+        }
         Hold(v);
         _ = HomeyStore.I.SetCapabilityAsync(this, v);
     }

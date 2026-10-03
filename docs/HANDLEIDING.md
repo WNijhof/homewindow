@@ -148,6 +148,7 @@ Bij **Instellingen → Uiterlijk → Wat het strookje toont** kies je zelf wat e
 
 - **Tegel**: klik op het ronde knopje rechtsboven, net als in de Homey web-app. Een lamp of stopcontact gaat aan of uit, een slot op slot of open, een speaker speelt of pauzeert, een rolluik gaat op of neer. Heb je in de Homey-app voor een apparaat een snelle actie gekozen, dan gebruikt HomeWindow die. Klik je ergens anders op de tegel, dan zie je de details van het apparaat.
 - **Lijst**: gebruik de schakelaar (of het ronde knopje) rechts in de rij. Klik je op de rij zelf, dan zie je de details.
+- **Altijd aan**: staat een stopcontact in Homey op *Altijd aan* (bij de energie-instellingen van het apparaat), dan weigert Homey het uit te zetten. HomeWindow toont dan **Altijd aan** als status en biedt geen uitknop aan. Wil je het toch kunnen uitzetten, zet die instelling dan uit in de Homey-app.
 
 De tegels lijken op die in de Homey-app. Staat een apparaat aan, dan kleurt het ronde knopje: geel voor lampen, paars voor speakers en blauw voor de rest. Voor de status staat een gekleurd tekentje: een bolletje als het apparaat aan staat, een bliksem bij vermogen (groen bij teruglevering), een muzieknoot bij muziek, een oranje pijl als een thermostaat verwarmt en een slotje bij een slot. Een sensor met een alarm (beweging, rook, open deur) krijgt een rood icoon.
 

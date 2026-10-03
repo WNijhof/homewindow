@@ -125,7 +125,7 @@
                         </DockPanel>
                     </Button>
                     <ToggleButton Grid.Column="1" Style="{StaticResource Switch}" Margin="4,0,4,0" IsChecked="{Binding IsOn}"
-                                  Visibility="{Binding HasOnOff, Converter={StaticResource Visible}}" IsEnabled="{Binding Available}" />
+                                  Visibility="{Binding HasOnOff, Converter={StaticResource Visible}}" IsEnabled="{Binding CanSwitch}" />
                     <Button Grid.Column="1" x:Name="Toggle" Style="{StaticResource QuickToggle}" Margin="4,0,4,0" Content="{Binding QuickGlyph}"
                             Command="{Binding QuickCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
                             Visibility="{Binding HasQuickButton, Converter={StaticResource Visible}}" />
@@ -254,7 +254,7 @@
     <!-- Generic controls, one per capability -->
     <DataTemplate x:Key="CapToggle" DataType="{x:Type c:CapabilityVM}">
         <DockPanel Margin="0,6">
-            <ToggleButton DockPanel.Dock="Right" Style="{StaticResource Switch}" IsChecked="{Binding BoolValue}" />
+            <ToggleButton DockPanel.Dock="Right" Style="{StaticResource Switch}" IsChecked="{Binding BoolValue}" IsEnabled="{Binding CanSet}" />
             <TextBlock Text="{Binding Title}" Style="{StaticResource Body}" VerticalAlignment="Center" />
         </DockPanel>
     </DataTemplate>

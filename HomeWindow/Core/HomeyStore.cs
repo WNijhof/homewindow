@@ -866,7 +866,8 @@ public sealed class HomeyStore : ObservableObject
 
     // ---- Actions ----
 
-    async Task Act(Func<HomeyClient, Task> action, Action? onError = null)
+    // refused: a chance to explain a refusal better than Homey's own words; true when it did
+    async Task Act(Func<HomeyClient, Task> action, Action? onError = null, Func<HomeyApiException, bool>? refused = null)
     {
         if (client is not { BaseUrl: not null } c)
         {
@@ -875,9 +876,14 @@ public sealed class HomeyStore : ObservableObject
             return;
         }
         try { await action(c); }
+        catch (HomeyApiException e) when (refused?.Invoke(e) == true)
+        {
+            onError?.Invoke();
+        }
         catch (HomeyApiException e) when (e.Status == 403)
         {
-            ShowError(Loc.T("Geen toegang. Geef de API-key meer rechten in my.homey.app."));
+            // Homey also answers 403 when it refuses one action; only speak of rights when it is about them
+            ShowError(AlwaysOn.IsMissingRights(e.Message) ? Loc.T("Geen toegang. Geef de API-key meer rechten in my.homey.app.") : e.Message);
             onError?.Invoke();
         }
         catch (Exception e) when (e is HomeyApiException or HomeyOfflineException)
@@ -894,7 +900,14 @@ public sealed class HomeyStore : ObservableObject
         {
             await c.PutAsync($"/api/manager/devices/device/{cap.Device.Id}/capability/{Uri.EscapeDataString(cap.Id)}", new { value });
             Kick();
-        }, () => { cap.Release(); Kick(); });
+        }, () => { cap.Release(); Kick(); }, e =>
+        {
+            // Homey keeps this device always on: remember it, so the switch is no longer offered
+            if (cap.Id != "onoff" || !AlwaysOn.IsRefusal(e.Message)) return false;
+            cap.Device.LearnAlwaysOn();
+            ShowError(AlwaysOn.Message(cap.Device.Name));
+            return true;
+        });
     }
 
     public Task RunFlowAsync(FlowVM flow) => Act(async c =>
