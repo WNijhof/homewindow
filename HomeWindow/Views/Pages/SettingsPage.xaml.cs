@@ -54,6 +54,8 @@ public partial class SettingsPage : UserControl
         Check(MainViewChoice, S.MainView);
         Check(TileSizeChoice, S.TileSize);
         Check(TaskbarPositionChoice, S.TaskbarPosition);
+        foreach (var chip in TaskbarItemsChoice.Children.OfType<ToggleButton>())
+            chip.IsChecked = S.TaskbarItems.Contains(chip.Tag as string ?? "");
         Check(LanguageChoice, S.Language ?? "");
         IntensitySlider.Value = S.Intensity;
         ScaleSlider.Value = S.TextScale;
@@ -211,6 +213,14 @@ public partial class SettingsPage : UserControl
     void MainView_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.MainView = v);
     void TileSize_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TileSize = v);
     void TaskbarPosition_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TaskbarPosition = v);
+
+    // The parts of the taskbar strip, kept in the strip's own order
+    void TaskbarItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (loading) return;
+        S.TaskbarItems = TaskbarItemsChoice.Children.OfType<ToggleButton>().Where(c => c.IsChecked == true).Select(c => (string)c.Tag).ToList();
+        S.Save();
+    }
 
     void Language_Checked(object sender, RoutedEventArgs e)
     {

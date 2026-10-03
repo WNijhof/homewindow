@@ -346,6 +346,38 @@
         <Setter Property="Padding" Value="3" />
     </Style>
 
+    <!-- A pill that is on or off, for picking several things -->
+    <Style x:Key="ToggleChip" TargetType="ToggleButton">
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Margin" Value="0,0,6,6" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Bd" Background="{DynamicResource CardBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                            BorderThickness="1" CornerRadius="14" Padding="11,5">
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CardHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- A pill to filter on -->
     <Style x:Key="Chip" TargetType="RadioButton">
         <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />

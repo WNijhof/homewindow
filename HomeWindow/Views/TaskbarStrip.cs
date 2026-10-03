@@ -21,10 +21,11 @@ public sealed class TaskbarStrip : IDisposable
     const int Gap = 8;
 
     readonly EnergyVM energy = HomeyStore.I.Energy;
+    readonly WeatherVM weatherData = HomeyStore.I.Weather;
     readonly DispatcherTimer timer;
     readonly Border root;
-    readonly TextBlock home, solar, grid, battery, solarIcon, gridIcon, batteryIcon;
-    readonly StackPanel solarPart, gridPart, batteryPart;
+    readonly TextBlock weather, home, solar, grid, battery, weatherIcon, solarIcon, gridIcon, batteryIcon;
+    readonly StackPanel weatherPart, homePart, solarPart, gridPart, batteryPart;
     HwndSource? source;
     IntPtr taskbar, failedOn;
     (int x, int width, int height, string text) last;
@@ -52,11 +53,14 @@ public sealed class TaskbarStrip : IDisposable
             Orientation = Orientation.Horizontal, Margin = new Thickness(left, 0, 0, 0), Children = { icon, value },
         };
 
-        home = Value(); solar = Value(); grid = Value(); battery = Value();
+        weather = Value(); home = Value(); solar = Value(); grid = Value(); battery = Value();
+        weatherIcon = Glyph(Icons.Sun);
         var homeIcon = Glyph(Icons.Home);
         solarIcon = Glyph(Icons.Sun);
         gridIcon = Glyph(Icons.Energy);
         batteryIcon = Glyph(Icons.Battery);
+        weatherPart = Part(weatherIcon, weather, 12);
+        homePart = Part(homeIcon, home, 12);
         solarPart = Part(solarIcon, solar, 12);
         gridPart = Part(gridIcon, grid, 12);
         batteryPart = Part(batteryIcon, battery, 12);
@@ -66,20 +70,35 @@ public sealed class TaskbarStrip : IDisposable
             Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)),
             Padding = new Thickness(8, 0, 8, 0),
             Cursor = Cursors.Hand,
-            Child = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { Part(homeIcon, home, 0), solarPart, gridPart, batteryPart } },
+            Child = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { weatherPart, homePart, solarPart, gridPart, batteryPart } },
         };
         root.MouseLeftButtonUp += (_, _) => Clicked?.Invoke();
         TextOptions.SetTextFormattingMode(root, TextFormattingMode.Display);
 
         energy.PropertyChanged += OnEnergyChanged;
+        weatherData.PropertyChanged += OnEnergyChanged;
         HomeyStore.I.PropertyChanged += OnStoreChanged;
         timer = new DispatcherTimer(TimeSpan.FromSeconds(2), DispatcherPriority.Background, (_, _) => Place(), Dispatcher.CurrentDispatcher);
         timer.Start();
         Place();
     }
 
+    // The parts the user picked that have something to show, in the order of the strip
+    static IReadOnlyList<string> Shown()
+    {
+        var items = App.Settings.TaskbarItems;
+        var e = HomeyStore.I.Energy;
+        var list = new List<string>();
+        if (items.Contains("weather") && HomeyStore.I.Weather.HasData) list.Add("weather");
+        if (items.Contains("home") && e.HomeW != null) list.Add("home");
+        if (items.Contains("solar") && e.HasSolar) list.Add("solar");
+        if (items.Contains("grid") && e.HasGrid) list.Add("grid");
+        if (items.Contains("battery") && e.BatteryPercent != null) list.Add("battery");
+        return list;
+    }
+
     // Only with live numbers: while offline the last ones would look current
-    static bool Wanted => App.Settings.TaskbarEnergy && HomeyStore.I.IsConnected && HomeyStore.I.Energy.HasData;
+    static bool Wanted => App.Settings.TaskbarEnergy && HomeyStore.I.IsConnected && Shown().Count > 0;
 
     void OnEnergyChanged(object? sender, PropertyChangedEventArgs e) => Place();
 
@@ -122,7 +141,7 @@ public sealed class TaskbarStrip : IDisposable
         root.Width = width / scale;
         root.Height = height / scale;
         // Explorer can put its own content on top again; every tenth tick (20 s) the strip moves back to the top anyway
-        var now = (x, width, height, energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText);
+        var now = (x, width, height, weatherData.Temperature + energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText + string.Join(',', Shown()));
         if (now == last && ++ticks % 10 != 0) return;
         last = now;
         SetWindowPos(source.Handle, IntPtr.Zero, x, 0, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
@@ -217,6 +236,8 @@ public sealed class TaskbarStrip : IDisposable
         System.Windows.Documents.TextElement.SetForeground(root, text);
         solarIcon.Foreground = new SolidColorBrush(light ? Color.FromRgb(0xE0, 0x9B, 0x00) : Color.FromRgb(0xFF, 0xC8, 0x3D));
 
+        weather.Text = weatherData.Temperature;
+        weatherIcon.Text = weatherData.Glyph;
         home.Text = energy.HomeText;
         solar.Text = energy.SolarText;
         grid.Text = energy.GridText;
@@ -224,11 +245,20 @@ public sealed class TaskbarStrip : IDisposable
         battery.Text = energy.BatteryPercentText;
         // Green while charging, so the direction shows without the watts
         batteryIcon.Foreground = energy.BatteryW > 50 ? good : text;
-        solarPart.Visibility = energy.HasSolar ? Visibility.Visible : Visibility.Collapsed;
-        gridPart.Visibility = energy.HasGrid ? Visibility.Visible : Visibility.Collapsed;
-        batteryPart.Visibility = energy.BatteryPercent != null ? Visibility.Visible : Visibility.Collapsed;
+
+        // Only the parts picked in the settings; the first one needs no space before it
+        var shown = Shown();
+        var first = true;
+        foreach (var (id, part) in new[] { ("weather", weatherPart), ("home", homePart), ("solar", solarPart), ("grid", gridPart), ("battery", batteryPart) })
+        {
+            var visible = shown.Contains(id);
+            part.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            part.Margin = new Thickness(visible && !first ? 12 : 0, 0, 0, 0);
+            first &= !visible;
+        }
         root.ToolTip = string.Join("\n", new[]
         {
+            weatherData.HasData ? $"{weatherData.Description} {weatherData.Temperature}".Trim() : null,
             $"{Loc.T("Huis")}: {energy.HomeText}",
             energy.HasSolar ? $"{Loc.T("Zon")}: {energy.SolarText}" : null,
             energy.HasGrid ? $"{energy.GridLabel}: {energy.GridText}" : null,
@@ -248,6 +278,7 @@ public sealed class TaskbarStrip : IDisposable
     {
         timer.Stop();
         energy.PropertyChanged -= OnEnergyChanged;
+        weatherData.PropertyChanged -= OnEnergyChanged;
         HomeyStore.I.PropertyChanged -= OnStoreChanged;
         Close();
     }

@@ -176,8 +176,18 @@
                         <ToggleButton x:Name="EnergySwitch" Style="{StaticResource Switch}" HorizontalAlignment="Left" Click="General_Click" />
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">
-                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Energie in de taakbalk'}" Style="{StaticResource Label}" />
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Strookje in de taakbalk'}" Style="{StaticResource Label}" />
                         <ToggleButton x:Name="TaskbarSwitch" Style="{StaticResource Switch}" HorizontalAlignment="Left" Click="General_Click" />
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Wat het strookje toont'}" Style="{StaticResource Label}" VerticalAlignment="Top" Margin="0,5,0,0" />
+                        <WrapPanel x:Name="TaskbarItemsChoice">
+                            <ToggleButton Style="{StaticResource ToggleChip}" Tag="weather" Content="{c:T Weer}" Click="TaskbarItem_Click" />
+                            <ToggleButton Style="{StaticResource ToggleChip}" Tag="home" Content="{c:T Verbruik}" Click="TaskbarItem_Click" />
+                            <ToggleButton Style="{StaticResource ToggleChip}" Tag="solar" Content="{c:T Zon}" Click="TaskbarItem_Click" />
+                            <ToggleButton Style="{StaticResource ToggleChip}" Tag="grid" Content="{c:T Net}" Click="TaskbarItem_Click" />
+                            <ToggleButton Style="{StaticResource ToggleChip}" Tag="battery" Content="{c:T Thuisbatterij}" Click="TaskbarItem_Click" />
+                        </WrapPanel>
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">
                         <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Plaats in de taakbalk'}" Style="{StaticResource Label}" />
