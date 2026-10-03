@@ -72,7 +72,6 @@ public partial class App : Application
         Settings = AppSettings.Load();
         // The demo can run beside the real HomeWindow; it reads the settings but never saves them
         if (args.Contains("--demo")) Settings.ReadOnly = true;
-        else AppSettings.MigrateStartup();
         Loc.Init(Settings.Language);
         Theme.Apply();
         SystemEvents.UserPreferenceChanged += (_, args) =>

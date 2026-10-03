@@ -328,8 +328,6 @@ Met **Automatisch bijwerken** aan (standaard) kijkt HomeWindow kort na het opsta
 2. wacht hij tot je HomeWindow niet gebruikt (het paneel is dicht en het hoofdvenster heeft de focus niet);
 3. installeert hij de nieuwe versie stil en start daarna vanzelf opnieuw. Je ziet een melding *Bijgewerkt naar versie …*.
 
-> **Had je HomeyBar?** Zo heette deze app tot versie 0.1. HomeyBar werkt zichzelf bij naar HomeWindow, net als bij elke andere update. Je Homeys, favorieten en de keuze voor *Starten met Windows* gaan mee, en de oude map en snelkoppeling worden opgeruimd.
-
 Je instellingen, favorieten en de keuze voor *Starten met Windows* blijven daarbij hetzelfde.
 
 Met **Nu controleren** zoek je meteen, en installeer je een gevonden versie direct, ook als automatisch bijwerken uit staat. Daaronder zie je je huidige versie en de uitkomst van de laatste controle.

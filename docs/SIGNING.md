@@ -5,7 +5,7 @@ Free code signing provided by [SignPath.io](https://about.signpath.io), certific
 ## What is signed
 
 - `HomeWindow.exe` and `HomeWindow.dll`, the app itself
-- `HomeWindow-Setup-<version>.exe`, the installer (and the same file as `HomeyBar-Setup-<version>.exe`, for the app under its old name)
+- `HomeWindow-Setup-<version>.exe`, the installer
 
 Only files built from this repository are signed. The .NET runtime in the installer is signed by Microsoft. Other libraries keep the signature their makers gave them, or stay unsigned.
 

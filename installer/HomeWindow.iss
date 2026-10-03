@@ -37,8 +37,6 @@ VersionInfoProductTextVersion={#AppVersion}
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 DefaultDirName={autopf}\{#AppName}
-; Until 0.1 the app was called HomeyBar and lived in a folder of that name; move to the new folder
-UsePreviousAppDir=no
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
 ArchitecturesAllowed=x64compatible
@@ -74,12 +72,6 @@ en.RemoveSettings=Also remove your HomeWindow settings (Homeys, API keys, favour
 Name: "autostart"; Description: "{cm:AutoStart}"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
-[InstallDelete]
-; What the old HomeyBar installation left behind
-Type: filesandordirs; Name: "{autopf}\HomeyBar"
-Type: files; Name: "{autoprograms}\HomeyBar.lnk"
-Type: files; Name: "{autodesktop}\HomeyBar.lnk"
-
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Excludes: "*.pdb"; Flags: ignoreversion recursesubdirs createallsubdirs
 
@@ -106,8 +98,6 @@ const
   // The names HomeWindow (App.xaml.cs, InstanceName) and the demo give their mutex and quit signal
   Instance = '{#AppName}-7d1c5e2a';
   Running = '{#AppName}-7d1c5e2a,{#AppName}-7d1c5e2a-demo';
-  // Including the app under its old name, and versions before 0.4.1 that have no quit signal
-  AnyRunning = '{#AppName}-7d1c5e2a,{#AppName}-7d1c5e2a-demo,HomeyBar-7d1c5e2a,HomeyBar-7d1c5e2a-demo';
 
 function OpenEvent(Access: Cardinal; Inherit: Boolean; Name: String): THandle;
   external 'OpenEventW@kernel32.dll stdcall';
@@ -142,11 +132,9 @@ begin
     Sleep(100);
     Waited := Waited + 100;
   end;
-  if CheckForMutexes(AnyRunning) then
-  begin
+  // Also versions before 0.4.1, which have no quit signal
+  if CheckForMutexes(Running) then
     Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM {#AppExe}', '', SW_HIDE, ewWaitUntilTerminated, Code);
-    Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM HomeyBar.exe', '', SW_HIDE, ewWaitUntilTerminated, Code);
-  end;
   // Windows releases the files a moment after the process has ended
   Sleep(500);
 end;
@@ -194,14 +182,10 @@ begin
     StopHomeWindow();
     // Also when start-up was switched on in HomeWindow itself rather than in this setup
     RegDeleteValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Run', 'HomeWindow');
-    RegDeleteValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Run', 'HomeyBar');
   end;
   if (CurUninstallStep = usPostUninstall) and not UninstallSilent() then
   begin
     if MsgBox(CustomMessage('RemoveSettings'), mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES then
-    begin
       DelTree(ExpandConstant('{userappdata}\HomeWindow'), True, True, True);
-      DelTree(ExpandConstant('{userappdata}\HomeyBar'), True, True, True);
-    end;
   end;
 end;

@@ -8,7 +8,7 @@ Bedien je **Homey Pro** vanuit het Windows-systeemvak. Eén klik op het icoon bi
 
 > **Alpha.** HomeWindow is nieuw en volop in ontwikkeling. Het werkt goed op de Homeys waarmee het getest is, maar verwacht nog ruwe randjes en veranderingen. Meld wat je tegenkomt bij de [issues](https://github.com/WNijhof/homewindow/issues).
 
-HomeWindow is geïnspireerd op [HomeBar](https://www.homebar.pro/) voor de Mac, maar is een eigen project zonder band met HomeBar of met Athom. Homey is een merk van Athom. Tot versie 0.1 heette deze app *HomeyBar*.
+HomeWindow is geïnspireerd op [HomeBar](https://www.homebar.pro/) voor de Mac, maar is een eigen project zonder band met HomeBar of met Athom. Homey is een merk van Athom.
 
 ## Welke Homey
 

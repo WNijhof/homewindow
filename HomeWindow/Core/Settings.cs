@@ -87,24 +87,8 @@ public sealed class AppSettings
     static readonly string FilePath = Path.Combine(Folder, "settings.json");
     static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
 
-    // Until version 0.1 the app was called HomeyBar and kept its settings under that name
-    const string OldName = "HomeyBar";
-    static readonly string OldFilePath = Path.Combine(DataRoot, OldName, "settings.json");
-
     public static AppSettings Load()
     {
-        try
-        {
-            if (!File.Exists(FilePath) && File.Exists(OldFilePath))
-            {
-                Directory.CreateDirectory(Folder);
-                File.Copy(OldFilePath, FilePath);
-            }
-        }
-        catch
-        {
-            // Without the old settings the app starts fresh
-        }
         try
         {
             if (File.Exists(FilePath)) return Upgrade(JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(FilePath), Options) ?? new());
@@ -185,21 +169,6 @@ public sealed class AppSettings
             using var key = Registry.CurrentUser.CreateSubKey(RunKey);
             if (value) key.SetValue("HomeWindow", $"\"{Environment.ProcessPath}\" --tray");
             else key.DeleteValue("HomeWindow", false);
-            key.DeleteValue(OldName, false);
-        }
-    }
-
-    // Start-up that was switched on under the old name now starts HomeWindow
-    public static void MigrateStartup()
-    {
-        try
-        {
-            using var key = Registry.CurrentUser.OpenSubKey(RunKey);
-            if (key?.GetValue(OldName) is string) StartWithWindows = true;
-        }
-        catch
-        {
-            // Not being able to read the registry only means start-up stays as it was
         }
     }
 }
