@@ -65,6 +65,8 @@ public sealed class AppSettings
     public bool AutoUpdate { get; set; } = true;
     // The version that ran last, to say so once after an update
     public string? LastVersion { get; set; }
+    // When HomeWindow first ran on this PC (UTC)
+    public DateTime? FirstRun { get; set; }
     // 1: switched once to the look of the energy dashboard
     public int StyleVersion { get; set; }
 

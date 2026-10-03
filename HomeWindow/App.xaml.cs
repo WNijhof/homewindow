@@ -108,6 +108,11 @@ public partial class App : Application
             Settings.LastVersion = Updater.CurrentText;
             Settings.Save();
         }
+        if (Settings.FirstRun == null && !demo)
+        {
+            Settings.FirstRun = DateTime.UtcNow;
+            Settings.Save();
+        }
         if (!demo) Updater.I.Start();
     }
 
