@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/images/logo.png" alt="HomeWindow logo in all sizes" width="560"></p>
+<p align="center"><img src="docs/images/og.png" alt="HomeWindow: your Homey Pro in the Windows taskbar, with the main window and the panel by the clock" width="800"></p>
 
 # HomeWindow – for Homey Pro
 

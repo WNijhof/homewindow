@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/images/logo.png" alt="HomeWindow-logo op alle formaten" width="560"></p>
+<p align="center"><img src="docs/images/og.png" alt="HomeWindow: je Homey Pro in de Windows-taakbalk, met het hoofdvenster en het paneel bij de klok" width="800"></p>
 
 # HomeWindow – for Homey Pro
 
