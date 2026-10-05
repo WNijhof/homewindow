@@ -238,6 +238,8 @@ public partial class FlyoutWindow : Window, IDetailsHost
     void UpdateLockToggle() => LockToggleButton.Update(LockToggle);
     void LockToggle_Click(object sender, RoutedEventArgs e) => App.Gate.SetActive(!App.Gate.IsActive);
 
+    void ShowRooms_Click(object sender, RoutedEventArgs e) => SelectTab("rooms");
+
     void Open_Click(object sender, RoutedEventArgs e) => App.Current.ShowMain();
     void Settings_Click(object sender, RoutedEventArgs e) => App.Current.ShowMain("settings");
 }

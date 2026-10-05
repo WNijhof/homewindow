@@ -154,6 +154,8 @@ public static partial class Loc
         ["Niet verbonden met Homey"] = "Not connected to Homey",
         ["Nieuwe meldingen uit de tijdlijn verschijnen als Windows-melding."] = "New notifications from the timeline show as Windows notifications.",
         ["Nog geen Homey ingesteld"] = "No Homey set up yet",
+        ["Dit zijn de favorieten van HomeWindow zelf, los van de favorieten in de Homey-app."] = "These are HomeWindow's own favourites, separate from the favourites in the Homey app.",
+        ["Alle apparaten per kamer"] = "All devices by room",
         ["Nog geen favorieten"] = "No favourites yet",
         ["Normaal"] = "Normal",
         ["Nu"] = "Now",
