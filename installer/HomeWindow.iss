@@ -53,8 +53,9 @@ WizardStyle=modern
 ShowLanguageDialog=auto
 
 [Languages]
-Name: "nl"; MessagesFile: "compiler:Languages\Dutch.isl"
+; English first: Inno Setup falls back to the first language when Windows is in neither (German, French, ...)
 Name: "en"; MessagesFile: "compiler:Default.isl"
+Name: "nl"; MessagesFile: "compiler:Languages\Dutch.isl"
 
 [CustomMessages]
 nl.AutoStart=HomeWindow starten wanneer ik me aanmeld bij Windows
