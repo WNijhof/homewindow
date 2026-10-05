@@ -17,6 +17,7 @@ public partial class SettingsPage : UserControl
     {
         InitializeComponent();
         Load();
+        Gate.Changed += () => Dispatcher.Invoke(RefreshPin);
         VersionText.Text = Loc.F("HomeWindow versie {0}", Updater.CurrentText);
         CheckButton.IsEnabled = Updater.IsInstalled;
     }
@@ -70,6 +71,7 @@ public partial class SettingsPage : UserControl
         AlarmSwitch.IsChecked = S.AlarmToasts;
         ActivitySwitch.IsChecked = S.ActivityToasts;
         UpdateSwitch.IsChecked = S.AutoUpdate;
+        RefreshPin();
         loading = false;
         if (S.Homeys.Count == 0) OpenEditor(null);
     }
@@ -290,5 +292,97 @@ public partial class SettingsPage : UserControl
         try { AppSettings.StartWithWindows = StartupSwitch.IsChecked == true; }
         catch (Exception ex) { HomeyStore.I.ShowError(ex.Message); }
         StartupSwitch.IsChecked = AppSettings.StartWithWindows;
+    }
+
+    // ---- PIN lock ----
+    static PinGate Gate => App.Gate;
+    string pinMode = "";
+
+    void RefreshPin()
+    {
+        var set = Gate.IsSet;
+        PinStatus.Text = !set ? Loc.T("Uit: iedereen met toegang tot deze pc kan je huis bedienen.")
+            : Gate.IsActive ? Loc.T("Aan: HomeWindow vraagt om de pincode.")
+            : Loc.T("Gepauzeerd met het slotje bovenin: HomeWindow vraagt nu niet om de pincode.");
+        PinSetButton.Visibility = set ? Visibility.Collapsed : Visibility.Visible;
+        PinChangeButton.Visibility = PinRemoveButton.Visibility = set ? Visibility.Visible : Visibility.Collapsed;
+        PinAutoRow.Visibility = set && Gate.IsActive ? Visibility.Visible : Visibility.Collapsed;
+        PinButtons.Visibility = pinMode == "" ? Visibility.Visible : Visibility.Collapsed;
+        PinEditor.Visibility = pinMode == "" ? Visibility.Collapsed : Visibility.Visible;
+        var wasLoading = loading;
+        loading = true;
+        Check(PinAutoChoice, S.PinAutoLockMinutes.ToString());
+        loading = wasLoading;
+    }
+
+    void OpenPinEditor(string mode)
+    {
+        pinMode = mode;
+        PinCurrent.Clear();
+        PinNew.Clear();
+        PinRepeat.Clear();
+        PinError.Visibility = Visibility.Collapsed;
+        PinCurrentRow.Visibility = mode == "set" ? Visibility.Collapsed : Visibility.Visible;
+        PinNewRow.Visibility = PinRepeatRow.Visibility = mode == "remove" ? Visibility.Collapsed : Visibility.Visible;
+        PinSaveButton.Content = Loc.T(mode == "remove" ? "Pincode verwijderen" : "Opslaan");
+        RefreshPin();
+        (mode == "set" ? PinNew : PinCurrent).Focus();
+    }
+
+    void PinSet_Click(object sender, RoutedEventArgs e) => OpenPinEditor("set");
+    void PinChange_Click(object sender, RoutedEventArgs e) => OpenPinEditor("change");
+    void PinRemove_Click(object sender, RoutedEventArgs e) => OpenPinEditor("remove");
+
+    void PinCancel_Click(object sender, RoutedEventArgs e)
+    {
+        pinMode = "";
+        PinCurrent.Clear();
+        PinNew.Clear();
+        PinRepeat.Clear();
+        RefreshPin();
+    }
+
+    void PinSave_Click(object sender, RoutedEventArgs e)
+    {
+        string? error = null;
+        if (pinMode != "set")
+        {
+            error = Gate.Check(PinCurrent.Password) switch
+            {
+                PinResult.Ok => null,
+                PinResult.Wait => Loc.T("Te vaak fout. Wacht even en probeer het opnieuw."),
+                _ => Loc.T("Dat is niet de juiste pincode."),
+            };
+        }
+        if (error == null && pinMode != "remove")
+        {
+            if (!PinGate.IsValid(PinNew.Password)) error = Loc.F("Een pincode bestaat uit {0} tot {1} cijfers.", PinGate.MinLength, PinGate.MaxLength);
+            else if (PinNew.Password != PinRepeat.Password) error = Loc.T("De twee pincodes zijn niet gelijk.");
+        }
+        if (error != null)
+        {
+            PinError.Text = error;
+            PinError.Visibility = Visibility.Visible;
+            return;
+        }
+        if (pinMode == "remove") Gate.ClearPin(); else Gate.SetPin(PinNew.Password);
+        PinCancel_Click(sender, e);
+    }
+
+    void PinAuto_Checked(object sender, RoutedEventArgs e)
+    {
+        if (loading || sender is not RadioButton { Tag: string minutes } || !int.TryParse(minutes, out var m)) return;
+        S.PinAutoLockMinutes = m;
+        S.Save();
+    }
+
+    void PinLockNow_Click(object sender, RoutedEventArgs e) => Gate.Lock();
+
+    // A PIN is digits only
+    void Pin_TextInput(object sender, System.Windows.Input.TextCompositionEventArgs e) => e.Handled = !e.Text.All(char.IsAsciiDigit);
+
+    void Pin_Pasting(object sender, DataObjectPastingEventArgs e)
+    {
+        if (e.DataObject.GetData(typeof(string)) is not string text || !text.All(char.IsAsciiDigit)) e.CancelCommand();
     }
 }

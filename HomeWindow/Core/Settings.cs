@@ -67,6 +67,12 @@ public sealed class AppSettings
     public bool AlarmToasts { get; set; } = true;
     public bool ActivityToasts { get; set; }
     public bool AutoUpdate { get; set; } = true;
+    // The PIN lock: a salted hash (see PinGate), empty when there is no PIN; and the minutes of not using
+    // HomeWindow after which it locks itself again (0: only at start-up, with the Windows lock or by hand)
+    public string PinHash { get; set; } = "";
+    public int PinAutoLockMinutes { get; set; } = 15;
+    // The switch in the top bar: with a PIN set, false pauses the lock without removing the PIN
+    public bool PinActive { get; set; } = true;
     // The version that ran last, to say so once after an update
     public string? LastVersion { get; set; }
     // When HomeWindow first ran on this PC (UTC)
@@ -117,6 +123,7 @@ public sealed class AppSettings
         s.TileSize ??= "normal";
         s.FlyoutTab ??= "favorites";
         s.TaskbarPosition ??= "left";
+        s.PinHash ??= "";
         s.TaskbarItems ??= ["home", "solar", "grid", "battery"];
         foreach (var h in s.Homeys)
         {

@@ -259,6 +259,61 @@
                 </StackPanel>
             </Border>
 
+            <!-- Security -->
+            <TextBlock Text="{c:T Beveiliging}" Style="{StaticResource Heading}" Margin="2,26,0,8" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <DockPanel Style="{StaticResource Row}">
+                        <StackPanel x:Name="PinButtons" DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button x:Name="PinSetButton" Style="{StaticResource Btn}" Content="{c:T 'Pincode instellen'}" Click="PinSet_Click" />
+                            <Button x:Name="PinChangeButton" Style="{StaticResource Btn}" Content="{c:T Wijzigen}" Click="PinChange_Click" />
+                            <Button x:Name="PinRemoveButton" Style="{StaticResource Btn}" Content="{c:T Verwijderen}" Margin="6,0,0,0" Click="PinRemove_Click" />
+                        </StackPanel>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{c:T Pincode}" Style="{StaticResource Body}" />
+                            <TextBlock x:Name="PinStatus" Style="{StaticResource Sub}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DockPanel>
+
+                    <StackPanel x:Name="PinEditor" Visibility="Collapsed" Margin="0,4,0,6">
+                        <DockPanel x:Name="PinCurrentRow" Style="{StaticResource Row}">
+                            <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Huidige pincode'}" Style="{StaticResource Label}" />
+                            <PasswordBox x:Name="PinCurrent" MaxLength="12" Width="180" HorizontalAlignment="Left" PreviewTextInput="Pin_TextInput" DataObject.Pasting="Pin_Pasting" />
+                        </DockPanel>
+                        <DockPanel x:Name="PinNewRow" Style="{StaticResource Row}">
+                            <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Nieuwe pincode'}" Style="{StaticResource Label}" />
+                            <PasswordBox x:Name="PinNew" MaxLength="12" Width="180" HorizontalAlignment="Left" PreviewTextInput="Pin_TextInput" DataObject.Pasting="Pin_Pasting" />
+                        </DockPanel>
+                        <DockPanel x:Name="PinRepeatRow" Style="{StaticResource Row}">
+                            <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Nog een keer'}" Style="{StaticResource Label}" />
+                            <PasswordBox x:Name="PinRepeat" MaxLength="12" Width="180" HorizontalAlignment="Left" PreviewTextInput="Pin_TextInput" DataObject.Pasting="Pin_Pasting" />
+                        </DockPanel>
+                        <TextBlock x:Name="PinError" Foreground="{DynamicResource AlarmBrush}" FontSize="12.5" TextWrapping="Wrap" Margin="170,0,0,6" Visibility="Collapsed" />
+                        <StackPanel Orientation="Horizontal" Margin="170,4,0,0">
+                            <Button x:Name="PinSaveButton" Style="{StaticResource AccentBtn}" Content="{c:T Opslaan}" Click="PinSave_Click" />
+                            <Button Style="{StaticResource Btn}" Content="{c:T Annuleren}" Margin="8,0,0,0" Click="PinCancel_Click" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <DockPanel x:Name="PinAutoRow" Style="{StaticResource Row}">
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Automatisch vergrendelen'}" Style="{StaticResource Label}" VerticalAlignment="Top" Margin="0,5,0,0" />
+                        <StackPanel>
+                            <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal" x:Name="PinAutoChoice">
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="PinAuto" Tag="0" Content="{c:T Nooit}" Checked="PinAuto_Checked" />
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="PinAuto" Tag="5" Content="{c:T '5 min'}" Checked="PinAuto_Checked" />
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="PinAuto" Tag="15" Content="{c:T '15 min'}" Checked="PinAuto_Checked" />
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="PinAuto" Tag="60" Content="{c:T '1 uur'}" Checked="PinAuto_Checked" />
+                                </StackPanel>
+                            </Border>
+                            <TextBlock Text="{c:T 'Na zo lang niet gebruikt vraagt HomeWindow weer om de pincode. Ook als Windows vergrendeld wordt en bij het starten.'}" Style="{StaticResource Sub}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                            <Button Style="{StaticResource Btn}" Content="{c:T 'Nu vergrendelen'}" HorizontalAlignment="Left" Margin="0,10,0,0" Click="PinLockNow_Click" />
+                        </StackPanel>
+                    </DockPanel>
+                    <TextBlock Text="{c:T 'De pincode houdt anderen weg bij je huis, zoals collega’s of gasten op je laptop. Het is geen beveiliging tegen iemand die in jouw Windows-account kan.'}" Style="{StaticResource Sub}" TextWrapping="Wrap" Margin="0,6,0,2" />
+                </StackPanel>
+            </Border>
+
             <!-- Updates -->
             <TextBlock Text="{c:T Updates}" Style="{StaticResource Heading}" Margin="2,26,0,8" />
             <Border Style="{StaticResource Card}">

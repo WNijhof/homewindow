@@ -34,6 +34,8 @@ public partial class FlyoutWindow : Window, IDetailsHost
         store.Moods.CollectionChanged += (_, _) => FilterMoods();
         IsVisibleChanged += (_, _) => { if (IsVisible) store.WindowShown(); else store.WindowHidden(); };
 
+        App.Gate.Changed += UpdateLockToggle;
+        UpdateLockToggle();
         tab = App.Settings.FlyoutTab;
         ApplyView();
         SelectTab(tab);
@@ -160,7 +162,7 @@ public partial class FlyoutWindow : Window, IDetailsHost
             e.Handled = true;
         }
         else if (e.Key == Key.F5) { store.Kick(); e.Handled = true; }
-        else if (!SearchBox.IsKeyboardFocused && tab != "favorites" && e.Key is >= Key.A and <= Key.Z && Keyboard.Modifiers == ModifierKeys.None)
+        else if (!App.Gate.IsLocked && !SearchBox.IsKeyboardFocused && tab != "favorites" && e.Key is >= Key.A and <= Key.Z && Keyboard.Modifiers == ModifierKeys.None)
         {
             // Typing starts a search right away
             SearchBox.Focus();
@@ -209,6 +211,7 @@ public partial class FlyoutWindow : Window, IDetailsHost
         Slide.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(fromTop ? -16 : 16, 0, TimeSpan.FromMilliseconds(220)) { EasingFunction = ease });
         BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(160)));
         store.Kick();
+        LockCover.Focus_Pin();
     }
 
     public void HideFlyout()
@@ -231,6 +234,9 @@ public partial class FlyoutWindow : Window, IDetailsHost
     {
         if (store.IsConnected) store.Kick(); else store.Reconnect();
     }
+
+    void UpdateLockToggle() => LockToggleButton.Update(LockToggle);
+    void LockToggle_Click(object sender, RoutedEventArgs e) => App.Gate.SetActive(!App.Gate.IsActive);
 
     void Open_Click(object sender, RoutedEventArgs e) => App.Current.ShowMain();
     void Settings_Click(object sender, RoutedEventArgs e) => App.Current.ShowMain("settings");

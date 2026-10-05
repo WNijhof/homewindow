@@ -1,0 +1,23 @@
+<UserControl x:Class="HomeWindow.Views.LockOverlay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:HomeWindow.Core"
+             Visibility="Collapsed">
+    <!-- Opaque, so nothing of the home shows through while it is locked -->
+    <Grid Background="{DynamicResource BackdropBrush}">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="220">
+            <Border Style="{StaticResource IconCircle}" Width="64" Height="64" HorizontalAlignment="Center" Margin="0,0,0,16">
+                <TextBlock Style="{StaticResource Icon}" Text="&#xE72E;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="{c:T 'HomeWindow is vergrendeld'}" FontFamily="{StaticResource DisplayFont}" FontSize="17" FontWeight="SemiBold"
+                       TextAlignment="Center" TextWrapping="Wrap" />
+            <TextBlock Text="{c:T 'Vul je pincode in om je huis te bedienen.'}" Style="{StaticResource Sub}" TextAlignment="Center"
+                       TextWrapping="Wrap" Margin="0,4,0,16" />
+            <PasswordBox x:Name="PinBox" MaxLength="12" HorizontalContentAlignment="Center" FontSize="18" Padding="8,8"
+                         PreviewTextInput="Pin_TextInput" PasswordChanged="Pin_Changed" KeyDown="Pin_KeyDown" DataObject.Pasting="Pin_Pasting" />
+            <TextBlock x:Name="Message" Foreground="{DynamicResource AlarmBrush}" FontSize="12.5" TextAlignment="Center"
+                       TextWrapping="Wrap" Margin="0,8,0,0" Visibility="Collapsed" />
+            <Button x:Name="UnlockButton" Style="{StaticResource AccentBtn}" Content="{c:T Ontgrendelen}" Margin="0,14,0,0" Click="Unlock_Click" />
+        </StackPanel>
+    </Grid>
+</UserControl>

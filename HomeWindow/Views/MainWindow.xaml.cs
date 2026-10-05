@@ -26,10 +26,15 @@ public partial class MainWindow : Window, IDetailsHost
             if (e.Key == Key.Escape && DetailPanel.Visibility == Visibility.Visible) { CloseDetail(); e.Handled = true; }
             if (e.Key == Key.F5) { store.Kick(); e.Handled = true; }
         };
+        App.Gate.Changed += UpdateLockToggle;
+        UpdateLockToggle();
         RefreshHomeys();
         ApplyView();
         UpdateStatus();
     }
+
+    void UpdateLockToggle() => LockToggleButton.Update(LockToggle);
+    void LockToggle_Click(object sender, RoutedEventArgs e) => App.Gate.SetActive(!App.Gate.IsActive);
 
     // Closing hides the window; HomeWindow keeps running in the tray
     protected override void OnClosing(CancelEventArgs e)
@@ -94,6 +99,7 @@ public partial class MainWindow : Window, IDetailsHost
         // Windows may pass on a minimized start-up state from the process that launched HomeWindow
         if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
         Activate();
+        LockCover.Focus_Pin();
     }
 
     public void Navigate(string? name)

@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:c="clr-namespace:HomeWindow.Core"
+        xmlns:local="clr-namespace:HomeWindow.Views"
         xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         Title="HomeWindow" Width="384" Height="640"
         WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True"
@@ -31,6 +32,7 @@
         <!-- Header -->
         <DockPanel Margin="16,14,10,8">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="LockToggle" Style="{StaticResource IconBtn}" Click="LockToggle_Click" Visibility="Collapsed" />
                 <Button Style="{StaticResource IconBtn}" Content="&#xE72C;" ToolTip="{c:T Vernieuwen}" Click="Refresh_Click" />
                 <Button Style="{StaticResource IconBtn}" Content="&#xE8A7;" ToolTip="{c:T 'HomeWindow openen'}" Click="Open_Click" />
                 <Button Style="{StaticResource IconBtn}" Content="&#xE713;" ToolTip="{c:T Instellingen}" Click="Settings_Click" />
@@ -192,5 +194,7 @@
                 Visibility="{Binding Error, Converter={StaticResource Visible}}">
             <TextBlock Text="{Binding Error}" Foreground="White" FontSize="12.5" TextWrapping="Wrap" />
         </Border>
+
+        <local:LockOverlay x:Name="LockCover" Grid.RowSpan="4" />
     </Grid>
 </Window>

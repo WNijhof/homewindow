@@ -13,6 +13,7 @@ public partial class App : Application
     const int HotkeyId = 0x4842;
 
     public static AppSettings Settings { get; private set; } = new();
+    public static PinGate Gate { get; private set; } = new(Settings);
 
     static Mutex? mutex;
     static EventWaitHandle? showSignal;
@@ -22,6 +23,7 @@ public partial class App : Application
     FlyoutWindow? flyout;
     MainWindow? main;
     HwndSource? messages;
+    System.Windows.Threading.DispatcherTimer? lockTimer;
 
     public static new App Current => (App)Application.Current;
 
@@ -70,6 +72,7 @@ public partial class App : Application
 
         base.OnStartup(e);
         Settings = AppSettings.Load();
+        Gate = new PinGate(Settings);
         // The demo can run beside the real HomeWindow; it reads the settings but never saves them
         if (args.Contains("--demo")) Settings.ReadOnly = true;
         Loc.Init(Settings.Language);
@@ -79,6 +82,15 @@ public partial class App : Application
             if (args.Category is UserPreferenceCategory.General or UserPreferenceCategory.Color or UserPreferenceCategory.VisualStyle)
                 Dispatcher.BeginInvoke(() => Theme.Apply());
         };
+
+        // Windows locking the PC locks HomeWindow too, and so does a while of not using it
+        SystemEvents.SessionSwitch += (_, args) =>
+        {
+            if (args.Reason == SessionSwitchReason.SessionLock) Dispatcher.BeginInvoke(() => Gate.Lock());
+        };
+        lockTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
+        lockTimer.Tick += (_, _) => Gate.Tick(IsInUse);
+        lockTimer.Start();
 
         tray = new Tray();
         tray.Clicked += ToggleFlyout;
@@ -145,6 +157,7 @@ public partial class App : Application
     async Task SnapshotAsync(string folder, bool dark, string language)
     {
         Settings = new AppSettings { Theme = dark ? "dark" : "light", Backdrop = "dashboard", Language = language, ReadOnly = true };
+        Gate = new PinGate(Settings);
         Loc.Init(language);
         Theme.Apply();
         Directory.CreateDirectory(folder);

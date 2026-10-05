@@ -83,6 +83,14 @@ public sealed class Tray : IDisposable
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(Loc.T("HomeWindow openen"), null, (_, _) => OpenMain?.Invoke());
 
+        // While locked the menu offers nothing that controls the home
+        if (App.Gate.IsLocked)
+        {
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(Loc.T("Afsluiten"), null, (_, _) => Quit?.Invoke());
+            return;
+        }
+
         if (store.FavoriteFlows.Count > 0)
         {
             var flows = new ToolStripMenuItem(Loc.T("Flows starten"));
@@ -118,6 +126,7 @@ public sealed class Tray : IDisposable
 
         menu.Items.Add(Loc.T("Opnieuw verbinden"), null, (_, _) => store.Reconnect());
         menu.Items.Add(Loc.T("Instellingen"), null, (_, _) => OpenSettings?.Invoke());
+        if (App.Gate.IsActive) menu.Items.Add(Loc.T("Nu vergrendelen"), null, (_, _) => App.Gate.Lock());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(Loc.T("Afsluiten"), null, (_, _) => Quit?.Invoke());
     }
