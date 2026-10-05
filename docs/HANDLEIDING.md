@@ -105,7 +105,7 @@ Klik op het HomeWindow-icoon bij de klok (of druk op **Ctrl + Alt + H**). Het pa
 **De tabbladen:**
 
 - **Favorieten**: de apparaten en flows die jij als favoriet hebt gemarkeerd (zie [Favorieten](#favorieten)).
-- **Kamers**: alle apparaten per kamer. Klik op een kamernaam om hem in of uit te klappen; HomeWindow onthoudt dat.
+- **Kamers**: alle apparaten per kamer. Klik op een kamernaam om hem in of uit te klappen; HomeWindow onthoudt dat. Met **Alles inklappen** en **Alles uitklappen** doe je dat voor alle kamers tegelijk.
 - **Flows**: alle flows per map. Klik op een flow om hem te starten.
 - **Sferen**: klik op een sfeer om hem in te schakelen.
 
@@ -184,6 +184,8 @@ Rechtsboven staan twee knoppen:
 ### Favorieten
 
 Een apparaat zet je bij je favorieten met de ster in zijn instellingen, of met de rechtermuisknop → **Favoriet**. Bij een flow klik je op het sterretje rechtsboven op de tegel. Favorieten verschijnen in het paneel bij de klok, op het overzicht en (flows) in het menu onder de rechtermuisknop. Ze worden per Homey bewaard, in de volgorde waarin je ze toevoegt. Een andere volgorde kies je met de rechtermuisknop op een favoriet → **Eerder in favorieten** of **Later in favorieten**; dat werkt ook bij flows.
+
+**Favorieten uit de Homey-app**: de eerste keer dat HomeWindow met een Homey verbindt, neemt hij de favoriete apparaten en flows uit de Homey-app over (als je in HomeWindow nog geen favorieten hebt). Later doe je dat opnieuw met **Instellingen → Algemeen → Overnemen**, of met de knop op een lege favorietentab. Er wordt niets verwijderd en niets teruggeschreven naar Homey. Sferen worden niet overgenomen. Lukt het niet, kijk dan of de API-key gebruikers mag lezen.
 
 > Een wijziging is meteen te zien. Komt Homey binnen een paar seconden met een andere waarde (omdat het apparaat niet reageerde), dan toont HomeWindow weer de echte stand en verschijnt er een rode melding onderaan.
 
@@ -301,7 +303,7 @@ Hier voeg je een Homey toe, wijzig je hem of verwijder je hem. Met meerdere Home
 | Intensiteit | Hoe sterk de kleur van de achtergrond is |
 | Tekstgrootte | Alles groter of kleiner, van 85 tot 130 % |
 | Schaduwen | Schaduwen onder de kaarten |
-| Tegelgrootte | Klein, Normaal of Groot, voor het hoofdvenster en het paneel. Groot zet in het paneel twee tegels naast elkaar en laat lange namen over twee regels lopen. |
+| Tegelgrootte | Extra klein, Klein, Normaal of Groot, voor het hoofdvenster en het paneel. Groot zet in het paneel twee tegels naast elkaar en laat lange namen over twee regels lopen; Extra klein zet er vier naast elkaar. |
 | Paneel bij de klok | Apparaten als lijst of als tegels |
 | Hoofdvenster | Apparaten als raster of als lijst |
 | Weer / Energie in het paneel | Deze regel bovenin het paneel tonen |
@@ -319,6 +321,21 @@ De accentkleur (van schakelaars en actieve apparaten) volgt de accentkleur van W
 | Melding bij een alarm | Een Windows-melding als een rookmelder, watersensor, deurbel of ander alarm afgaat (standaard aan). Een bijna lege batterij telt hier niet mee. |
 | Ook bij beweging en deuren | Ook een melding als een bewegingssensor iets ziet of een deur of raam opengaat (standaard uit, omdat dat vaak gebeurt). |
 | Taal | Automatisch (volgt Windows), Nederlands of English. Start HomeWindow opnieuw om te wisselen. |
+
+### Beveiliging
+
+Met een **pincode** (4 tot 12 cijfers) houd je anderen weg bij je huis, zoals collega’s of gasten op je laptop. Kies **Pincode instellen**. HomeWindow vraagt de pincode daarna:
+
+- bij het starten;
+- als Windows vergrendeld wordt;
+- na een tijd niet gebruikt (**Automatisch vergrendelen**, standaard 15 minuten, of nooit);
+- als je kiest voor **Nu vergrendelen**, hier of in het menu onder de rechtermuisknop.
+
+Vergrendeld toont het paneel en het hoofdvenster alleen het invulscherm, en het menu laat geen flows, sferen of Homey-wissel meer zien. Het energiestrookje in de taakbalk blijft zichtbaar. Na vijf foute pogingen moet je 30 seconden wachten.
+
+Het **slotje** bovenin het paneel en naast het logo in het hoofdvenster zet de vergrendeling even uit (open slotje) en weer aan (dicht slotje), zonder dat je de pincode kwijtraakt. Wijzigen en verwijderen vragen de huidige pincode.
+
+HomeWindow bewaart de pincode zelf nooit, alleen een onomkeerbare afdruk ervan. Het is geen beveiliging tegen iemand die in jouw Windows-account kan.
 
 ### Updates
 

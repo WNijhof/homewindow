@@ -28,8 +28,10 @@ HomeWindow uses the Homey Web API with an API key, which you create in my.homey.
 ## What it does
 
 - **Panel by the clock** (click the icon or press **Ctrl + Alt + H**): favourites, rooms, flows and moods, with the weather, energy right now and who is home. As a list or as tiles.
-- **Tiles like the Homey app**: a round quick-action button, a coloured state (on, power, music, heating, locked) and up to two measurements you pick per device. Three tile sizes.
+- **Tiles like the Homey app**: a round quick-action button, a coloured state (on, power, music, heating, locked) and up to two measurements you pick per device. Four tile sizes.
 - **Control**: on/off, dimming, colour temperature, thermostats, blinds, speakers and locks. Every other setting and measurement of a device is one click away.
+- **Favourites** of your own, or taken over from the Homey app.
+- **PIN lock**, so colleagues or guests on your laptop cannot control your home.
 - **Main window** with an overview and pages for devices (search, filter by type, collapse rooms), flows per folder, moods, Logic variables, energy, batteries, notifications and system (restart apps).
 - **Energy**: use, solar, grid and home battery right now – also on the taskbar, with returned power in green – the biggest users, totals for today and this month, and a chart of the last 14 days.
 - **At home and away**: local through your Homey's IP address, and automatically through Athom's cloud when you are out. More than one Homey is fine.

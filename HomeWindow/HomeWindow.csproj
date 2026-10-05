@@ -11,7 +11,7 @@
     <RootNamespace>HomeWindow</RootNamespace>
     <ApplicationIcon>Assets\HomeWindow.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.4.1</Version>
+    <Version>0.4.2</Version>
     <Product>HomeWindow</Product>
     <!-- Version information in the exe and dll; files without it look suspicious to virus scanners -->
     <AssemblyTitle>HomeWindow</AssemblyTitle>
