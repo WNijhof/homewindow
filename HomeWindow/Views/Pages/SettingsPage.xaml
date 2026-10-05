@@ -244,6 +244,13 @@
                         </StackPanel>
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">
+                        <Button x:Name="FavoritesButton" DockPanel.Dock="Right" Style="{StaticResource Btn}" Content="{c:T 'Overnemen'}" Click="HomeyFavorites_Click" />
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{c:T 'Favorieten van Homey overnemen'}" Style="{StaticResource Body}" />
+                            <TextBlock x:Name="FavoritesResult" Text="{c:T 'Voegt de favoriete apparaten en flows uit de Homey-app toe aan die van HomeWindow. Er wordt niets verwijderd.'}" Style="{StaticResource Sub}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
                         <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T Taal}" Style="{StaticResource Label}" />
                         <StackPanel>
                             <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">

@@ -238,6 +238,12 @@ public partial class FlyoutWindow : Window, IDetailsHost
     void UpdateLockToggle() => LockToggleButton.Update(LockToggle);
     void LockToggle_Click(object sender, RoutedEventArgs e) => App.Gate.SetActive(!App.Gate.IsActive);
 
+    async void ImportFavorites_Click(object sender, RoutedEventArgs e)
+    {
+        if (await store.ImportHomeyFavoritesAsync() is (0, 0))
+            store.ShowError(Loc.T("In de Homey-app staan geen favorieten voor deze gebruiker."));
+    }
+
     void ShowRooms_Click(object sender, RoutedEventArgs e) => SelectTab("rooms");
 
     void Open_Click(object sender, RoutedEventArgs e) => App.Current.ShowMain();

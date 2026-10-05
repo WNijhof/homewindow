@@ -120,6 +120,7 @@
                                    Style="{StaticResource Body}" Foreground="{DynamicResource SubTextBrush}" TextAlignment="Center" TextWrapping="Wrap" />
                         <TextBlock Text="{c:T 'Dit zijn de favorieten van HomeWindow zelf, los van de favorieten in de Homey-app.'}"
                                    Style="{StaticResource Sub}" TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0" />
+                        <Button Style="{StaticResource AccentBtn}" Content="{c:T 'Favorieten van Homey overnemen'}" HorizontalAlignment="Center" Margin="0,14,0,0" Click="ImportFavorites_Click" />
                         <Button Style="{StaticResource Btn}" Content="{c:T 'Alle apparaten per kamer'}" HorizontalAlignment="Center" Margin="0,14,0,0" Click="ShowRooms_Click" />
                     </StackPanel>
                 </StackPanel>

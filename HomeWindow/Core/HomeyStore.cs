@@ -169,6 +169,7 @@ public sealed class HomeyStore : ObservableObject
                 }
 
                 await LoadDevices(c, ct);
+                await Feature("favorites", () => TakeOverFavoritesOnce(c, ct));
 
                 if (now - mid > TimeSpan.FromSeconds(30))
                 {
@@ -360,6 +361,42 @@ public sealed class HomeyStore : ObservableObject
         ComputeLiveEnergy(null);
         foreach (var (device, capability) in started)
             if (device.Cap(capability) is { } cap) AlarmStarted?.Invoke(device, cap);
+    }
+
+    // A new HomeWindow starts with the favourites of the Homey app, so the panel is not empty. Only once, and only
+    // while there are none of its own; after that the user decides.
+    async Task TakeOverFavoritesOnce(HomeyClient c, CancellationToken ct)
+    {
+        var cfg = Config;
+        if (cfg == null || cfg.FavoritesChecked || devices.Count == 0) return;
+        cfg.FavoritesChecked = true;
+        App.Settings.Save();
+        if (cfg.FavoriteDevices.Count > 0 || cfg.FavoriteFlows.Count > 0) return;
+        await TakeOverFavorites(c, ct);
+    }
+
+    async Task<(int devices, int flows)> TakeOverFavorites(HomeyClient c, CancellationToken ct)
+    {
+        var cfg = Config!;
+        var (favDevices, favFlows) = Favorites.FromHomey(await c.GetAsync("/api/manager/users/user/me", ct));
+        var addedDevices = Favorites.Merge(cfg.FavoriteDevices, favDevices, devices.ContainsKey);
+        var addedFlows = Favorites.Merge(cfg.FavoriteFlows, favFlows, flows.ContainsKey);
+        foreach (var id in addedDevices) devices[id].IsFavorite = true;
+        foreach (var id in addedFlows) flows[id].IsFavorite = true;
+        if (addedDevices.Count + addedFlows.Count > 0)
+        {
+            App.Settings.Save();
+            RebuildFavorites();
+        }
+        return (addedDevices.Count, addedFlows.Count);
+    }
+
+    // The button: adds what is in the Homey app and not yet here; nothing is removed. Null when it failed.
+    public async Task<(int devices, int flows)?> ImportHomeyFavoritesAsync()
+    {
+        (int, int)? result = null;
+        await Act(async c => result = await TakeOverFavorites(c, CancellationToken.None));
+        return result;
     }
 
     void RebuildFavorites()

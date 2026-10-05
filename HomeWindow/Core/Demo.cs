@@ -177,6 +177,15 @@ public sealed class Demo
             "/api/manager/flow/advancedflow" => Flows(true),
             "/api/manager/moods/mood" => Moods(),
             "/api/manager/logic/variable" => variables.DeepClone(),
+            "/api/manager/users/user/me" => new JsonObject
+            {
+                ["id"] = "u1", ["name"] = "Sanne de Vries",
+                ["properties"] = new JsonObject
+                {
+                    ["favoriteDevices"] = new JsonArray("light-living", "thermostat", "lock-front"),
+                    ["favoriteFlows"] = new JsonArray("flow-movie"),
+                },
+            },
             "/api/manager/users/user" => new JsonObject
             {
                 ["u1"] = new JsonObject { ["id"] = "u1", ["name"] = "Sanne de Vries", ["present"] = true, ["asleep"] = false },

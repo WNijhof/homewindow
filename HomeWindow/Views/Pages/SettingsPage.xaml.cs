@@ -287,6 +287,19 @@ public partial class SettingsPage : UserControl
         if (hotkeyChanged) App.Current.RegisterHotkey();
     }
 
+    async void HomeyFavorites_Click(object sender, RoutedEventArgs e)
+    {
+        FavoritesButton.IsEnabled = false;
+        var result = await HomeyStore.I.ImportHomeyFavoritesAsync();
+        FavoritesButton.IsEnabled = true;
+        FavoritesResult.Text = result switch
+        {
+            null => Loc.T("Overnemen lukt nu niet. Is HomeWindow verbonden, en mag de API-key gebruikers lezen?"),
+            (0, 0) => Loc.T("Alle favorieten uit Homey staan er al in."),
+            var (d, f) => Loc.F("Toegevoegd: {0} apparaten en {1} flows.", d, f),
+        };
+    }
+
     void Startup_Click(object sender, RoutedEventArgs e)
     {
         try { AppSettings.StartWithWindows = StartupSwitch.IsChecked == true; }

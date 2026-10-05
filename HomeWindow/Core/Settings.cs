@@ -18,6 +18,8 @@ public sealed class HomeyConfig
     public string ProtectedToken { get; set; } = "";
     public List<string> FavoriteDevices { get; set; } = [];
     public List<string> FavoriteFlows { get; set; } = [];
+    // The favourites of the Homey app are taken over once, the first time this Homey connects with none of its own
+    public bool FavoritesChecked { get; set; }
     public Dictionary<string, string> CustomIcons { get; set; } = [];
     // Per device the measurements its tile shows; a device without an entry gets one automatic
     public Dictionary<string, List<string>> TileDetails { get; set; } = [];
