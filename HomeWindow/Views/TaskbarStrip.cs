@@ -15,7 +15,9 @@ namespace HomeWindow.Views;
 // the way tools such as TrafficMonitor do it.
 public sealed class TaskbarStrip : IDisposable
 {
-    const int WS_CHILD = 0x40000000, WS_VISIBLE = 0x10000000, WS_CLIPSIBLINGS = 0x04000000;
+    const int WS_CHILD = 0x40000000, WS_VISIBLE = 0x10000000, WS_CLIPSIBLINGS = 0x04000000, WS_POPUP = unchecked((int)0x80000000);
+    const int WS_EX_TOOLWINDOW = 0x80, WS_EX_NOACTIVATE = 0x08000000, WS_EX_TOPMOST = 0x8;
+    static readonly IntPtr HWND_TOPMOST = new(-1);
     // ASYNCWINDOWPOS: the taskbar belongs to Explorer; when it hangs, HomeWindow must not hang with it
     const uint SWP_NOACTIVATE = 0x10, SWP_SHOWWINDOW = 0x40, SWP_ASYNCWINDOWPOS = 0x4000;
     const int Gap = 8;
@@ -28,7 +30,15 @@ public sealed class TaskbarStrip : IDisposable
     readonly StackPanel weatherPart, homePart, solarPart, gridPart, batteryPart;
     HwndSource? source;
     IntPtr taskbar, failedOn;
-    (int x, int width, int height, string text) last;
+    // Windows or a security program can refuse the window at first (access denied, seen right after a restart);
+    // so it is tried again a few times, further and further apart, before giving up on this taskbar
+    int failures;
+    DateTime retryAt;
+    static readonly int[] RetrySeconds = [3, 6, 12, 30, 60, 120];
+    (int x, int y, int width, int height, string text) last;
+    // Some PCs (a security program, or Windows itself) refuse a window inside the taskbar unless HomeWindow runs as
+    // administrator. The strip is then a separate window on top of the taskbar instead.
+    bool overlay;
     int ticks;
     bool light;
     // Free room at the left of the taskbar, in pixels from its left edge: from the end of the buttons there
@@ -116,9 +126,20 @@ public sealed class TaskbarStrip : IDisposable
             Close();
             return;
         }
-        if (bar == failedOn) return;
+        if (bar == failedOn)
+        {
+            if (failures > RetrySeconds.Length || DateTime.UtcNow < retryAt) return;
+        }
         if (bar != taskbar || source == null || !IsWindow(source.Handle)) Create(bar);
         if (source == null) return;
+
+        // As a window of its own it must give way to full-screen programs and to a hidden taskbar
+        if (overlay && (!IsWindowVisible(bar) || FullScreenProgram()))
+        {
+            ShowWindow(source.Handle, 0);
+            last = default;
+            return;
+        }
 
         Fill();
         var scale = Native.ScaleAt(tb.Left + 1, tb.Top + 1);
@@ -141,10 +162,12 @@ public sealed class TaskbarStrip : IDisposable
         root.Width = width / scale;
         root.Height = height / scale;
         // Explorer can put its own content on top again; every tenth tick (20 s) the strip moves back to the top anyway
-        var now = (x, width, height, weatherData.Temperature + energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText + string.Join(',', Shown()));
-        if (now == last && ++ticks % 10 != 0) return;
+        // As an overlay the position is on the screen, and it is put on top again every time: the taskbar takes the top back
+        var (px, py) = overlay ? (tb.Left + x, tb.Top) : (x, 0);
+        var now = (px, py, width, height, weatherData.Temperature + energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText + string.Join(',', Shown()));
+        if (!overlay && now == last && ++ticks % 10 != 0) return;
         last = now;
-        SetWindowPos(source.Handle, IntPtr.Zero, x, 0, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
+        SetWindowPos(source.Handle, overlay ? HWND_TOPMOST : IntPtr.Zero, px, py, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
     }
 
     // The last known free room at the left; starts a new lookup when it is old or the taskbar is new.
@@ -207,23 +230,37 @@ public sealed class TaskbarStrip : IDisposable
         Close();
         taskbar = bar;
         last = default;
+        overlay = false;
         try
         {
-            var p = new HwndSourceParameters("HomeWindowEnergy")
+            HwndSource Make(bool asOverlay) => new(new HwndSourceParameters("HomeWindowEnergy")
             {
-                ParentWindow = bar,
-                WindowStyle = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
+                ParentWindow = asOverlay ? IntPtr.Zero : bar,
+                WindowStyle = asOverlay ? WS_POPUP | WS_VISIBLE : WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
+                ExtendedWindowStyle = asOverlay ? WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TOPMOST : 0,
                 UsesPerPixelTransparency = true,
                 Width = 1, Height = 1,
-            };
-            source = new HwndSource(p) { RootVisual = root, SizeToContent = SizeToContent.Manual };
+            }) { RootVisual = root, SizeToContent = SizeToContent.Manual };
+
+            try { source = Make(false); }
+            catch (System.ComponentModel.Win32Exception e) when (e.NativeErrorCode == 5)
+            {
+                Log.Error("Taskbar strip: no window in the taskbar, using a window on top of it", e);
+                overlay = true;
+                source = Make(true);
+            }
+            failedOn = IntPtr.Zero;
+            failures = 0;
         }
         catch (Exception e)
         {
-            // Not again on this taskbar; a new one (Explorer restarted) gets a new try
-            Log.Error("Taskbar strip", e);
+            // Logged on the first and the last try only; a new taskbar (Explorer restarted) starts over
+            if (failedOn != bar) failures = 0;
+            if (failures == 0 || failures == RetrySeconds.Length) Log.Error($"Taskbar strip (try {failures + 1} of {RetrySeconds.Length + 1})", e);
             source = null;
             failedOn = bar;
+            retryAt = DateTime.UtcNow.AddSeconds(failures < RetrySeconds.Length ? RetrySeconds[failures] : 0);
+            failures++;
         }
     }
 
@@ -297,6 +334,18 @@ public sealed class TaskbarStrip : IDisposable
 
     [DllImport("user32.dll")]
     static extern bool IsWindow(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    static extern bool IsWindowVisible(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    static extern bool ShowWindow(IntPtr hwnd, int command);
+
+    [DllImport("shell32.dll")]
+    static extern int SHQueryUserNotificationState(out int state);
+
+    // A game or video in full screen, or a presentation: busy, Direct3D full screen or presentation mode
+    static bool FullScreenProgram() => SHQueryUserNotificationState(out var state) == 0 && state is 2 or 3 or 4;
 
     [DllImport("user32.dll")]
     static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
