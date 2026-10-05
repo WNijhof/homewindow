@@ -143,6 +143,7 @@
                         <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T Tegelgrootte}" Style="{StaticResource Label}" />
                         <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
                             <StackPanel Orientation="Horizontal" x:Name="TileSizeChoice">
+                                <RadioButton Style="{StaticResource Segment}" GroupName="TileSize" Tag="xsmall" Content="{c:T 'Extra klein'}" Checked="TileSize_Checked" />
                                 <RadioButton Style="{StaticResource Segment}" GroupName="TileSize" Tag="small" Content="{c:T Klein}" Checked="TileSize_Checked" />
                                 <RadioButton Style="{StaticResource Segment}" GroupName="TileSize" Tag="normal" Content="{c:T Normaal}" Checked="TileSize_Checked" />
                                 <RadioButton Style="{StaticResource Segment}" GroupName="TileSize" Tag="large" Content="{c:T Groot}" Checked="TileSize_Checked" />

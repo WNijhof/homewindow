@@ -194,7 +194,7 @@ public partial class App : Application
         main.CloseDetail();
         main.Navigate("devices");
         flyout.SelectTab("favorites");
-        foreach (var size in new[] { "small", "normal", "large" })
+        foreach (var size in new[] { "xsmall", "small", "normal", "large" })
         {
             Settings.TileSize = size;
             Theme.Apply();

@@ -15,14 +15,17 @@ public static class Theme
 
     public static readonly string[] Backdrops = ["dashboard", "paper", "aurora", "dusk", "ocean", "glass"];
 
-    // Tested sizes of a device tile. The panel by the clock is 384 wide: three tiles a row, or two when large.
-    public sealed record TileMetrics(double Width, double Height, double NameHeight, double NameLine, double NameSize, double IconSize);
+    // Tested sizes of a device tile. The panel by the clock is 384 wide: four tiles a row when extra small, three, or two when large.
+    // Compact: tighter margins and no detail line, for the extra small tiles.
+    public sealed record TileMetrics(double Width, double Height, double NameHeight, double NameLine, double NameSize, double IconSize, bool Compact = false);
 
     public static TileMetrics Tiles(string? size, bool flyout) => (size, flyout) switch
     {
+        ("xsmall", false) => new(104, 84, 16, 16, 12, 18, Compact: true),
         ("small", false) => new(128, 110, 18, 18, 13, 20),
         ("large", false) => new(184, 158, 40, 20, 15.5, 30),
         (_, false) => new(150, 134, 36, 18, 13.5, 24),
+        ("xsmall", true) => new(79, 80, 16, 16, 12, 18, Compact: true),
         ("small", true) => new(108, 100, 18, 18, 13, 20),
         ("large", true) => new(168, 132, 36, 18, 14, 26),
         (_, true) => new(108, 112, 18, 18, 13.5, 24),
@@ -36,6 +39,10 @@ public static class Theme
         r["TileNameLine"] = t.NameLine;
         r["TileNameSize"] = t.NameSize;
         r["TileIconSize"] = t.IconSize;
+        r["TilePadding"] = t.Compact ? new Thickness(8, 8, 8, 7) : new Thickness(12, 12, 12, 10);
+        r["TileToggleMargin"] = t.Compact ? new Thickness(0, 6, 6, 0) : new Thickness(0, 9, 9, 0);
+        r["TileStarMargin"] = t.Compact ? new Thickness(0, 15, 40, 0) : new Thickness(0, 18, 46, 0);
+        r["TileDetailHeight"] = t.Compact ? 0.0 : double.PositiveInfinity;
     }
 
     public static void Apply()

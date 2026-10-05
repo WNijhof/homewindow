@@ -10,6 +10,10 @@
     <sys:Double x:Key="TileNameLine">18</sys:Double>
     <sys:Double x:Key="TileNameSize">13.5</sys:Double>
     <sys:Double x:Key="TileIconSize">24</sys:Double>
+    <Thickness x:Key="TilePadding">12,12,12,10</Thickness>
+    <Thickness x:Key="TileToggleMargin">0,9,9,0</Thickness>
+    <Thickness x:Key="TileStarMargin">0,18,46,0</Thickness>
+    <sys:Double x:Key="TileDetailHeight">Infinity</sys:Double>
     <sys:Double x:Key="FlowHeight">56</sys:Double>
     <sys:Double x:Key="FlowWidth">220</sys:Double>
 

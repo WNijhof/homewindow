@@ -57,7 +57,7 @@
             <Border x:Name="Card" Style="{StaticResource Card}" Padding="0" />
             <Button Style="{StaticResource TileBtn}" Command="{Binding DetailsCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
                     ToolTip="{Binding Name}">
-                <Grid Margin="12,12,12,10">
+                <Grid Margin="{DynamicResource TilePadding}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
@@ -75,14 +75,15 @@
                                LineStackingStrategy="BlockLineHeight" />
                     <ContentPresenter Grid.Row="3" Content="{Binding}" ContentTemplate="{StaticResource DeviceStatus}" Tag="{Binding StateText}" Margin="0,2,0,0" />
                     <TextBlock Grid.Row="4" Text="{Binding DetailText}" Style="{StaticResource Sub}" FontSize="11.5" Foreground="{DynamicResource FaintTextBrush}"
+                               MaxHeight="{DynamicResource TileDetailHeight}"
                                Visibility="{Binding DetailText, Converter={StaticResource Visible}}" />
                 </Grid>
             </Button>
-            <Button x:Name="Toggle" Style="{StaticResource QuickToggle}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,9,9,0"
+            <Button x:Name="Toggle" Style="{StaticResource QuickToggle}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="{DynamicResource TileToggleMargin}"
                     Content="{Binding QuickGlyph}" ToolTip="{c:T Aan/uit}" Command="{Binding QuickCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}"
                     Visibility="{Binding QuickGlyph, Converter={StaticResource Visible}}" />
             <TextBlock x:Name="Star" Style="{StaticResource Icon}" Text="&#xE735;" FontSize="10" Foreground="{DynamicResource SolarBrush}"
-                       HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,18,46,0"
+                       HorizontalAlignment="Right" VerticalAlignment="Top" Margin="{DynamicResource TileStarMargin}"
                        Visibility="{Binding IsFavorite, Converter={StaticResource Visible}}" />
         </Grid>
         <DataTemplate.Triggers>

@@ -53,7 +53,7 @@ public sealed class AppSettings
     public double TextScale { get; set; } = 1.0;
     public string FlyoutView { get; set; } = "list";       // list, grid
     public string MainView { get; set; } = "grid";
-    public string TileSize { get; set; } = "normal";       // small, normal, large
+    public string TileSize { get; set; } = "normal";       // xsmall, small, normal, large
     public string FlyoutTab { get; set; } = "favorites";
     public bool FlyoutEnergy { get; set; } = true;
     public bool FlyoutWeather { get; set; } = true;

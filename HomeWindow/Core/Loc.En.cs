@@ -120,6 +120,7 @@ public static partial class Loc
         ["Kamers"] = "Rooms",
         ["Kapot"] = "Broken",
         ["Keuken"] = "Kitchen",
+        ["Extra klein"] = "Extra small",
         ["Klein"] = "Small",
         ["Kleurtemperatuur"] = "Colour temperature",
         ["Klik met de rechtermuisknop op een apparaat, of op de ster bij een flow, om het hier te zetten."] = "Right-click a device, or click the star of a flow, to put it here.",
