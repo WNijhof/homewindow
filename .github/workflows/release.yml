@@ -122,7 +122,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $v = '${{ steps.version.outputs.value }}'
-          $files = "installer/Output/HomeWindow-Setup-$v.exe"
+          # A list, also with one file: @files splats a plain string letter by letter
+          $files = @("installer/Output/HomeWindow-Setup-$v.exe")
           # Written release notes when there are any (docs/releases/<version>.md, its first line the title)
           $notes = "docs/releases/$v.md"
           if (Test-Path $notes) {
