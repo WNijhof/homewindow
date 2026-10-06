@@ -139,6 +139,7 @@ public static partial class Loc
         ["Lokaal verbonden"] = "Connected locally",
         ["Lokaal verbonden: {0} apparaten gevonden."] = "Connected locally: {0} devices found.",
         ["Lokaal: {0}"] = "Local: {0}",
+        ["Windows blokkeert de verbinding. Sta HomeWindow toe in je firewall of virusscanner."] = "Windows blocks the connection. Allow HomeWindow in your firewall or virus scanner.",
         ["Markeer apparaten als favoriet met de ster in hun instellingen, of klik er met de rechtermuisknop op."] = "Mark devices as favourite with the star in their settings, or right-click them.",
         ["Melding bij een alarm"] = "Notify on an alarm",
         ["Meldingen"] = "Notifications",

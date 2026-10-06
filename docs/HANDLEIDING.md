@@ -374,8 +374,9 @@ Automatisch bijwerken werkt alleen als HomeWindow met de installer is geïnstall
 | **De API-key mag de apparaten niet bekijken** | Geef de API-key het recht om apparaten te bekijken. Een API-key kun je niet aanpassen, dus maak een nieuwe. |
 | ***Geen toegang*** op één pagina | De API-key mist het recht voor dat onderdeel (zie de tabel bij [Een API-key maken](#een-api-key-maken)). De rest werkt gewoon. |
 | **Lokaal: geen antwoord** | Klopt het IP-adres? Zit je pc in hetzelfde netwerk als je Homey (niet in een gastnetwerk)? Probeer `http://<ip-adres>` in je browser. |
+| **Windows blokkeert de verbinding** | Een firewall of virusscanner houdt HomeWindow van het netwerk. Zoek HomeWindow bij de geblokkeerde toepassingen in de firewall van je beveiligingsprogramma, zet hem op *Toestaan* en start HomeWindow opnieuw. Na een update kan dat opnieuw nodig zijn. |
 | **Geen adres of Homey-ID ingesteld** | Vul het IP-adres in, of het Homey-ID voor de cloud. |
-| Werkt thuis, maar onderweg niet | HomeWindow kent het Homey-ID nog niet. Verbind één keer thuis, of vul het ID zelf in. |
+| Werkt thuis, maar onderweg niet | HomeWindow kent het Homey-ID nog niet. Verbind één keer thuis, of vul het ID zelf in. Je vindt het in de adresbalk op my.homey.app (`/homeys/<id>/`), of daar in de instellingen van je Homey. |
 | *Geen releases gevonden op GitHub* bij Updates | Er is nog geen versie uitgebracht, of de repository op GitHub is privé. |
 | Het icoon is niet te zien | Klik op **^** naast de klok en sleep het HomeWindow-icoon naar de taakbalk. |
 | Ctrl + Alt + H doet niets | Een ander programma gebruikt die combinatie al. Sluit dat programma, of zet de sneltoets uit en weer aan bij Instellingen. |

@@ -71,6 +71,15 @@ public class HomeyClientTests
     [Fact]
     public void CloudUrl_uses_the_lowercase_id() =>
         Assert.Equal("https://5f2a.connect.athom.com", HomeyClient.CloudUrl(" 5F2A "));
+
+    [Fact]
+    public void A_blocked_socket_points_to_the_firewall()
+    {
+        var blocked = new System.Net.Http.HttpRequestException("x", new System.Net.Sockets.SocketException(10013));
+        Assert.Contains("firewall", HomeyClient.Short(blocked));
+        var refused = new System.Net.Http.HttpRequestException("x", new System.Net.Sockets.SocketException(10061));
+        Assert.DoesNotContain("firewall", HomeyClient.Short(refused));
+    }
 }
 
 public class FavoritesTests

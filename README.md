@@ -54,6 +54,12 @@ HomeWindow then looks for new versions by itself and installs them silently (you
 
 Want to look around first? Run `HomeWindow.exe --demo`.
 
+## No connection?
+
+- **"Windows blocks the connection"** (or, in older versions, *"An attempt was made to access a socket in a way forbidden by its access permissions"*): a firewall or virus scanner keeps HomeWindow off the network, so it never reaches your Homey. Open the firewall of your security program, look for HomeWindow among the blocked applications, set it to *Allow* and restart HomeWindow (also quit it in the tray). This can happen again after an update, because the new version is a new file for the scanner.
+- **The cloud does not work:** HomeWindow learns the Homey ID from the first connection at home. Away from home, or when the local connection never worked, fill in **Homey ID (cloud)** yourself. You find it in the address bar on [my.homey.app](https://my.homey.app) (`/homeys/<id>/`), or in your Homey's settings there.
+- More in the [manual](docs/HANDLEIDING.md#8-problemen-oplossen) (Dutch).
+
 ## Privacy
 
 HomeWindow only talks to your own Homey: directly on your network, or through Athom's cloud relay (`<homey-id>.connect.athom.com`) when you are away. It also asks GitHub whether there is a new version. Nothing about your Homey goes anywhere else. Your settings are in `%APPDATA%\HomeWindow\settings.json`; the API key in it is encrypted with your Windows account.

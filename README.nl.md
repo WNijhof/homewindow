@@ -51,6 +51,12 @@ HomeWindow zoekt daarna zelf naar nieuwe versies en installeert die stil (uit te
 
 Eerst rondkijken zonder Homey? Start `HomeWindow.exe --demo`.
 
+## Geen verbinding?
+
+- **"Windows blokkeert de verbinding"** (of, in oudere versies, *"Er is geprobeerd toegang te krijgen tot een socket op een manier die niet is toegestaan door de bijbehorende toegangsmachtigingen"*): een firewall of virusscanner houdt HomeWindow van het netwerk, dus hij komt niet bij je Homey. Open de firewall van je beveiligingsprogramma, zoek HomeWindow bij de geblokkeerde toepassingen, zet hem op *Toestaan* en start HomeWindow opnieuw (sluit hem ook in het systeemvak). Dit kan na een update opnieuw gebeuren, omdat de nieuwe versie voor de scanner een nieuw bestand is.
+- **De cloud werkt niet:** HomeWindow leert het Homey-ID bij de eerste verbinding thuis. Ben je niet thuis, of lukte de lokale verbinding nooit, vul dan zelf **Homey-ID (cloud)** in. Je vindt het in de adresbalk op [my.homey.app](https://my.homey.app) (`/homeys/<id>/`), of daar in de instellingen van je Homey.
+- Meer in de [handleiding](docs/HANDLEIDING.md#8-problemen-oplossen).
+
 ## Privacy
 
 HomeWindow praat met je eigen Homey: rechtstreeks in je netwerk, of via de cloud-doorgang van Athom (`<homey-id>.connect.athom.com`) als je niet thuis bent. Daarnaast vraagt hij bij GitHub of er een nieuwe versie is. Er gaat geen informatie over je Homey naar andere partijen. Je instellingen staan in `%APPDATA%\HomeWindow\settings.json`; de API-key is daarin versleuteld met je Windows-account.

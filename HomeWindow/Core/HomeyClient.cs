@@ -127,7 +127,15 @@ public sealed class HomeyClient(HomeyConfig config)
         }
     }
 
-    static string Short(Exception e) => e is HttpRequestException h && h.InnerException != null ? h.InnerException.Message : e.Message;
+    // The reason a request failed, short enough for the status line
+    internal static string Short(Exception e)
+    {
+        // Windows refusing the socket (WSAEACCES) means a firewall or virus scanner blocks HomeWindow, not that Homey is away
+        for (var inner = e; inner != null; inner = inner.InnerException)
+            if (inner is System.Net.Sockets.SocketException { SocketErrorCode: System.Net.Sockets.SocketError.AccessDenied })
+                return Loc.T("Windows blokkeert de verbinding. Sta HomeWindow toe in je firewall of virusscanner.");
+        return e is HttpRequestException h && h.InnerException != null ? h.InnerException.Message : e.Message;
+    }
 
     public Task<JsonNode?> GetAsync(string path, CancellationToken ct = default) => SendAsync(HttpMethod.Get, path, null, ct);
     public Task<JsonNode?> PutAsync(string path, object body, CancellationToken ct = default) => SendAsync(HttpMethod.Put, path, body, ct);
