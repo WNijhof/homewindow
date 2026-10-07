@@ -115,6 +115,7 @@ public sealed class HomeyStore : ObservableObject
         }
         HomeyName = config.Name;
         client = new HomeyClient(config);
+        client.CredentialsChanged += () => App.Current.Dispatcher.BeginInvoke(() => App.Settings.Save());
         loop = new CancellationTokenSource();
         _ = RunAsync(client, loop.Token);
     }
@@ -156,7 +157,9 @@ public sealed class HomeyStore : ObservableObject
                     backoff = 2;
                     slow = mid = weather = system = DateTime.MinValue;
                     localProbe = DateTime.UtcNow;
-                    await Feature("name", async () => HomeyName = (await c.GetAsync("/api/manager/system/name", ct))?.GetValue<string>() ?? HomeyName);
+                    // A Homey account may not read the name; then the one from the settings stays
+                    if (!c.Config.UsesAccount)
+                        await Feature("name", async () => HomeyName = (await c.GetAsync("/api/manager/system/name", ct))?.GetValue<string>() ?? HomeyName);
                 }
 
                 var now = DateTime.UtcNow;
@@ -219,14 +222,14 @@ public sealed class HomeyStore : ObservableObject
             {
                 c.Disconnect();
                 Status = "error";
-                StatusText = Loc.T("De API-key is ongeldig of ingetrokken");
+                StatusText = c.Config.UsesAccount ? e.Message : Loc.T("De API-key is ongeldig of ingetrokken");
                 await Wait(30000, ct, kickable: true);
             }
             catch (HomeyApiException e) when (e.Status == 403)
             {
                 c.Disconnect();
                 Status = "error";
-                StatusText = Loc.T("De API-key mag de apparaten niet bekijken");
+                StatusText = Loc.T(c.Config.UsesAccount ? "Dit Homey-account mag de apparaten niet bekijken" : "De API-key mag de apparaten niet bekijken");
                 await Wait(30000, ct, kickable: true);
             }
             catch (Exception e) when (!ct.IsCancellationRequested)
@@ -268,10 +271,16 @@ public sealed class HomeyStore : ObservableObject
         {
             featureErrors[name] = e.Status == 404
                 ? Loc.T("Deze Homey ondersteunt dit niet")
-                : Loc.T("Geen toegang. Geef de API-key meer rechten in my.homey.app.");
+                : NoRights();
             OnPropertyChanged(string.Empty);
         }
     }
+
+    // Signed in with a Homey account, HomeWindow gets the rights Athom allows a third-party client, which do not
+    // cover everything (the system, updates, deleting notifications); more rights cannot be given there
+    string NoRights() => Loc.T(Config?.UsesAccount == true
+        ? "Niet beschikbaar bij inloggen met een Homey-account. Gebruik een API-key als je Homey die kan maken."
+        : "Geen toegang. Geef de API-key meer rechten in my.homey.app.");
 
     // ---- Loading ----
 
@@ -920,7 +929,7 @@ public sealed class HomeyStore : ObservableObject
         catch (HomeyApiException e) when (e.Status == 403)
         {
             // Homey also answers 403 when it refuses one action; only speak of rights when it is about them
-            ShowError(AlwaysOn.IsMissingRights(e.Message) ? Loc.T("Geen toegang. Geef de API-key meer rechten in my.homey.app.") : e.Message);
+            ShowError(AlwaysOn.IsMissingRights(e.Message) ? NoRights() : e.Message);
             onError?.Invoke();
         }
         catch (Exception e) when (e is HomeyApiException or HomeyOfflineException)

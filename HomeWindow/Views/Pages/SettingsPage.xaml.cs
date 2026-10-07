@@ -12,6 +12,10 @@ public partial class SettingsPage : UserControl
     static AppSettings S => App.Settings;
     HomeyConfig? editing;
     bool loading;
+    // Signing in with a Homey account: the refresh token and the session the form will save. Until the user signs
+    // in again (accountChanged) the Homey being edited keeps its own, which the running connection may renew.
+    string accountRefresh = "", accountSession = "";
+    bool accountChanged;
 
     public SettingsPage()
     {
@@ -117,6 +121,15 @@ public partial class SettingsPage : UserControl
         TokenBox.Password = h?.Token ?? "";
         CloudBox.Text = h?.CloudId ?? "";
         (h?.Mode switch { "local" => ModeLocal, "cloud" => ModeCloud, _ => ModeAuto }).IsChecked = true;
+        var account = h?.UsesAccount == true;
+        accountRefresh = accountSession = "";
+        accountChanged = false;
+        if (account) TokenBox.Password = "";
+        AuthRow.Visibility = AthomLogin.IsAvailable || account ? Visibility.Visible : Visibility.Collapsed;
+        (account ? AuthAccount : AuthKey).IsChecked = true;
+        HomeyChoiceRow.Visibility = Visibility.Collapsed;
+        AccountStatus.Text = Loc.T(account && h!.RefreshToken.Length > 0 ? "Ingelogd" : "Nog niet ingelogd");
+        ShowAuth();
         TestResult.Visibility = Visibility.Collapsed;
         Editor.Visibility = Visibility.Visible;
         AddButton.Visibility = Visibility.Collapsed;
@@ -130,7 +143,64 @@ public partial class SettingsPage : UserControl
         Editor.Visibility = Visibility.Collapsed;
         AddButton.Visibility = Visibility.Visible;
         TokenBox.Password = "";
+        accountRefresh = accountSession = "";
+        accountChanged = false;
+        HomeyChoice.ItemsSource = null;
         editing = null;
+    }
+
+    bool UsesAccount => AuthAccount.IsChecked == true;
+
+    (string refresh, string session) AccountTokens() =>
+        !accountChanged && editing?.UsesAccount == true ? (editing.RefreshToken, editing.Token) : (accountRefresh, accountSession);
+
+    void Auth_Checked(object sender, RoutedEventArgs e) => ShowAuth();
+
+    void ShowAuth()
+    {
+        if (KeyRow == null || AccountPanel == null) return;
+        KeyRow.Visibility = KeyHelp.Visibility = UsesAccount ? Visibility.Collapsed : Visibility.Visible;
+        AccountPanel.Visibility = AccountHelp.Visibility = UsesAccount ? Visibility.Visible : Visibility.Collapsed;
+        SignInButton.IsEnabled = AthomLogin.IsAvailable;
+    }
+
+    // Opens Homey's login page in the browser, then lists the Homeys of the account to choose from
+    async void SignIn_Click(object sender, RoutedEventArgs e)
+    {
+        SignInButton.IsEnabled = false;
+        AccountStatus.Text = Loc.T("Log in in je browser…");
+        try
+        {
+            var (access, refresh) = await AthomLogin.SignInAsync(CancellationToken.None);
+            accountRefresh = refresh;
+            accountSession = "";
+            accountChanged = true;
+            var homeys = await AthomLogin.HomeysAsync(access, CancellationToken.None);
+            if (homeys.Count == 0)
+            {
+                AccountStatus.Text = Loc.T("Ingelogd, maar dit account heeft geen Homey.");
+                return;
+            }
+            AccountStatus.Text = Loc.T("Ingelogd");
+            HomeyChoice.ItemsSource = homeys;
+            HomeyChoiceRow.Visibility = homeys.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
+            HomeyChoice.SelectedItem = homeys.FirstOrDefault(h => h.Id.Equals(CloudBox.Text.Trim(), StringComparison.OrdinalIgnoreCase)) ?? homeys[0];
+            Window.GetWindow(this)?.Activate();
+        }
+        catch (Exception ex)
+        {
+            AccountStatus.Text = Loc.F("Inloggen lukt niet: {0}", ex.Message);
+        }
+        finally { SignInButton.IsEnabled = AthomLogin.IsAvailable; }
+    }
+
+    void HomeyChoice_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (HomeyChoice.SelectedItem is not AthomHomey h) return;
+        if (!h.Id.Equals(CloudBox.Text.Trim(), StringComparison.OrdinalIgnoreCase)) { accountSession = ""; accountChanged = true; }
+        NameBox.Text = h.Name;
+        CloudBox.Text = h.Id;
+        if (h.LocalAddress.Length > 0) AddressBox.Text = h.LocalAddress;
     }
 
     HomeyConfig FromForm(HomeyConfig target)
@@ -139,13 +209,17 @@ public partial class SettingsPage : UserControl
         target.LocalAddress = AddressBox.Text.Trim();
         target.CloudId = CloudBox.Text.Trim();
         target.Mode = ModeLocal.IsChecked == true ? "local" : ModeCloud.IsChecked == true ? "cloud" : "auto";
-        target.Token = TokenBox.Password;
+        var (refresh, session) = AccountTokens();
+        target.Auth = UsesAccount ? "account" : "key";
+        target.Token = UsesAccount ? session : TokenBox.Password;
+        target.RefreshToken = UsesAccount ? refresh : "";
         return target;
     }
 
     string? Validate()
     {
-        if (TokenBox.Password.Trim().Length == 0) return Loc.T("Vul de API-key in.");
+        if (UsesAccount && AccountTokens().refresh.Length == 0) return Loc.T("Log in met je Homey-account.");
+        if (!UsesAccount && TokenBox.Password.Trim().Length == 0) return Loc.T("Vul de API-key in.");
         if (AddressBox.Text.Trim().Length == 0 && CloudBox.Text.Trim().Length == 0) return Loc.T("Vul het IP-adres of het Homey-ID in.");
         if (ModeLocal.IsChecked == true && AddressBox.Text.Trim().Length == 0) return Loc.T("Vul het IP-adres in.");
         if (ModeCloud.IsChecked == true && CloudBox.Text.Trim().Length == 0) return Loc.T("Vul het Homey-ID in.");
@@ -158,26 +232,48 @@ public partial class SettingsPage : UserControl
         var probe = FromForm(new HomeyConfig());
         TestButton.IsEnabled = false;
         ShowResult(Loc.T("Bezig met testen…"), null);
+        var step = "connect";
+        var client = new HomeyClient(probe);
         try
         {
-            var client = new HomeyClient(probe);
             await client.ConnectAsync(CancellationToken.None);
+            step = "devices";
             var devices = J.Items(await client.GetAsync("/api/manager/devices/device")).Count();
             string? name = null;
             try { name = (await client.GetAsync("/api/manager/system/name"))?.GetValue<string>(); } catch { }
             if (probe.CloudId.Length > 0 && CloudBox.Text.Trim().Length == 0) CloudBox.Text = probe.CloudId;
+            // The test may have renewed them; the old refresh token can be spent
+            KeepAccountTokens(probe);
             if (name != null && (NameBox.Text.Trim() is "" or "Homey")) NameBox.Text = name;
             ShowResult(Loc.F(client.IsCloud ? "Verbonden via de cloud: {0} apparaten gevonden." : "Lokaal verbonden: {0} apparaten gevonden.", devices), true);
         }
         catch (HomeyApiException ex) when (ex.Status is 401 or 403)
         {
-            ShowResult(Loc.T(ex.Status == 401 ? "De API-key wordt niet geaccepteerd." : "De API-key mag de apparaten niet bekijken."), false);
+            KeepAccountTokens(probe);
+            var text = probe.UsesAccount
+                ? (ex.Status == 401 ? ex.Message : Loc.T("Dit Homey-account mag de apparaten niet bekijken."))
+                : Loc.T(ex.Status == 401 ? "De API-key wordt niet geaccepteerd." : "De API-key mag de apparaten niet bekijken.");
+            // What Homey says, such as the missing scope, helps more than the general sentence
+            if (ex.Message.Length > 0 && ex.Message != text && !ex.Message.StartsWith("HTTP ", StringComparison.Ordinal)) text += $" ({ex.Message})";
+            Log.Error($"Connection test ({step}, {(probe.UsesAccount ? "account" : "key")})", ex);
+            // Which scopes the session got, to compare with what was asked
+            if (probe.UsesAccount && ex.Status == 403)
+                try { Log.Error("Connection test", new Exception("Session: " + (await client.GetAsync("/api/manager/sessions/session/me"))?.ToJsonString())); }
+                catch (Exception sessionError) { Log.Error("Connection test (session)", sessionError); }
+            ShowResult(text, false);
         }
         catch (Exception ex)
         {
             ShowResult(Loc.F("Geen verbinding: {0}", ex.Message), false);
         }
         finally { TestButton.IsEnabled = true; }
+    }
+
+    // A test that renewed the tokens spent the old refresh token; the form saves the new ones
+    void KeepAccountTokens(HomeyConfig probe)
+    {
+        if (!probe.UsesAccount || (probe.RefreshToken, probe.Token) == AccountTokens()) return;
+        (accountRefresh, accountSession, accountChanged) = (probe.RefreshToken, probe.Token, true);
     }
 
     void ShowResult(string text, bool? ok)

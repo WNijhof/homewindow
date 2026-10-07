@@ -237,6 +237,37 @@ public class SettingsTests
         Assert.False(s.ActivityToasts);
         Assert.Equal("dashboard", s.Backdrop);
     }
+
+    [Fact]
+    public void A_homey_from_an_older_version_signs_in_with_its_api_key()
+    {
+        var s = AppSettings.Upgrade(JsonSerializer.Deserialize<AppSettings>("""{ "Homeys": [ { "Name": "Thuis", "Auth": null } ] }""")!);
+        var h = Assert.Single(s.Homeys);
+        Assert.Equal("key", h.Auth);
+        Assert.False(h.UsesAccount);
+        Assert.Equal("", h.RefreshToken);
+    }
+
+    [Fact]
+    public void The_refresh_token_is_kept_encrypted()
+    {
+        var h = new HomeyConfig { Auth = "account", RefreshToken = "secret-refresh" };
+        Assert.True(h.UsesAccount);
+        Assert.Equal("secret-refresh", h.RefreshToken);
+        Assert.DoesNotContain("secret-refresh", JsonSerializer.Serialize(h));
+    }
+}
+
+public class AthomLoginTests
+{
+    [Theory]
+    [InlineData("http://192.168.1.20", "192.168.1.20")]
+    [InlineData("http://192.168.1.20:8080/", "192.168.1.20:8080")]
+    [InlineData("https://192-168-1-20.homey.homeylocal.com", "192-168-1-20.homey.homeylocal.com")]
+    [InlineData(null, "")]
+    [InlineData("", "")]
+    public void The_local_url_of_a_homey_becomes_the_address(string? url, string expected) =>
+        Assert.Equal(expected, AthomLogin.HostOf(url));
 }
 
 public class TranslationTests

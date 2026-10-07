@@ -53,11 +53,32 @@
                         <TextBlock DockPanel.Dock="Left" Width="150" Text="{c:T Naam}" Style="{StaticResource Label}" />
                         <TextBox x:Name="NameBox" />
                     </DockPanel>
+                    <!-- Only when the build has an API client (AthomLogin.IsAvailable) -->
+                    <DockPanel x:Name="AuthRow" Style="{StaticResource Row}">
+                        <TextBlock DockPanel.Dock="Left" Width="150" Text="{c:T Inloggen}" Style="{StaticResource Label}" />
+                        <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton x:Name="AuthKey" Style="{StaticResource Segment}" GroupName="Auth" Content="API-key" Checked="Auth_Checked" />
+                                <RadioButton x:Name="AuthAccount" Style="{StaticResource Segment}" GroupName="Auth" Content="{c:T 'Homey-account'}" Checked="Auth_Checked" />
+                            </StackPanel>
+                        </Border>
+                    </DockPanel>
+                    <StackPanel x:Name="AccountPanel" Visibility="Collapsed">
+                        <DockPanel Style="{StaticResource Row}">
+                            <TextBlock DockPanel.Dock="Left" Width="150" Text="{c:T 'Homey-account'}" Style="{StaticResource Label}" />
+                            <Button x:Name="SignInButton" DockPanel.Dock="Left" Style="{StaticResource Btn}" Content="{c:T 'Inloggen bij Homey…'}" Click="SignIn_Click" />
+                            <TextBlock x:Name="AccountStatus" Style="{StaticResource Sub}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="10,0,0,0" />
+                        </DockPanel>
+                        <DockPanel x:Name="HomeyChoiceRow" Style="{StaticResource Row}" Visibility="Collapsed">
+                            <TextBlock DockPanel.Dock="Left" Width="150" Text="Homey" Style="{StaticResource Label}" />
+                            <ComboBox x:Name="HomeyChoice" DisplayMemberPath="Name" SelectionChanged="HomeyChoice_Changed" />
+                        </DockPanel>
+                    </StackPanel>
                     <DockPanel Style="{StaticResource Row}">
                         <TextBlock DockPanel.Dock="Left" Width="150" Text="{c:T 'IP-adres (lokaal)'}" Style="{StaticResource Label}" />
                         <TextBox x:Name="AddressBox" />
                     </DockPanel>
-                    <DockPanel Style="{StaticResource Row}">
+                    <DockPanel x:Name="KeyRow" Style="{StaticResource Row}">
                         <TextBlock DockPanel.Dock="Left" Width="150" Text="API-key" Style="{StaticResource Label}" />
                         <PasswordBox x:Name="TokenBox" />
                     </DockPanel>
@@ -85,7 +106,14 @@
                         <Button Style="{StaticResource Btn}" Content="{c:T Annuleren}" Click="Cancel_Click" />
                     </StackPanel>
 
-                    <Border Background="{DynamicResource IconBgBrush}" CornerRadius="8" Padding="12,10" Margin="0,16,0,0">
+                    <Border x:Name="AccountHelp" Background="{DynamicResource IconBgBrush}" CornerRadius="8" Padding="12,10" Margin="0,16,0,0" Visibility="Collapsed">
+                        <StackPanel>
+                            <TextBlock Text="{c:T 'Inloggen met je Homey-account'}" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,4" />
+                            <TextBlock Style="{StaticResource Body}" Foreground="{DynamicResource SubTextBrush}" TextWrapping="Wrap"
+                                       Text="{c:T 'Voor een Homey die geen API-sleutels kan maken, zoals de Homey Pro (Early 2019). De browser opent de inlogpagina van Homey; daarna vult HomeWindow je Homey zelf in. HomeWindow krijgt de rechten van jouw account en bewaart alleen een versleutelde sleutel om opnieuw te verbinden, nooit je wachtwoord.'}" />
+                        </StackPanel>
+                    </Border>
+                    <Border x:Name="KeyHelp" Background="{DynamicResource IconBgBrush}" CornerRadius="8" Padding="12,10" Margin="0,16,0,0">
                         <StackPanel>
                             <TextBlock Text="{c:T 'Een API-key maken'}" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,4" />
                             <TextBlock Style="{StaticResource Body}" Foreground="{DynamicResource SubTextBrush}"

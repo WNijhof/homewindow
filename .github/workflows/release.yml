@@ -43,8 +43,13 @@ jobs:
       # SIGNPATH_ORGANIZATION_ID is set; until then the installer goes out unsigned, as before.
       # Tag builds use the release certificate, which needs an approval in SignPath for each
       # release; a manual run uses the test certificate.
+      # The Homey API client for signing in with a Homey account (Core/AthomLogin.cs); without these secrets
+      # that sign-in is hidden and only the API key remains
       - name: Publish app
         shell: pwsh
+        env:
+          HOMEY_CLIENT_ID: ${{ secrets.HOMEY_CLIENT_ID }}
+          HOMEY_CLIENT_SECRET: ${{ secrets.HOMEY_CLIENT_SECRET }}
         run: ./scripts/build-installer.ps1 -Version ${{ steps.version.outputs.value }} -SelfContained -PublishOnly
 
       - name: Upload app for signing

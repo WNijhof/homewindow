@@ -322,5 +322,30 @@ public static partial class Loc
         ["Te vaak fout. Wacht even en probeer het opnieuw."] = "Too many wrong tries. Wait a moment and try again.",
         ["Uit: iedereen met toegang tot deze pc kan je huis bedienen."] = "Off: anyone with access to this PC can control your home.",
         ["Vul je pincode in om je huis te bedienen."] = "Enter your PIN to control your home.",
+
+        // Signing in with a Homey account
+        ["Athom gaf geen toegang."] = "Athom did not grant access.",
+        ["Athom reageert niet"] = "Athom is not responding",
+        ["De Homey gaf geen sessie."] = "Homey did not start a session.",
+        ["Dit Homey-account mag de apparaten niet bekijken"] = "This Homey account may not view the devices",
+        ["Dit Homey-account mag de apparaten niet bekijken."] = "This Homey account may not view the devices.",
+        ["Niet beschikbaar bij inloggen met een Homey-account. Gebruik een API-key als je Homey die kan maken."] = "Not available when signed in with a Homey account. Use an API key if your Homey can create one.",
+        ["Homey-account"] = "Homey account",
+        ["Ingelogd"] = "Signed in",
+        ["Ingelogd, maar dit account heeft geen Homey."] = "Signed in, but this account has no Homey.",
+        ["Inloggen"] = "Sign in",
+        ["Inloggen bij Homey…"] = "Sign in to Homey…",
+        ["Inloggen duurde te lang. Probeer het opnieuw."] = "Signing in took too long. Please try again.",
+        ["Inloggen is afgebroken."] = "Signing in was cancelled.",
+        ["Inloggen lukt niet: {0}"] = "Could not sign in: {0}",
+        ["Inloggen met je Homey-account"] = "Sign in with your Homey account",
+        ["Je kunt dit venster sluiten en teruggaan naar HomeWindow."] = "You can close this window and go back to HomeWindow.",
+        ["Log in in je browser…"] = "Sign in in your browser…",
+        ["Log in met je Homey-account."] = "Sign in with your Homey account.",
+        ["Log opnieuw in met je Homey-account."] = "Sign in again with your Homey account.",
+        ["Nog niet ingelogd"] = "Not signed in yet",
+        ["Poort {0} is in gebruik; sluit het andere inlogvenster."] = "Port {0} is in use; close the other sign-in window.",
+        ["Voor een Homey die geen API-sleutels kan maken, zoals de Homey Pro (Early 2019). De browser opent de inlogpagina van Homey; daarna vult HomeWindow je Homey zelf in. HomeWindow krijgt de rechten van jouw account en bewaart alleen een versleutelde sleutel om opnieuw te verbinden, nooit je wachtwoord."] =
+            "For a Homey that cannot create API keys, such as the Homey Pro (Early 2019). Your browser opens Homey's sign-in page; HomeWindow then fills in your Homey by itself. HomeWindow gets the rights of your account and only keeps an encrypted key to reconnect, never your password.",
     };
 }

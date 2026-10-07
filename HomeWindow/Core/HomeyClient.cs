@@ -16,7 +16,8 @@ public sealed class HomeyApiException(int status, string message) : Exception(me
 public sealed class HomeyOfflineException(string message, Exception? inner = null) : Exception(message, inner);
 
 // The Homey Pro Web API with an API key, on the local network or through Athom's cloud relay
-// (https://<homey id>.connect.athom.com), which accepts the same key
+// (https://<homey id>.connect.athom.com), which accepts the same key. With a Homey account instead of a key
+// (Config.UsesAccount) the key is a session, renewed through AthomLogin when Homey no longer takes it.
 public sealed class HomeyClient(HomeyConfig config)
 {
     static readonly HttpClient Http = new(new SocketsHttpHandler
@@ -30,6 +31,9 @@ public sealed class HomeyClient(HomeyConfig config)
     public HomeyConfig Config { get; } = config;
     public string? BaseUrl { get; private set; }
     public bool IsCloud { get; private set; }
+    // A new session or refresh token, to be saved
+    public event Action? CredentialsChanged;
+    readonly SemaphoreSlim renewing = new(1, 1);
 
     public static string? NormalizeLocal(string? address)
     {
@@ -91,8 +95,10 @@ public sealed class HomeyClient(HomeyConfig config)
         if (BaseUrl == null)
             throw new HomeyOfflineException(errors.Count > 0 ? string.Join(" · ", errors) : Loc.T("Geen adres of Homey-ID ingesteld"));
 
-        // Checks the key right away, so a wrong key does not look like an empty Homey
-        await GetAsync("/api/manager/system/name", ct);
+        if (Config.UsesAccount && Config.Token.Length == 0) await RenewSessionAsync("", ct);
+        // Checks the key right away, so a wrong key does not look like an empty Homey. A Homey account may not
+        // read the system manager, so it is checked with the zones.
+        await GetAsync(Config.UsesAccount ? "/api/manager/zones/zone" : "/api/manager/system/name", ct);
     }
 
     // Tries to move from the cloud back to the local address
@@ -169,14 +175,52 @@ public sealed class HomeyClient(HomeyConfig config)
 
     async Task<JsonNode?> SendAsync(HttpMethod method, string path, object? body, CancellationToken ct)
     {
-        var baseUrl = BaseUrl ?? throw new HomeyOfflineException(Loc.T("Niet verbonden"));
         if (demo != null)
         {
             await Task.Delay(40, ct);
             return demo.Handle(method, path, body);
         }
+        var token = Config.Token;
+        try { return await SendOnceAsync(method, path, body, token, ct); }
+        catch (HomeyApiException e) when (e.Status == 401 && Config.UsesAccount)
+        {
+            // The session ran out: a new one, and the request once more
+            await RenewSessionAsync(token, ct);
+            return await SendOnceAsync(method, path, body, Config.Token, ct);
+        }
+    }
+
+    // A new session on the Homey from the refresh token. Skipped when another request already renewed the one that failed.
+    async Task RenewSessionAsync(string failed, CancellationToken ct)
+    {
+        await renewing.WaitAsync(ct);
+        try
+        {
+            if (Config.Token != failed && Config.Token.Length > 0) return;
+            var baseUrl = BaseUrl ?? throw new HomeyOfflineException(Loc.T("Niet verbonden"));
+            if (Config.RefreshToken.Length == 0) throw new HomeyApiException(401, Loc.T("Log opnieuw in met je Homey-account."));
+            string access;
+            try
+            {
+                (access, var refresh) = await AthomLogin.RefreshAsync(Config.RefreshToken, ct);
+                if (refresh.Length > 0) Config.RefreshToken = refresh;
+            }
+            // Athom refuses a refresh token that was revoked or not used for half a year
+            catch (HomeyApiException e) when (e.Status is 400 or 401 or 403)
+            {
+                throw new HomeyApiException(401, Loc.T("Log opnieuw in met je Homey-account."));
+            }
+            Config.Token = await AthomLogin.SessionAsync(access, baseUrl, ct);
+            CredentialsChanged?.Invoke();
+        }
+        finally { renewing.Release(); }
+    }
+
+    async Task<JsonNode?> SendOnceAsync(HttpMethod method, string path, object? body, string token, CancellationToken ct)
+    {
+        var baseUrl = BaseUrl ?? throw new HomeyOfflineException(Loc.T("Niet verbonden"));
         using var req = new HttpRequestMessage(method, baseUrl + path);
-        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Config.Token);
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         if (body != null) req.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -202,7 +246,7 @@ public sealed class HomeyClient(HomeyConfig config)
         }
     }
 
-    static string ErrorText(string text, int status)
+    internal static string ErrorText(string text, int status)
     {
         string? message = null;
         try

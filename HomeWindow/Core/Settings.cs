@@ -16,6 +16,10 @@ public sealed class HomeyConfig
     // "auto": local when reachable, otherwise the cloud; "local" or "cloud" force one
     public string Mode { get; set; } = "auto";
     public string ProtectedToken { get; set; } = "";
+    // "key": an API key; "account": signed in with a Homey account (AthomLogin), for Homeys without API keys.
+    // Then ProtectedToken holds the session on the Homey and ProtectedRefreshToken the way to a new one.
+    public string Auth { get; set; } = "key";
+    public string ProtectedRefreshToken { get; set; } = "";
     public List<string> FavoriteDevices { get; set; } = [];
     public List<string> FavoriteFlows { get; set; } = [];
     // The favourites of the Homey app are taken over once, the first time this Homey connects with none of its own
@@ -26,19 +30,33 @@ public sealed class HomeyConfig
     public List<string> CollapsedZones { get; set; } = [];
     public List<string> CollapsedFolders { get; set; } = [];
 
-    // The API key, encrypted for the current Windows user
+    [JsonIgnore]
+    public bool UsesAccount => Auth == "account";
+
+    // The API key (or the session), encrypted for the current Windows user
     [JsonIgnore]
     public string Token
     {
-        get
-        {
-            if (string.IsNullOrEmpty(ProtectedToken)) return "";
-            try { return Encoding.UTF8.GetString(ProtectedData.Unprotect(Convert.FromBase64String(ProtectedToken), null, DataProtectionScope.CurrentUser)); }
-            catch { return ""; }
-        }
-        set => ProtectedToken = string.IsNullOrEmpty(value) ? "" :
-            Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(value.Trim()), null, DataProtectionScope.CurrentUser));
+        get => Unprotect(ProtectedToken);
+        set => ProtectedToken = Protect(value);
     }
+
+    [JsonIgnore]
+    public string RefreshToken
+    {
+        get => Unprotect(ProtectedRefreshToken);
+        set => ProtectedRefreshToken = Protect(value);
+    }
+
+    static string Unprotect(string data)
+    {
+        if (string.IsNullOrEmpty(data)) return "";
+        try { return Encoding.UTF8.GetString(ProtectedData.Unprotect(Convert.FromBase64String(data), null, DataProtectionScope.CurrentUser)); }
+        catch { return ""; }
+    }
+
+    static string Protect(string? value) => string.IsNullOrEmpty(value) ? "" :
+        Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(value.Trim()), null, DataProtectionScope.CurrentUser));
 }
 
 public sealed class AppSettings
@@ -135,6 +153,8 @@ public sealed class AppSettings
             h.CloudId ??= "";
             h.Mode ??= "auto";
             h.ProtectedToken ??= "";
+            h.Auth ??= "key";
+            h.ProtectedRefreshToken ??= "";
             h.FavoriteDevices ??= [];
             h.FavoriteFlows ??= [];
             h.CustomIcons ??= [];

@@ -40,6 +40,13 @@
     <InternalsVisibleTo Include="HomeWindow.Tests" />
   </ItemGroup>
 
+  <!-- The API client for signing in with a Homey account (Core/AthomLogin.cs), from the environment at build time
+       (GitHub secrets in the release workflow), so it is not in the source. Without them that sign-in is hidden. -->
+  <ItemGroup>
+    <AssemblyMetadata Include="HOMEY_CLIENT_ID" Value="$(HOMEY_CLIENT_ID)" />
+    <AssemblyMetadata Include="HOMEY_CLIENT_SECRET" Value="$(HOMEY_CLIENT_SECRET)" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="SharpVectors.Wpf" Version="1.8.6" />
   </ItemGroup>
