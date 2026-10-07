@@ -121,14 +121,15 @@ public partial class SettingsPage : UserControl
         TokenBox.Password = h?.Token ?? "";
         CloudBox.Text = h?.CloudId ?? "";
         (h?.Mode switch { "local" => ModeLocal, "cloud" => ModeCloud, _ => ModeAuto }).IsChecked = true;
-        var account = h?.UsesAccount == true;
+        // A new Homey signs in with an account by default; one that has an API key keeps it
+        var account = h?.UsesAccount ?? AthomLogin.IsAvailable;
         accountRefresh = accountSession = "";
         accountChanged = false;
-        if (account) TokenBox.Password = "";
+        if (h?.UsesAccount == true) TokenBox.Password = "";
         AuthRow.Visibility = AthomLogin.IsAvailable || account ? Visibility.Visible : Visibility.Collapsed;
         (account ? AuthAccount : AuthKey).IsChecked = true;
         HomeyChoiceRow.Visibility = Visibility.Collapsed;
-        AccountStatus.Text = Loc.T(account && h!.RefreshToken.Length > 0 ? "Ingelogd" : "Nog niet ingelogd");
+        AccountStatus.Text = Loc.T(h?.UsesAccount == true && h.RefreshToken.Length > 0 ? "Ingelogd" : "Nog niet ingelogd");
         ShowAuth();
         TestResult.Visibility = Visibility.Collapsed;
         Editor.Visibility = Visibility.Visible;

@@ -345,7 +345,7 @@ public static partial class Loc
         ["Log opnieuw in met je Homey-account."] = "Sign in again with your Homey account.",
         ["Nog niet ingelogd"] = "Not signed in yet",
         ["Poort {0} is in gebruik; sluit het andere inlogvenster."] = "Port {0} is in use; close the other sign-in window.",
-        ["Voor een Homey die geen API-sleutels kan maken, zoals de Homey Pro (Early 2019). De browser opent de inlogpagina van Homey; daarna vult HomeWindow je Homey zelf in. HomeWindow krijgt de rechten van jouw account en bewaart alleen een versleutelde sleutel om opnieuw te verbinden, nooit je wachtwoord."] =
-            "For a Homey that cannot create API keys, such as the Homey Pro (Early 2019). Your browser opens Homey's sign-in page; HomeWindow then fills in your Homey by itself. HomeWindow gets the rights of your account and only keeps an encrypted key to reconnect, never your password.",
+        ["De eenvoudigste manier, ook voor een Homey die geen API-sleutels kan maken, zoals de Homey Pro (Early 2019). De browser opent de inlogpagina van Homey; daarna vult HomeWindow je Homey zelf in. HomeWindow bewaart alleen een versleutelde sleutel om opnieuw te verbinden, nooit je wachtwoord. De Systeem-pagina, updates, apps herstarten, meldingen wissen en het weer werken alleen met een API-key: die rechten geeft Athom niet aan andere apps."] =
+            "The easiest way, also for a Homey that cannot create API keys, such as the Homey Pro (Early 2019). Your browser opens Homey's sign-in page; HomeWindow then fills in your Homey by itself. HomeWindow only keeps an encrypted key to reconnect, never your password. The system page, updates, restarting apps, deleting notifications and the weather only work with an API key: Athom does not give those rights to other apps.",
     };
 }
