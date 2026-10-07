@@ -21,9 +21,9 @@ HomeWindow was inspired by [HomeBar](https://www.homebar.pro/) for the Mac, but 
 | Homey Pro (2023) and Homey Pro mini | Yes |
 | Homey Self-Hosted Server | Probably (same API, not tested) |
 | Homey (with Homey Bridge, no Pro) | No: it has no API keys |
-| Homey Pro from before 2023 | No: an older API without API keys |
+| Homey Pro (Early 2019) and older Homey Pro | Probably, by signing in with your Homey account (new in 0.4.3, not yet tested on one) |
 
-HomeWindow uses the Homey Web API with an API key, which you create in my.homey.app.
+HomeWindow uses the Homey Web API. You sign in with your Homey account: your browser opens Homey's sign-in page, and HomeWindow fills in your Homey by itself. A few parts need an API key instead, which you create in my.homey.app (Homey Pro 2023 and mini): the system page, updates, restarting apps, deleting notifications and the weather. Athom does not give those rights to apps that sign in with an account.
 
 ## What it does
 
@@ -45,7 +45,9 @@ The full manual is in Dutch: **[HANDLEIDING](docs/HANDLEIDING.md)** (a browser t
 1. Download `HomeWindow-Setup-<version>.exe` from the latest [release](https://github.com/WNijhof/homewindow/releases/latest).
 2. Run it. Windows may warn that the publisher is unknown (the installer is not code-signed): choose **More info → Run anyway**.
 3. HomeWindow installs for your Windows account, without admin rights, and adds itself to the Start menu. .NET is included.
-4. On first start the settings open. Fill in your Homey's IP address and an API key:
+4. On first start the settings open. Click **Sign in to Homey…** and sign in with your Homey account in the browser; HomeWindow then fills in your Homey and its IP address. Click **Save**.
+
+Prefer an API key, for the system page, updates and the weather too? Choose **API key** instead of *Homey account* and fill in your Homey's IP address and the key:
    - Go to [my.homey.app](https://my.homey.app), pick your Homey and open **Settings → API Keys → New API Key**.
    - Give it the rights HomeWindow needs: devices (view and control), zones, flows (view and start), moods, Logic, notifications, users, energy, Insights, system, apps and geolocation (for the weather).
    - The IP address is in the Homey app under **Settings → General**.
@@ -62,7 +64,7 @@ Want to look around first? Run `HomeWindow.exe --demo`.
 
 ## Privacy
 
-HomeWindow only talks to your own Homey: directly on your network, or through Athom's cloud relay (`<homey-id>.connect.athom.com`) when you are away. It also asks GitHub whether there is a new version. Nothing about your Homey goes anywhere else. Your settings are in `%APPDATA%\HomeWindow\settings.json`; the API key in it is encrypted with your Windows account.
+HomeWindow only talks to your own Homey: directly on your network, or through Athom's cloud relay (`<homey-id>.connect.athom.com`) when you are away. It also asks GitHub whether there is a new version. Signing in goes through Athom's own sign-in page (`api.athom.com`); HomeWindow never sees or keeps your password. Nothing about your Homey goes anywhere else. Your settings are in `%APPDATA%\HomeWindow\settings.json`; the key to connect (an API key or the sign-in) is encrypted in it with your Windows account.
 
 ## Code signing policy
 

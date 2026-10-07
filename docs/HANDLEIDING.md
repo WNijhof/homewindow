@@ -20,7 +20,9 @@ HomeWindow zet je Homey Pro in het Windows-systeemvak, naast de klok. Deze handl
 
 ### Werkt het met mijn Homey?
 
-HomeWindow werkt met een **Homey Pro (2023)** of **Homey Pro mini**, en waarschijnlijk ook met de **Homey Self-Hosted Server**. Een gewone Homey met Homey Bridge, of een Homey Pro van vóór 2023, wordt niet ondersteund: die hebben geen API-keys.
+HomeWindow werkt met een **Homey Pro (2023)** of **Homey Pro mini**, en waarschijnlijk ook met de **Homey Self-Hosted Server**. Een **Homey Pro (Early 2019)** of ouder werkt waarschijnlijk ook (nieuw in 0.4.3, nog niet op zo'n Homey getest). Een gewone Homey met Homey Bridge wordt niet ondersteund.
+
+Je logt in met je **Homey-account**: Instellingen → Homey → *Inloggen* → **Homey-account** → **Inloggen bij Homey…**. De browser opent de inlogpagina van Homey; daarna vult HomeWindow je Homey zelf in. HomeWindow bewaart alleen een versleutelde sleutel om opnieuw te verbinden, nooit je wachtwoord. De Systeem-pagina, updates, apps herstarten, meldingen wissen en het weer werken alleen met een **API-key** (kies *API-key* in plaats van *Homey-account*): die rechten geeft Athom niet aan apps die met een account inloggen. Een API-key kan alleen een Homey Pro (2023) of mini maken.
 
 ### Installeren
 

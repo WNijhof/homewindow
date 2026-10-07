@@ -17,9 +17,9 @@ HomeWindow is geïnspireerd op [HomeBar](https://www.homebar.pro/) voor de Mac, 
 | Homey Pro (2023) en Homey Pro mini | Ja |
 | Homey Self-Hosted Server | Waarschijnlijk wel (zelfde API, niet getest) |
 | Homey (met Homey Bridge, zonder Pro) | Nee: die heeft geen API-keys |
-| Homey Pro van vóór 2023 | Nee: andere, oudere API zonder API-keys |
+| Homey Pro (Early 2019) en oudere Homey Pro | Waarschijnlijk wel, door in te loggen met je Homey-account (nieuw in 0.4.3, nog niet op zo'n Homey getest) |
 
-HomeWindow werkt met de Web API van Homey en een API-key. Die API-keys maak je in my.homey.app, en dat kan alleen voor de modellen hierboven met *Ja*.
+HomeWindow werkt met de Web API van Homey. Je logt in met je Homey-account: de browser opent de inlogpagina van Homey, en HomeWindow vult je Homey zelf in. Voor een paar onderdelen is een API-key nodig, die je maakt in my.homey.app (Homey Pro 2023 en mini): de Systeem-pagina, updates, apps herstarten, meldingen wissen en het weer. Die rechten geeft Athom niet aan apps die met een account inloggen.
 
 | Paneel bij de klok | Hoofdvenster |
 |---|---|
@@ -45,7 +45,7 @@ Hoe je alles gebruikt staat in de **[handleiding](docs/HANDLEIDING.md)**.
 1. Download `HomeWindow-Setup-<versie>.exe` bij de nieuwste [release](https://github.com/WNijhof/homewindow/releases/latest).
 2. Start het bestand. Windows kan waarschuwen dat de uitgever onbekend is (de installer is niet digitaal ondertekend): kies **Meer informatie → Toch uitvoeren**.
 3. HomeWindow installeert voor jouw Windows-account, zonder beheerdersrechten, en zet zichzelf in het Start-menu. .NET zit in de installer; je hoeft niets anders te installeren.
-4. Bij de eerste start opent Instellingen: vul het IP-adres van je Homey en een API-key in. De [handleiding](docs/HANDLEIDING.md#een-api-key-maken) legt uit hoe je die maakt.
+4. Bij de eerste start opent Instellingen. Klik **Inloggen bij Homey…** en log in de browser in met je Homey-account; HomeWindow vult daarna je Homey en het IP-adres zelf in. Klik **Opslaan**. Liever een API-key, ook voor de Systeem-pagina, updates en het weer? Kies **API-key** in plaats van *Homey-account*; de [handleiding](docs/HANDLEIDING.md#een-api-key-maken) legt uit hoe je die maakt.
 
 HomeWindow zoekt daarna zelf naar nieuwe versies en installeert die stil (uit te zetten bij Instellingen → Updates). Verwijderen gaat via **Windows-instellingen → Apps**.
 
@@ -59,7 +59,7 @@ Eerst rondkijken zonder Homey? Start `HomeWindow.exe --demo`.
 
 ## Privacy
 
-HomeWindow praat met je eigen Homey: rechtstreeks in je netwerk, of via de cloud-doorgang van Athom (`<homey-id>.connect.athom.com`) als je niet thuis bent. Daarnaast vraagt hij bij GitHub of er een nieuwe versie is. Er gaat geen informatie over je Homey naar andere partijen. Je instellingen staan in `%APPDATA%\HomeWindow\settings.json`; de API-key is daarin versleuteld met je Windows-account.
+HomeWindow praat met je eigen Homey: rechtstreeks in je netwerk, of via de cloud-doorgang van Athom (`<homey-id>.connect.athom.com`) als je niet thuis bent. Daarnaast vraagt hij bij GitHub of er een nieuwe versie is. Inloggen gaat via de eigen inlogpagina van Athom (`api.athom.com`); HomeWindow ziet en bewaart je wachtwoord nooit. Er gaat geen informatie over je Homey naar andere partijen. Je instellingen staan in `%APPDATA%\HomeWindow\settings.json`; de sleutel om te verbinden (een API-key of de inlog) is daarin versleuteld met je Windows-account.
 
 ## Code signing policy
 
