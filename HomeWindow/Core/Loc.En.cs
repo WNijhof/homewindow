@@ -143,6 +143,7 @@ public static partial class Loc
         ["Markeer apparaten als favoriet met de ster in hun instellingen, of klik er met de rechtermuisknop op."] = "Mark devices as favourite with the star in their settings, or right-click them.",
         ["Melding bij een alarm"] = "Notify on an alarm",
         ["Meldingen"] = "Notifications",
+        ["Meter voor het net"] = "Meter for the grid",
         ["Meldingen van Homey tonen"] = "Show Homey notifications",
         ["Metingen"] = "Measurements",
         ["Mist"] = "Fog",

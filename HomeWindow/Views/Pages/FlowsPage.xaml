@@ -4,6 +4,10 @@
              xmlns:c="clr-namespace:HomeWindow.Core">
     <DockPanel>
         <DockPanel DockPanel.Dock="Top" Margin="28,22,22,8">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                <Button Style="{StaticResource IconBtn}" Content="&#xE70E;" ToolTip="{c:T 'Alles inklappen'}" Click="CollapseAll_Click" />
+                <Button Style="{StaticResource IconBtn}" Content="&#xE70D;" ToolTip="{c:T 'Alles uitklappen'}" Click="ExpandAll_Click" />
+            </StackPanel>
             <Grid DockPanel.Dock="Right" Width="240" VerticalAlignment="Center">
                 <TextBox x:Name="SearchBox" Padding="30,6,8,6" TextChanged="Search_Changed" />
                 <TextBlock Style="{StaticResource Icon}" Text="&#xE721;" FontSize="12" HorizontalAlignment="Left" Margin="11,0,0,0" Foreground="{DynamicResource SubTextBrush}" IsHitTestVisible="False" />

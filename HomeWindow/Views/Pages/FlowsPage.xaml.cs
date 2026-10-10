@@ -21,6 +21,14 @@ public partial class FlowsPage : UserControl
         Filter();
     }
 
+    void CollapseAll_Click(object sender, RoutedEventArgs e) => SetAll(false);
+    void ExpandAll_Click(object sender, RoutedEventArgs e) => SetAll(true);
+
+    void SetAll(bool expanded)
+    {
+        foreach (var g in Groups.Items.OfType<FlowGroup>()) g.IsExpanded = expanded;
+    }
+
     void Filter()
     {
         var q = SearchBox.Text.Trim();

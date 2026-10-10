@@ -29,6 +29,9 @@ public sealed class HomeyConfig
     public Dictionary<string, List<string>> TileDetails { get; set; } = [];
     public List<string> CollapsedZones { get; set; } = [];
     public List<string> CollapsedFolders { get; set; } = [];
+    // The device whose reading is the grid; empty: HomeWindow picks one. Meters that measure the same
+    // supply (a P1 reader and a smart meter) must not be added together.
+    public string GridMeterId { get; set; } = "";
 
     [JsonIgnore]
     public bool UsesAccount => Auth == "account";
@@ -161,6 +164,7 @@ public sealed class AppSettings
             h.TileDetails ??= [];
             h.CollapsedZones ??= [];
             h.CollapsedFolders ??= [];
+            h.GridMeterId ??= "";
         }
         return s;
     }

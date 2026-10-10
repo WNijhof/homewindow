@@ -17,6 +17,12 @@
                        Foreground="{DynamicResource WarnBrush}" Margin="0,8,0,0"
                        Visibility="{Binding DataContext.EnergyError, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource Visible}}" />
 
+            <!-- More than one meter: which one is the grid -->
+            <DockPanel Margin="0,10,0,0" Visibility="{Binding HasMeterChoice, Converter={StaticResource Visible}}">
+                <TextBlock DockPanel.Dock="Left" Text="{c:T 'Meter voor het net'}" Style="{StaticResource Sub}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                <ComboBox x:Name="MeterChoice" DisplayMemberPath="Name" MinWidth="220" HorizontalAlignment="Left" SelectionChanged="Meter_Changed" Loaded="Meter_Loaded" />
+            </DockPanel>
+
             <!-- Now -->
             <TextBlock Text="{c:T Nu}" Style="{StaticResource Heading}" />
             <UniformGrid Rows="1" Margin="0,0,-12,0">

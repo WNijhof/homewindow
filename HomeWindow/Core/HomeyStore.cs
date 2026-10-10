@@ -649,27 +649,53 @@ public sealed class HomeyStore : ObservableObject
 
     JsonNode? lastLive;
 
+    // The grid meters Homey knows, best first: ones that count imported kWh come before those that only read watts
+    public List<DeviceVM> GridMeters() => Devices
+        .Where(d => d.IsGridMeter && (d.PowerW != null || d.ImportCapability != null || d.Has("meter_power.imported") || d.Has("meter_power")))
+        .OrderByDescending(d => d.PowerW != null && (d.ImportCapability != null || d.Has("meter_power.imported") || d.Has("meter_power")))
+        .ToList();
+
+    // One meter is the grid: the chosen one, otherwise the best. Adding several would count the same supply twice.
+    DeviceVM? GridMeter()
+    {
+        var meters = GridMeters();
+        return meters.FirstOrDefault(d => d.Id == Config?.GridMeterId) ?? meters.FirstOrDefault();
+    }
+
+    public void ChooseGridMeter(string id)
+    {
+        if (Config == null) return;
+        Config.GridMeterId = id;
+        App.Settings.Save();
+        ComputeLiveEnergy(null);
+        EnergyReportRequested = true;
+        Kick();
+    }
+
     // Power right now: the grid meter, solar panels and home batteries, then the devices.
     // Homey Energy's live report adds devices that only have an estimated use (lights).
     void ComputeLiveEnergy(JsonNode? live)
     {
         if (live != null) lastLive = live;
         var e = Energy;
-        var grid = Devices.Where(d => d.IsGridMeter && d.PowerW != null).ToList();
+        var gridMeter = GridMeter();
         var solar = Devices.Where(d => d.IsSolar).ToList();
         var batteries = Devices.Where(d => d.IsHomeBattery).ToList();
-        e.GridW = grid.Count > 0 ? grid.Sum(d => d.PowerW!.Value) : null;
+        e.GridW = gridMeter?.PowerW;
+        e.GridMeterCount = GridMeters().Count;
         e.HasSolar = solar.Count > 0;
         e.SolarW = solar.Sum(d => Math.Abs(d.PowerW ?? 0));
         e.HasBattery = batteries.Count > 0;
         e.BatteryW = batteries.Sum(d => d.PowerW ?? 0);
         e.BatteryPercent = EnergyMath.StateOfCharge(batteries.Select(d => d.BatteryLevel));
 
+        var items = J.Arr(lastLive, "items") ?? (lastLive as JsonArray);
+        // Homey Energy's live report only lists devices that count in Energy; one it leaves out stays out here too
+        var counted = items?.OfType<JsonObject>().Where(i => J.Str(i, "type") == "device").Select(i => J.Str(i, "id")).OfType<string>().ToHashSet();
         var consumers = Devices
-            .Where(d => !d.IsGridMeter && !d.IsSolar && !d.IsHomeBattery && d.Class != "battery" && d.PowerW is > 0.5)
+            .Where(d => !d.IsGridMeter && !d.IsSolar && !d.IsHomeBattery && d.Class != "battery" && d.PowerW is > 0.5 && (counted == null || counted.Count == 0 || counted.Contains(d.Id)))
             .Select(d => (name: d.Name, watts: d.PowerW!.Value, estimated: false, glyph: d.Glyph))
             .ToList();
-        var items = J.Arr(lastLive, "items") ?? (lastLive as JsonArray);
         foreach (var item in items?.OfType<JsonObject>() ?? [])
         {
             if (J.Str(item, "type") != "device" || J.Num(J.Obj(item, "values"), "W") is not > 0.5) continue;
@@ -732,7 +758,7 @@ public sealed class HomeyStore : ObservableObject
         e.ReportStatus = Loc.T("Rapport wordt geladen…");
         e.Changed();
 
-        var meter = Devices.FirstOrDefault(d => d.IsGridMeter && (d.ImportCapability != null || d.Has("meter_power.imported") || d.Has("meter_power")));
+        var meter = GridMeter();
         var importCap = meter?.ImportCapability ?? (meter?.Has("meter_power.imported") == true ? "meter_power.imported" : meter?.Has("meter_power") == true ? "meter_power" : null);
         var exportCap = meter?.ExportCapability ?? (meter?.Has("meter_power.exported") == true ? "meter_power.exported" : null);
 

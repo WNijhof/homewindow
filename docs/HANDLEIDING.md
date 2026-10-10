@@ -242,7 +242,7 @@ De logica-variabelen van je Homey. Een ja/nee-variabele zet je met de schakelaar
 - **Totalen** voor vandaag en deze maand: verbruik, van het net, teruggeleverd, zon opgewekt, wat de thuisbatterij laadde en ontlaadde, en gas. Het verbruik is van het net + zon − teruggeleverd − geladen + ontladen, dus energie die alleen even in de batterij zat, telt niet dubbel.
 - **Afgelopen 14 dagen**: per dag wat er van het net kwam en wat de zon opwekte. Beweeg de muis over een dag voor de getallen.
 
-HomeWindow vindt je slimme meter (P1), zonnepanelen en thuisbatterij zelf, aan de hand van hoe ze in Homey Energie staan. De totalen en de grafiek komen uit Insights. Ze worden geladen als je de pagina opent en daarna elke vijf minuten; **Rapport vernieuwen** laadt ze meteen opnieuw.
+HomeWindow vindt je slimme meter (P1), zonnepanelen en thuisbatterij zelf, aan de hand van hoe ze in Homey Energie staan. Heb je meer dan één meter op dezelfde aansluiting (bijvoorbeeld een P1-lezer en een slimme meter), dan telt HomeWindow er maar één als het net; met **Meter voor het net** bovenaan de pagina kies je welke. De totalen en de grafiek komen uit Insights. Ze worden geladen als je de pagina opent en daarna elke vijf minuten; **Rapport vernieuwen** laadt ze meteen opnieuw.
 
 ### Batterijen
 
