@@ -39,6 +39,10 @@ public partial class App : Application
         AppDomain.CurrentDomain.UnhandledException += (_, ev) => { if (ev.ExceptionObject is Exception ex) Log.Error("Fatal", ex); };
         TaskScheduler.UnobservedTaskException += (_, ev) => { Log.Error("Task", ev.Exception); ev.SetObserved(); };
 
+        // Dragging a list past its end by touch would otherwise shift the whole window
+        EventManager.RegisterClassHandler(typeof(System.Windows.Controls.ScrollViewer), UIElement.ManipulationBoundaryFeedbackEvent,
+            new EventHandler<System.Windows.Input.ManipulationBoundaryFeedbackEventArgs>((_, ev) => ev.Handled = true));
+
         var args = e.Args.ToList();
         var snapshot = args.IndexOf("--snapshot") is var si && si >= 0 && si + 1 < args.Count ? args[si + 1] : null;
         if (snapshot != null)

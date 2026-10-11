@@ -550,7 +550,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
                     <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="7">
-                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        <ScrollViewer x:Name="PART_ContentHost" PanningMode="None" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocused" Value="True">
@@ -573,7 +573,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="PasswordBox">
                     <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="7">
-                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
+                        <ScrollViewer x:Name="PART_ContentHost" PanningMode="None" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocused" Value="True">
@@ -583,6 +583,11 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- Every list scrolls by dragging it with a finger too; sideways drags still reach the sliders -->
+    <Style TargetType="ScrollViewer">
+        <Setter Property="PanningMode" Value="VerticalFirst" />
     </Style>
 
     <!-- Slim scroll bars -->
