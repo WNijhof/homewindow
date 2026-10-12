@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
 using System.Windows.Forms;
 
 namespace HomeWindow.Core;
@@ -129,6 +130,34 @@ public sealed class Tray : IDisposable
         if (App.Gate.IsActive) menu.Items.Add(Loc.T("Nu vergrendelen"), null, (_, _) => App.Gate.Lock());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(Loc.T("Afsluiten"), null, (_, _) => Quit?.Invoke());
+    }
+
+    public const string AppId = "WNijhof.HomeWindow";
+
+    [System.Runtime.InteropServices.DllImport("shell32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    static extern int SetCurrentProcessExplicitAppUserModelID(string appId);
+
+    // Without its own app ID, Windows titles a notification "NotifyIconGeneratedAumid_…" when it cannot
+    // match the exe to a Start menu shortcut; the registered name and icon make it read "HomeWindow".
+    // Called before the first window, so the taskbar groups the windows under the same ID.
+    public static void RegisterAppId()
+    {
+        try
+        {
+            var iconPath = Path.Combine(Path.GetDirectoryName(Log.FilePath)!, "HomeWindow.ico");
+            if (!File.Exists(iconPath))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(iconPath)!);
+                using var source = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Assets/HomeWindow.ico"))!.Stream;
+                using var target = File.Create(iconPath);
+                source.CopyTo(target);
+            }
+            using var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey($@"Software\Classes\AppUserModelId\{AppId}");
+            key.SetValue("DisplayName", "HomeWindow");
+            key.SetValue("IconUri", iconPath);
+            SetCurrentProcessExplicitAppUserModelID(AppId);
+        }
+        catch (Exception e) { Log.Error("AppId", e); }
     }
 
     public void Notify(string title, string text)

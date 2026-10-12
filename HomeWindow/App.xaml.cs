@@ -43,6 +43,8 @@ public partial class App : Application
         EventManager.RegisterClassHandler(typeof(System.Windows.Controls.ScrollViewer), UIElement.ManipulationBoundaryFeedbackEvent,
             new EventHandler<System.Windows.Input.ManipulationBoundaryFeedbackEventArgs>((_, ev) => ev.Handled = true));
 
+        Tray.RegisterAppId();
+
         var args = e.Args.ToList();
         var snapshot = args.IndexOf("--snapshot") is var si && si >= 0 && si + 1 < args.Count ? args[si + 1] : null;
         if (snapshot != null)

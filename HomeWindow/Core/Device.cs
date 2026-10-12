@@ -251,6 +251,8 @@ public sealed class DeviceVM : ObservableObject
             if (Cap("alarm_contact") is { } contact) return contact.Display;
             if (Cap("alarm_motion") is { } motion) return motion.Display;
             if (Capabilities.FirstOrDefault(c => c.IsAlarm && c.Id != "alarm_battery" && c.Value is true) is { } alarm) return alarm.Title;
+            // Without a real state the tile shows a measurement; the details the user picked take its place
+            if (DetailsReplaceState) return ChosenDetailText;
             if (Cap("measure_temperature") is { } temp)
                 return Cap("measure_humidity") is { Value: double } hum ? $"{temp.Display} · {hum.Display}" : temp.Display;
             if (Cap("measure_power") is { } power) return power.Display;
@@ -279,8 +281,17 @@ public sealed class DeviceVM : ObservableObject
 
     IEnumerable<string> ChosenDetails => TileDetails ?? (AutoDetail is { } auto ? [auto] : []);
 
-    public string DetailText => !Available ? "" : string.Join(" · ", ChosenDetails
+    string ChosenDetailText => string.Join(" · ", ChosenDetails
         .Select(Cap).Where(c => c is { Value: not null }).Select(c => c!.Display).Where(t => t.Length > 0));
+
+    // A device without on/off, thermostat, curtain, lock, media, contact or motion shows a measurement as
+    // its state; once the user picks details, only those are shown, not the temperature and humidity as well
+    bool DetailsReplaceState => TileDetails is { Count: > 0 }
+        && !Has("onoff") && !Has("target_temperature") && !Has("windowcoverings_set") && !Has("windowcoverings_state")
+        && !Has("locked") && !Has("speaker_playing") && !Has("alarm_contact") && !Has("alarm_motion")
+        && ChosenDetailText.Length > 0;
+
+    public string DetailText => !Available || DetailsReplaceState ? "" : ChosenDetailText;
 
     // The two pickers in the details: everything Homey reports a value for, apart from plain buttons
     public string Detail1Title => DetailTitle(0);

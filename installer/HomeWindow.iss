@@ -81,10 +81,13 @@ Source: "{#SourceDir}\*"; DestDir: "{app}"; Excludes: "*.pdb"; Flags: ignorevers
 Type: filesandordirs; Name: "{localappdata}\{#AppName}\Updates"
 
 [Icons]
-Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"
-Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
+; The same app ID HomeWindow gives itself (Tray.AppId), so the taskbar and notifications match the shortcut
+Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"; AppUserModelID: "WNijhof.HomeWindow"
+Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; AppUserModelID: "WNijhof.HomeWindow"; Tasks: desktopicon
 
 [Registry]
+; HomeWindow writes this key itself for the name and icon on its notifications; removed on uninstall
+Root: HKCU; Subkey: "Software\Classes\AppUserModelId\WNijhof.HomeWindow"; Flags: uninsdeletekey dontcreatekey
 ; The same value HomeWindow sets itself under Settings → Start with Windows
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "HomeWindow"; ValueData: """{app}\{#AppExe}"" --tray"; Tasks: autostart; Flags: uninsdeletevalue
 

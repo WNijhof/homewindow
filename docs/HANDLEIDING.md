@@ -154,7 +154,7 @@ Bij **Instellingen → Uiterlijk → Wat het strookje toont** kies je zelf wat e
 
 De tegels lijken op die in de Homey-app. Staat een apparaat aan, dan kleurt het ronde knopje: geel voor lampen, paars voor speakers en blauw voor de rest. Voor de status staat een gekleurd tekentje: een bolletje als het apparaat aan staat, een bliksem bij vermogen (groen bij teruglevering), een muzieknoot bij muziek, een oranje pijl als een thermostaat verwarmt en een slotje bij een slot. Een sensor met een alarm (beweging, rook, open deur) krijgt een rood icoon.
 
-Onder de status staat op een tegel een meting, zoals het vermogen van een stopcontact of de luchtvochtigheid bij een thermostaat. Welke meting dat is, kies je zelf in de details van het apparaat onder **Op de tegel**: bij **Detail 1** een andere meting of **Geen**, en bij **Detail 2** eventueel een tweede. HomeWindow onthoudt dat per apparaat. Een rood batterijtje betekent dat de batterij bijna leeg is. In de lijst staan die metingen achter de status.
+Onder de status staat op een tegel een meting, zoals het vermogen van een stopcontact of de luchtvochtigheid bij een thermostaat. Welke meting dat is, kies je zelf in de details van het apparaat onder **Op de tegel**: bij **Detail 1** een andere meting of **Geen**, en bij **Detail 2** eventueel een tweede. HomeWindow onthoudt dat per apparaat. Heeft een apparaat geen eigen toestand (zoals aan/uit), dan is de status zelf een meting; kies je details, dan staan alleen die op de tegel. Een rood batterijtje betekent dat de batterij bijna leeg is. In de lijst staan die metingen achter de status.
 
 ### Meer bediening
 

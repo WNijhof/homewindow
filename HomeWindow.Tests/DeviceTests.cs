@@ -75,6 +75,25 @@ public class DeviceTests
     }
 
     [Fact]
+    public void Chosen_details_replace_a_measured_state()
+    {
+        var charger = Make("Car charger", "other", [Cap("measure_temperature", "number", 28.3), Cap("measure_humidity", "number", 36.84),
+            Cap("measure_power", "number", 0.0), Cap("measure_current", "number", 14.0)]);
+        Assert.Contains(charger.Cap("measure_temperature")!.Display, charger.StateText);
+
+        charger.TileDetails = ["measure_power", "measure_current"];
+        Assert.Equal($"{charger.Cap("measure_power")!.Display} · {charger.Cap("measure_current")!.Display}", charger.StateText);
+        Assert.Equal("", charger.DetailText);
+        Assert.Equal(charger.StateText, charger.SummaryText);
+
+        // A device with a real state keeps it, with the details after it
+        var socket = Make("Stekker", "socket", [Cap("onoff", "boolean", true, true), Cap("measure_power", "number", 5.0)]);
+        socket.TileDetails = ["measure_power"];
+        Assert.Equal(Loc.T("Aan"), socket.StateText);
+        Assert.Equal(socket.Cap("measure_power")!.Display, socket.DetailText);
+    }
+
+    [Fact]
     public void Capabilities_that_disappear_are_removed()
     {
         var d = Make("Lamp", "light", [Cap("onoff", "boolean", true, true), Cap("dim", "number", 0.5, true, 0, 1)]);
