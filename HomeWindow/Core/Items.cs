@@ -437,6 +437,9 @@ public sealed class EnergyVM : ObservableObject
     // More than one grid meter: the Energy page then lets the user pick which one is the grid
     public int GridMeterCount { get; set; }
     public bool HasMeterChoice => GridMeterCount > 1;
+    // More than one solar device: the Energy page then lets the user pick which ones count
+    public int SolarPanelCount { get; set; }
+    public bool HasSolarChoice => SolarPanelCount > 1;
     public bool HasSolar { get; set; }
     public bool HasBattery { get; set; }
     public bool IsExporting => GridW is < 0;

@@ -32,6 +32,8 @@ public sealed class HomeyConfig
     // The device whose reading is the grid; empty: HomeWindow picks one. Meters that measure the same
     // supply (a P1 reader and a smart meter) must not be added together.
     public string GridMeterId { get; set; } = "";
+    // Solar devices left out of the totals: an inverter and a kWh meter on the same panels would otherwise count the sun twice
+    public List<string> ExcludedSolar { get; set; } = [];
 
     [JsonIgnore]
     public bool UsesAccount => Auth == "account";
@@ -83,6 +85,8 @@ public sealed class AppSettings
     public string TaskbarPosition { get; set; } = "left";
     // What the taskbar strip shows: weather, home, solar, grid, battery
     public List<string> TaskbarItems { get; set; } = ["home", "solar", "grid", "battery"];
+    // The text of the taskbar strip: normal, large
+    public string TaskbarTextSize { get; set; } = "normal";
     public string? Language { get; set; }
     public bool Hotkey { get; set; } = true;
     public bool Toasts { get; set; } = true;
@@ -146,6 +150,7 @@ public sealed class AppSettings
         s.TileSize ??= "normal";
         s.FlyoutTab ??= "favorites";
         s.TaskbarPosition ??= "left";
+        s.TaskbarTextSize ??= "normal";
         s.PinHash ??= "";
         s.TaskbarItems ??= ["home", "solar", "grid", "battery"];
         foreach (var h in s.Homeys)
@@ -165,6 +170,7 @@ public sealed class AppSettings
             h.CollapsedZones ??= [];
             h.CollapsedFolders ??= [];
             h.GridMeterId ??= "";
+            h.ExcludedSolar ??= [];
         }
         return s;
     }

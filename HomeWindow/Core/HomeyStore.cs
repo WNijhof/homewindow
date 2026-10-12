@@ -662,6 +662,22 @@ public sealed class HomeyStore : ObservableObject
         return meters.FirstOrDefault(d => d.Id == Config?.GridMeterId) ?? meters.FirstOrDefault();
     }
 
+    // The solar devices Homey knows, and the ones that count: all of them, except those the user left out
+    public List<DeviceVM> SolarPanels() => Devices.Where(d => d.IsSolar).ToList();
+
+    List<DeviceVM> CountedSolar() => SolarPanels().Where(d => Config?.ExcludedSolar.Contains(d.Id) != true).ToList();
+
+    public void CountSolar(string id, bool counted)
+    {
+        if (Config == null) return;
+        Config.ExcludedSolar.Remove(id);
+        if (!counted) Config.ExcludedSolar.Add(id);
+        App.Settings.Save();
+        ComputeLiveEnergy(null);
+        EnergyReportRequested = true;
+        Kick();
+    }
+
     public void ChooseGridMeter(string id)
     {
         if (Config == null) return;
@@ -679,10 +695,11 @@ public sealed class HomeyStore : ObservableObject
         if (live != null) lastLive = live;
         var e = Energy;
         var gridMeter = GridMeter();
-        var solar = Devices.Where(d => d.IsSolar).ToList();
+        var solar = CountedSolar();
         var batteries = Devices.Where(d => d.IsHomeBattery).ToList();
         e.GridW = gridMeter?.PowerW;
         e.GridMeterCount = GridMeters().Count;
+        e.SolarPanelCount = SolarPanels().Count;
         e.HasSolar = solar.Count > 0;
         e.SolarW = solar.Sum(d => Math.Abs(d.PowerW ?? 0));
         e.HasBattery = batteries.Count > 0;
@@ -766,7 +783,7 @@ public sealed class HomeyStore : ObservableObject
         if (meter != null && importCap != null) import = PerDay(await Entries(c, meter.Id, importCap, "last31Days", ct));
         if (meter != null && exportCap != null) export = PerDay(await Entries(c, meter.Id, exportCap, "last31Days", ct));
         if (meter != null && meter.Has("meter_gas")) gas = PerDay(await Entries(c, meter.Id, "meter_gas", "last31Days", ct));
-        foreach (var panel in Devices.Where(d => d.IsSolar && d.Has("meter_power")))
+        foreach (var panel in CountedSolar().Where(d => d.Has("meter_power")))
             foreach (var (day, kwh) in PerDay(await Entries(c, panel.Id, "meter_power", "last31Days", ct)))
                 solar[day] = solar.GetValueOrDefault(day) + kwh;
         // Home batteries count their charged and discharged kWh; without them, charging would read as use

@@ -164,7 +164,7 @@ public sealed class TaskbarStrip : IDisposable
         // Explorer can put its own content on top again; every tenth tick (20 s) the strip moves back to the top anyway
         // As an overlay the position is on the screen, and it is put on top again every time: the taskbar takes the top back
         var (px, py) = overlay ? (tb.Left + x, tb.Top) : (x, 0);
-        var now = (px, py, width, height, weatherData.Temperature + energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText + string.Join(',', Shown()));
+        var now = (px, py, width, height, weatherData.Temperature + energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText + string.Join(',', Shown()) + App.Settings.TaskbarTextSize);
         if (!overlay && now == last && ++ticks % 10 != 0) return;
         last = now;
         SetWindowPos(source.Handle, overlay ? HWND_TOPMOST : IntPtr.Zero, px, py, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
@@ -282,6 +282,14 @@ public sealed class TaskbarStrip : IDisposable
         battery.Text = energy.BatteryPercentText;
         // Green while charging, so the direction shows without the watts
         batteryIcon.Foreground = energy.BatteryW > 50 ? good : text;
+
+        // Larger text when chosen, for readers who find the taskbar's own size small
+        var large = App.Settings.TaskbarTextSize == "large";
+        foreach (var part in new[] { weatherPart, homePart, solarPart, gridPart, batteryPart })
+        {
+            ((TextBlock)part.Children[0]).FontSize = large ? 16 : 13;
+            ((TextBlock)part.Children[1]).FontSize = large ? 15.5 : 12.5;
+        }
 
         // Only the parts picked in the settings; the first one needs no space before it
         var shown = Shown();

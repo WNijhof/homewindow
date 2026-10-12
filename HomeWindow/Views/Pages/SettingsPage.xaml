@@ -230,6 +230,15 @@
                             <TextBlock Text="{c:T 'Links past bij taakbalk-iconen in het midden. Staan die links, dan blijft de energie rechts.'}" Style="{StaticResource Sub}" TextWrapping="Wrap" Margin="0,6,0,0" />
                         </StackPanel>
                     </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Tekst van het strookje'}" Style="{StaticResource Label}" />
+                        <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal" x:Name="TaskbarTextSizeChoice">
+                                <RadioButton Style="{StaticResource Segment}" GroupName="TaskbarTextSize" Tag="normal" Content="{c:T Normaal}" Checked="TaskbarTextSize_Checked" />
+                                <RadioButton Style="{StaticResource Segment}" GroupName="TaskbarTextSize" Tag="large" Content="{c:T Groot}" Checked="TaskbarTextSize_Checked" />
+                            </StackPanel>
+                        </Border>
+                    </DockPanel>
                 </StackPanel>
             </Border>
 
