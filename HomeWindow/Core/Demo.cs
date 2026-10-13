@@ -54,6 +54,9 @@ public sealed class Demo
             energy: new JsonObject { ["evCharger"] = true, ["meterPowerImportedCapability"] = "meter_power" });
         Device("washer", "Wasmachine", "attic", "socket", [OnOff(false), Measure("measure_power", "Power", 0, "W", 0)]);
         Device("smoke", "Rookmelder", "attic", "sensor", [Alarm("alarm_smoke", "Smoke", false), Bool("alarm_battery", "Battery alarm", false, false)], ["9V"]);
+        // A few devices of an app, so their icon comes from Homey
+        foreach (var (device, driver) in new[] { ("light-living", "com.philips.hue.zigbee:bulb"), ("speaker", "com.sonos:speaker"), ("blinds-living", "com.somfy:rts"), ("lock-front", "com.danalock:lock") })
+            devices[device]!["driverId"] = "homey:app:" + driver;
 
         foreach (var (id, name, type, value) in new (string, string, string, JsonNode)[]
         {

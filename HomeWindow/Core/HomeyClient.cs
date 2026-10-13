@@ -47,8 +47,10 @@ public sealed class HomeyClient(HomeyConfig config)
 
     public void Disconnect() => BaseUrl = null;
 
-    // Picks the address to use. Learns the Homey id from the local ping, so the cloud works later.
     Demo? demo;
+    public bool IsDemo => demo != null;
+
+    // Picks the address to use. Learns the Homey id from the local ping, so the cloud works later.
 
     public async Task ConnectAsync(CancellationToken ct)
     {

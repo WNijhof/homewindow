@@ -412,7 +412,8 @@ public sealed class HomeyStore : ObservableObject
                 if (!deviceIcons.TryGetValue(key, out var image))
                 {
                     var file = Path.Combine(IconFolder, Convert.ToHexString(SHA1.HashData(Encoding.UTF8.GetBytes(key))) + ".icon");
-                    try { if (File.Exists(file)) image = Icons.FromFile(await File.ReadAllBytesAsync(file)); }
+                    // The demo home leaves nothing on the disk
+                    try { if (!c.IsDemo && File.Exists(file)) image = Icons.FromFile(await File.ReadAllBytesAsync(file)); }
                     catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
                     if (image == null)
                     {
@@ -425,7 +426,7 @@ public sealed class HomeyStore : ObservableObject
                             return;
                         }
                         image = data is { Length: > 0 } ? Icons.FromFile(data) : null;
-                        if (image != null)
+                        if (image != null && !c.IsDemo)
                         {
                             try
                             {
