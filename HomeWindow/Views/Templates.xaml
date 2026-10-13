@@ -1,10 +1,42 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:c="clr-namespace:HomeWindow.Core">
+                    xmlns:c="clr-namespace:HomeWindow.Core"
+                    xmlns:v="clr-namespace:HomeWindow.Views">
+
+    <!-- A device's icon from Homey as a mask in the text colour; the font glyph when there is none -->
+    <Style TargetType="v:DeviceGlyph">
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="v:DeviceGlyph">
+                    <Grid>
+                        <Rectangle x:Name="Picture" Width="{TemplateBinding FontSize}" Height="{TemplateBinding FontSize}" Fill="{TemplateBinding Foreground}">
+                            <Rectangle.OpacityMask>
+                                <ImageBrush ImageSource="{Binding Image, RelativeSource={RelativeSource TemplatedParent}}" Stretch="Uniform" />
+                            </Rectangle.OpacityMask>
+                        </Rectangle>
+                        <TextBlock x:Name="Font" Style="{StaticResource Icon}" Visibility="Collapsed" Text="{TemplateBinding Glyph}"
+                                   FontSize="{TemplateBinding FontSize}" Foreground="{TemplateBinding Foreground}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Image" Value="{x:Null}">
+                            <Setter TargetName="Picture" Property="Visibility" Value="Collapsed" />
+                            <Setter TargetName="Font" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <!-- Icon of a device: a plain line icon like in the Homey app, red during an alarm -->
     <DataTemplate x:Key="DeviceIcon" DataType="{x:Type c:DeviceVM}">
-        <TextBlock x:Name="Glyph" Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="24" Width="30" Height="30" TextAlignment="Center" />
+        <v:DeviceGlyph x:Name="Glyph" Glyph="{Binding Glyph}" Image="{Binding IconImage}" FontSize="24" Width="30" Height="30" />
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding IsAlarm}" Value="True">
                 <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource AlarmBrush}" />
@@ -66,7 +98,7 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock x:Name="Glyph" Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="{DynamicResource TileIconSize}" />
+                        <v:DeviceGlyph x:Name="Glyph" Glyph="{Binding Glyph}" Image="{Binding IconImage}" FontSize="{DynamicResource TileIconSize}" />
                         <TextBlock Style="{StaticResource Icon}" Text="&#xE850;" FontSize="13" Foreground="{DynamicResource AlarmBrush}" Margin="6,0,0,0"
                                    ToolTip="{Binding BatteryText}" Visibility="{Binding BatteryLow, Converter={StaticResource Visible}}" />
                     </StackPanel>
@@ -349,7 +381,7 @@
         <StackPanel>
             <DockPanel>
                 <Border DockPanel.Dock="Left" x:Name="Circle" Width="48" Height="48" CornerRadius="24" Background="{DynamicResource IconBgBrush}" Margin="0,0,12,0">
-                    <TextBlock x:Name="Glyph" Style="{StaticResource Icon}" FontSize="22" Text="{Binding Glyph}" />
+                    <v:DeviceGlyph x:Name="Glyph" Glyph="{Binding Glyph}" Image="{Binding IconImage}" FontSize="22" />
                 </Border>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
                     <ToggleButton x:Name="IconPick" Width="32" Height="32" ToolTip="{c:T 'Ander pictogram'}" Cursor="Hand">

@@ -67,6 +67,7 @@ public partial class SettingsPage : UserControl
         ScaleSlider.Value = S.TextScale;
         ScaleText.Text = $"{S.TextScale * 100:0} %";
         ShadowSwitch.IsChecked = S.Shadows;
+        HomeyIconSwitch.IsChecked = S.HomeyIcons;
         WeatherSwitch.IsChecked = S.FlyoutWeather;
         EnergySwitch.IsChecked = S.FlyoutEnergy;
         TaskbarSwitch.IsChecked = S.TaskbarEnergy;
@@ -343,6 +344,14 @@ public partial class SettingsPage : UserControl
         if (loading) return;
         S.Intensity = IntensitySlider.Value;
         Apply();
+    }
+
+    void HomeyIcons_Click(object sender, RoutedEventArgs e)
+    {
+        if (loading) return;
+        S.HomeyIcons = HomeyIconSwitch.IsChecked == true;
+        S.Save();
+        HomeyStore.I.HomeyIconsChanged();
     }
 
     void Appearance_Click(object sender, RoutedEventArgs e)

@@ -69,7 +69,28 @@ public sealed class DeviceVM : ObservableObject
     public bool IsFavorite { get => isFavorite; set => Set(ref isFavorite, value); }
 
     string? customGlyph;
-    public string? CustomGlyph { get => customGlyph; set { if (Set(ref customGlyph, value)) OnPropertyChanged(nameof(Glyph)); } }
+    public string? CustomGlyph { get => customGlyph; set { if (Set(ref customGlyph, value)) { OnPropertyChanged(nameof(Glyph)); OnPropertyChanged(nameof(IconImage)); } } }
+
+    // Where Homey serves the device's own icon, best first: the one picked in the Homey app, the device's, its driver's
+    public IReadOnlyList<string> IconUrls { get; private set; } = [];
+    public bool IconRequested { get; set; }
+    ImageSource? homeyIcon;
+    public ImageSource? HomeyIcon { get => homeyIcon; set { if (Set(ref homeyIcon, value)) OnPropertyChanged(nameof(IconImage)); } }
+    // The icon from Homey when it is shown: switched on, and no icon of the user's own choice
+    public ImageSource? IconImage => CustomGlyph == null && App.Settings.HomeyIcons ? HomeyIcon : null;
+    public void IconSettingChanged() => OnPropertyChanged(nameof(IconImage));
+
+    public static IReadOnlyList<string> IconUrlsOf(JsonObject d)
+    {
+        var urls = new List<string>();
+        // An icon picked in the Homey app is only a name; Homey's apps fetch it from Athom's icon library
+        if (J.Str(d, "iconOverride") is { Length: > 0 } picked) urls.Add($"https://icons-cdn.athom.com/{Uri.EscapeDataString(picked)}.svg?ver=1");
+        if (J.Str(J.Obj(d, "iconObj"), "url") is { Length: > 0 } own) urls.Add(own);
+        // homey:app:<app id>:<driver id>
+        if (J.Str(d, "driverId")?.Split(':') is ["homey", "app", var app, var driver, ..])
+            urls.Add($"/app/{Uri.EscapeDataString(app)}/drivers/{Uri.EscapeDataString(driver)}/assets/icon.svg");
+        return urls;
+    }
 
     bool isExpanded;
     public bool IsExpanded { get => isExpanded; set => Set(ref isExpanded, value); }
@@ -364,6 +385,14 @@ public sealed class DeviceVM : ObservableObject
             UnavailableMessage = message;
             QuickAction = J.Str(J.Obj(d, "ui"), "quickAction");
             DriverName = J.Str(d, "driverId");
+            var iconUrls = IconUrlsOf(d);
+            if (!iconUrls.SequenceEqual(IconUrls))
+            {
+                // Another icon in Homey: fetched again
+                IconUrls = iconUrls;
+                IconRequested = false;
+                HomeyIcon = null;
+            }
 
             var energy = J.Obj(d, "energyObj") ?? J.Obj(d, "energy");
             IsGridMeter = J.Bool(energy, "cumulative") == true || Regex(name);

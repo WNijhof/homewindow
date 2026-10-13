@@ -180,7 +180,7 @@ Je ziet:
 
 Rechtsboven staan twee knoppen:
 
-- ✎ **Ander pictogram**: kies een eigen pictogram, of **Standaard pictogram** om terug te gaan.
+- ✎ **Ander pictogram**: kies een eigen pictogram, of **Standaard pictogram** om terug te gaan. Zonder eigen keuze toont HomeWindow het pictogram dat het apparaat in Homey heeft (zie **Pictogrammen uit Homey** bij Instellingen → Uiterlijk).
 - ☆ **Favoriet**: zet het apparaat bij je favorieten (of haal het eraf).
 
 ### Favorieten
@@ -305,6 +305,7 @@ Hier voeg je een Homey toe, wijzig je hem of verwijder je hem. Met meerdere Home
 | Intensiteit | Hoe sterk de kleur van de achtergrond is |
 | Tekstgrootte | Alles groter of kleiner, van 85 tot 130 % |
 | Schaduwen | Schaduwen onder de kaarten |
+| Pictogrammen uit Homey | Apparaten tonen het pictogram dat ze in Homey hebben, ook een pictogram dat je in de Homey-app zelf koos. Uit: het pictogram dat HomeWindow kiest bij het soort apparaat. Een pictogram dat je in HomeWindow zelf kiest, gaat altijd voor. |
 | Tegelgrootte | Extra klein, Klein, Normaal of Groot, voor het hoofdvenster en het paneel. Groot zet in het paneel twee tegels naast elkaar en laat lange namen over twee regels lopen; Extra klein zet er vier naast elkaar. |
 | Paneel bij de klok | Apparaten als lijst of als tegels |
 | Hoofdvenster | Apparaten als raster of als lijst |

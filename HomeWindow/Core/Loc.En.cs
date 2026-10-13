@@ -201,6 +201,7 @@ public static partial class Loc
         ["Regen"] = "Rain",
         ["Rustig"] = "No motion",
         ["Schaduwen"] = "Shadows",
+        ["Pictogrammen uit Homey"] = "Icons from Homey",
         ["Schakelaars"] = "Switches",
         ["Schemer"] = "Dusk",
         ["Sensoren"] = "Sensors",

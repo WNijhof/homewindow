@@ -90,7 +90,7 @@ public static class Icons
         }
         catch (Exception e)
         {
-            Log.Error("App icon", e);
+            Log.Error("Icon", e);
             return null;
         }
     }

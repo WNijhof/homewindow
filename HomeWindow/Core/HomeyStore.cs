@@ -1,5 +1,9 @@
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json.Nodes;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace HomeWindow.Core;
@@ -370,6 +374,76 @@ public sealed class HomeyStore : ObservableObject
         ComputeLiveEnergy(null);
         foreach (var (device, capability) in started)
             if (device.Cap(capability) is { } cap) AlarmStarted?.Invoke(device, cap);
+        LoadNewDeviceIcons(c);
+    }
+
+    // ---- Device icons from Homey ----
+
+    // Each icon file once: from memory, from the disk when fetched before, otherwise from Homey (or Athom's icon library)
+    static readonly Dictionary<string, ImageSource?> deviceIcons = [];
+    static string IconFolder => Path.Combine(Path.GetDirectoryName(Log.FilePath)!, "icons");
+
+    void LoadNewDeviceIcons(HomeyClient c)
+    {
+        if (!App.Settings.HomeyIcons) return;
+        var list = Devices.Where(d => !d.IconRequested && d.IconUrls.Count > 0).ToList();
+        if (list.Count > 0) _ = LoadDeviceIcons(c, list);
+    }
+
+    // Switched on or off in the settings
+    public void HomeyIconsChanged()
+    {
+        foreach (var d in Devices) d.IconSettingChanged();
+        if (client is { BaseUrl: not null } c) LoadNewDeviceIcons(c);
+    }
+
+    // One after the other, so Homey is not flooded
+    async Task LoadDeviceIcons(HomeyClient c, List<DeviceVM> list)
+    {
+        // Claimed up front, so the next poll does not start on the same devices while this one runs
+        foreach (var d in list) d.IconRequested = true;
+        // A relative address belongs to this Homey; the same path on another Homey can be another icon
+        var homey = Config?.Id ?? "";
+        for (var i = 0; i < list.Count; i++)
+        {
+            foreach (var url in list[i].IconUrls)
+            {
+                var key = url.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? url : homey + url;
+                if (!deviceIcons.TryGetValue(key, out var image))
+                {
+                    var file = Path.Combine(IconFolder, Convert.ToHexString(SHA1.HashData(Encoding.UTF8.GetBytes(key))) + ".icon");
+                    try { if (File.Exists(file)) image = Icons.FromFile(await File.ReadAllBytesAsync(file)); }
+                    catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+                    if (image == null)
+                    {
+                        byte[]? data;
+                        try { data = await c.GetBytesAsync(url); }
+                        catch (HomeyOfflineException)
+                        {
+                            // Gone offline: the rest get another try after reconnecting
+                            for (var j = i; j < list.Count; j++) list[j].IconRequested = false;
+                            return;
+                        }
+                        image = data is { Length: > 0 } ? Icons.FromFile(data) : null;
+                        if (image != null)
+                        {
+                            try
+                            {
+                                Directory.CreateDirectory(IconFolder);
+                                await File.WriteAllBytesAsync(file, data!);
+                            }
+                            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+                        }
+                    }
+                    deviceIcons[key] = image;
+                }
+                if (image != null)
+                {
+                    list[i].HomeyIcon = image;
+                    break;
+                }
+            }
+        }
     }
 
     // A new HomeWindow starts with the favourites of the Homey app, so the panel is not empty. Only once, and only

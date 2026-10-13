@@ -63,6 +63,20 @@ public class DeviceTests
     }
 
     [Fact]
+    public void A_device_icon_comes_from_the_Homey_app_choice_then_the_device_then_its_driver()
+    {
+        var all = DeviceVM.IconUrlsOf(new JsonObject
+        {
+            ["iconOverride"] = "light-bulb", ["iconObj"] = new JsonObject { ["url"] = "/icons/abc.svg" },
+            ["driverId"] = "homey:app:com.philips.hue.zigbee:bulb",
+        });
+        Assert.Equal(["https://icons-cdn.athom.com/light-bulb.svg?ver=1", "/icons/abc.svg", "/app/com.philips.hue.zigbee/drivers/bulb/assets/icon.svg"], all);
+
+        // A virtual device of Homey itself has no app driver
+        Assert.Empty(DeviceVM.IconUrlsOf(new JsonObject { ["driverId"] = "homey:manager:vdevice:light" }));
+    }
+
+    [Fact]
     public void An_EV_charger_is_known_by_its_class_or_energy_settings()
     {
         var byClass = Make("Laadpaal", "evcharger", [Cap("measure_power", "number", 7200.0), Cap("meter_power", "number", 2140.6)]);

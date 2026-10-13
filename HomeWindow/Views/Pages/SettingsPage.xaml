@@ -168,6 +168,10 @@
                         <ToggleButton x:Name="ShadowSwitch" Style="{StaticResource Switch}" HorizontalAlignment="Left" Click="Appearance_Click" />
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Pictogrammen uit Homey'}" Style="{StaticResource Label}" />
+                        <ToggleButton x:Name="HomeyIconSwitch" Style="{StaticResource Switch}" HorizontalAlignment="Left" Click="HomeyIcons_Click" />
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
                         <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T Tegelgrootte}" Style="{StaticResource Label}" />
                         <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
                             <StackPanel Orientation="Horizontal" x:Name="TileSizeChoice">

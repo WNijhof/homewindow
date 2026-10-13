@@ -73,6 +73,8 @@ public sealed class AppSettings
     public string Backdrop { get; set; } = "dashboard";    // dashboard, paper, aurora, dusk, ocean, glass
     public double Intensity { get; set; } = 0.6;
     public bool Shadows { get; set; } = true;
+    // Devices show the icon they have in Homey; off: HomeWindow's own icon per kind of device
+    public bool HomeyIcons { get; set; } = true;
     public double TextScale { get; set; } = 1.0;
     public string FlyoutView { get; set; } = "list";       // list, grid
     public string MainView { get; set; } = "grid";
