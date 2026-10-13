@@ -16,6 +16,8 @@
                 <ControlTemplate TargetType="v:DeviceGlyph">
                     <Grid>
                         <Rectangle x:Name="Picture" Width="{TemplateBinding FontSize}" Height="{TemplateBinding FontSize}" Fill="{TemplateBinding Foreground}">
+                            <!-- Homey's icons fill their whole box; a little smaller they weigh the same as the font glyphs -->
+                            <Rectangle.LayoutTransform><ScaleTransform ScaleX="0.85" ScaleY="0.85" /></Rectangle.LayoutTransform>
                             <Rectangle.OpacityMask>
                                 <ImageBrush ImageSource="{Binding Image, RelativeSource={RelativeSource TemplatedParent}}" Stretch="Uniform" />
                             </Rectangle.OpacityMask>

@@ -234,6 +234,7 @@ public static partial class Loc
         ["Laadpaal"] = "EV charger",
         ["Auto laadt"] = "Car charging",
         ["Auto {0}"] = "Car {0}",
+        ["Auto"] = "Car",
         ["Auto geladen"] = "Car charged",
         ["Totalen"] = "Totals",
         ["Uit"] = "Off",

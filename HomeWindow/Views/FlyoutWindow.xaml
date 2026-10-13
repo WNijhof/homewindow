@@ -72,11 +72,6 @@
                     <TextBlock Style="{StaticResource Icon}" Text="&#xE945;" FontSize="13" Foreground="{DynamicResource GridBrush}" Margin="0,0,5,0" />
                     <TextBlock Text="{Binding GridText}" Style="{StaticResource GridValue}" FontSize="12.5" />
                 </StackPanel>
-                <!-- The car only while it charges, so the row stays short -->
-                <StackPanel Orientation="Horizontal" ToolTip="{Binding ChargerLabel}" Margin="12,0,0,0" Visibility="{Binding IsCharging, Converter={StaticResource Visible}}">
-                    <TextBlock Style="{StaticResource Icon}" Text="&#xEC81;" FontSize="13" Foreground="{DynamicResource AccentBrush}" Margin="0,0,5,0" />
-                    <TextBlock Text="{Binding ChargerText}" FontSize="12.5" FontWeight="SemiBold" />
-                </StackPanel>
             </StackPanel>
             <ItemsControl Grid.Column="2" ItemsSource="{Binding Users}" ItemTemplate="{StaticResource UserChip}" VerticalAlignment="Center">
                 <ItemsControl.ItemsPanel>
