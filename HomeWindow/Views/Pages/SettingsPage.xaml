@@ -205,11 +205,11 @@
                         <ToggleButton x:Name="EnergySwitch" Style="{StaticResource Switch}" HorizontalAlignment="Left" Click="General_Click" />
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">
-                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Strookje in de taakbalk'}" Style="{StaticResource Label}" />
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T Taakbalkwidget}" Style="{StaticResource Label}" />
                         <ToggleButton x:Name="TaskbarSwitch" Style="{StaticResource Switch}" HorizontalAlignment="Left" Click="General_Click" />
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">
-                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Wat het strookje toont'}" Style="{StaticResource Label}" VerticalAlignment="Top" Margin="0,5,0,0" />
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Wat de taakbalkwidget toont'}" Style="{StaticResource Label}" VerticalAlignment="Top" Margin="0,5,0,0" />
                         <WrapPanel x:Name="TaskbarItemsChoice">
                             <ToggleButton Style="{StaticResource ToggleChip}" Tag="weather" Content="{c:T Weer}" Click="TaskbarItem_Click" />
                             <ToggleButton Style="{StaticResource ToggleChip}" Tag="home" Content="{c:T Verbruik}" Click="TaskbarItem_Click" />
@@ -232,7 +232,7 @@
                         </StackPanel>
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">
-                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Tekst van het strookje'}" Style="{StaticResource Label}" />
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Tekst van de taakbalkwidget'}" Style="{StaticResource Label}" />
                         <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
                             <StackPanel Orientation="Horizontal" x:Name="TaskbarTextSizeChoice">
                                 <RadioButton Style="{StaticResource Segment}" GroupName="TaskbarTextSize" Tag="normal" Content="{c:T Normaal}" Checked="TaskbarTextSize_Checked" />
