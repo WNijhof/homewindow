@@ -705,6 +705,10 @@ public sealed class HomeyStore : ObservableObject
         e.HasBattery = batteries.Count > 0;
         e.BatteryW = batteries.Sum(d => d.PowerW ?? 0);
         e.BatteryPercent = EnergyMath.StateOfCharge(batteries.Select(d => d.BatteryLevel));
+        var chargers = Devices.Where(d => d.IsEvCharger).ToList();
+        e.HasCharger = chargers.Count > 0;
+        e.ChargerW = chargers.Sum(d => Math.Max(0, d.PowerW ?? 0));
+        e.CarPercent = EnergyMath.StateOfCharge(chargers.Select(d => d.BatteryLevel));
 
         var items = J.Arr(lastLive, "items") ?? (lastLive as JsonArray);
         // Homey Energy's live report only lists devices that count in Energy; one it leaves out stays out here too
@@ -796,6 +800,12 @@ public sealed class HomeyStore : ObservableObject
             foreach (var (day, kwh) in PerDay(await Entries(c, battery.Id, battery.DischargedCapability!, "last31Days", ct)))
                 discharged[day] = discharged.GetValueOrDefault(day) + kwh;
         }
+        // What the EV chargers put into the car; part of the home's use, shown on its own as well
+        Dictionary<DateTime, double> charger = [];
+        var chargers = Devices.Where(d => d.IsEvCharger && d.ChargerMeterCapability != null).ToList();
+        foreach (var ev in chargers)
+            foreach (var (day, kwh) in PerDay(await Entries(c, ev.Id, ev.ChargerMeterCapability!, "last31Days", ct)))
+                charger[day] = charger.GetValueOrDefault(day) + kwh;
         ct.ThrowIfCancellationRequested();
 
         var today = DateTime.Today;
@@ -818,6 +828,9 @@ public sealed class HomeyStore : ObservableObject
         e.TodayDischarged = EnergyVM.Kwh(Sum(discharged, IsToday));
         e.MonthCharged = EnergyVM.Kwh(Sum(charged, IsMonth));
         e.MonthDischarged = EnergyVM.Kwh(Sum(discharged, IsMonth));
+        e.HasChargerTotals = chargers.Count > 0;
+        e.TodayCharger = EnergyVM.Kwh(Sum(charger, IsToday));
+        e.MonthCharger = EnergyVM.Kwh(Sum(charger, IsMonth));
         e.TodayGas = gas.Count > 0 ? Sum(gas, IsToday).ToString("0.00", Loc.Culture) + " m³" : "";
         e.MonthGas = gas.Count > 0 ? Sum(gas, IsMonth).ToString("0.0", Loc.Culture) + " m³" : "";
 
@@ -832,6 +845,8 @@ public sealed class HomeyStore : ObservableObject
             var tooltip = $"{day.ToString("ddd d MMM", Loc.Culture)}\n{Loc.T("Van het net")}: {EnergyVM.Kwh(imp)}\n{Loc.T("Zon")}: {EnergyVM.Kwh(sol)}";
             if (homeBatteries.Count > 0)
                 tooltip += $"\n{Loc.T("Batterij geladen")}: {EnergyVM.Kwh(charged.GetValueOrDefault(day))}\n{Loc.T("Batterij ontladen")}: {EnergyVM.Kwh(discharged.GetValueOrDefault(day))}";
+            if (chargers.Count > 0)
+                tooltip += $"\n{Loc.T("Laadpaal")}: {EnergyVM.Kwh(charger.GetValueOrDefault(day))}";
             e.Days.Add(new BarVM
             {
                 Label = day.ToString("dd", Loc.Culture),

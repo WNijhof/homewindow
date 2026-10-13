@@ -49,6 +49,9 @@ public sealed class Demo
         Device("home-battery", "Thuisbatterij", "meterkast", "battery", [Measure("measure_power", "Power", 850, "W", 0), Measure("measure_battery", "Battery", 62, "%", 0),
                 Measure("meter_power.charged", "Charged", 1210.5, "kWh", 2), Measure("meter_power.discharged", "Discharged", 1088.2, "kWh", 2)],
             energy: new JsonObject { ["homeBattery"] = true, ["meterPowerImportedCapability"] = "meter_power.charged", ["meterPowerExportedCapability"] = "meter_power.discharged" });
+        Device("ev-charger", "Laadpaal", "garden", "evcharger", [Bool("evcharger_charging", "Charging", true, true), Measure("measure_power", "Power", 7200, "W", 0),
+                Measure("measure_battery", "Battery", 58, "%", 0), Measure("meter_power", "Energy", 2140.6, "kWh", 2)],
+            energy: new JsonObject { ["evCharger"] = true, ["meterPowerImportedCapability"] = "meter_power" });
         Device("washer", "Wasmachine", "attic", "socket", [OnOff(false), Measure("measure_power", "Power", 0, "W", 0)]);
         Device("smoke", "Rookmelder", "attic", "sensor", [Alarm("alarm_smoke", "Smoke", false), Bool("alarm_battery", "Battery alarm", false, false)], ["9V"]);
 
@@ -227,7 +230,7 @@ public sealed class Demo
         ["Televisie"] = "TV", ["Thermostaat"] = "Thermostat", ["Bewegingssensor"] = "Motion sensor", ["Keukenspots"] = "Kitchen spots",
         ["Koffiemachine"] = "Coffee machine", ["Vaatwasser"] = "Dishwasher", ["Koelkast"] = "Fridge", ["Achterdeur"] = "Back door", ["Bedlampje"] = "Bedside lamp",
         ["Radiatorkraan"] = "Radiator valve", ["Voordeur"] = "Front door", ["Deurbel"] = "Doorbell", ["Tuinverlichting"] = "Garden lights",
-        ["Slimme meter"] = "Smart meter", ["Omvormer"] = "Inverter", ["Wasmachine"] = "Washing machine", ["Thuisbatterij"] = "Home battery", ["Rookmelder"] = "Smoke alarm",
+        ["Slimme meter"] = "Smart meter", ["Omvormer"] = "Inverter", ["Wasmachine"] = "Washing machine", ["Thuisbatterij"] = "Home battery", ["Laadpaal"] = "EV charger", ["Rookmelder"] = "Smoke alarm",
         ["Gasten aanwezig"] = "Guests over", ["Vakantiemodus"] = "Holiday mode", ["Comforttemperatuur"] = "Comfort temperature",
         ["Laatste scène"] = "Last scene", ["Film"] = "Movie",
         ["Thuis"] = "Home", ["Begane grond"] = "Ground floor", ["Woonkamer"] = "Living room", ["Keuken"] = "Kitchen", ["Hal"] = "Hall",
@@ -272,6 +275,7 @@ public sealed class Demo
         Nudge("coffee", "measure_power", 30);
         Nudge("dishwasher", "measure_power", 40);
         Nudge("home-battery", "measure_power", 60);
+        Nudge("ev-charger", "measure_power", 80);
 
         // The back door opens for a short while now and then, to show what an alarm looks like
         if (devices["contact-back"]?["capabilitiesObj"]?["alarm_contact"] is JsonObject door)
@@ -346,7 +350,7 @@ public sealed class Demo
     static JsonObject Logs()
     {
         var logs = new JsonObject();
-        foreach (var (device, cap) in new[] { ("p1", "meter_power.imported"), ("p1", "meter_power.exported"), ("p1", "meter_gas"), ("solar", "meter_power"), ("home-battery", "meter_power.charged"), ("home-battery", "meter_power.discharged"), ("coffee", "meter_power"), ("dishwasher", "meter_power") })
+        foreach (var (device, cap) in new[] { ("p1", "meter_power.imported"), ("p1", "meter_power.exported"), ("p1", "meter_gas"), ("solar", "meter_power"), ("home-battery", "meter_power.charged"), ("home-battery", "meter_power.discharged"), ("ev-charger", "meter_power"), ("coffee", "meter_power"), ("dishwasher", "meter_power") })
         {
             var id = $"homey:device:{device}:{cap}";
             logs[id] = new JsonObject { ["id"] = id, ["ownerUri"] = $"homey:device:{device}", ["ownerId"] = cap };
@@ -369,6 +373,7 @@ public sealed class Demo
             ("solar", _) => 14.0,
             ("home-battery", "meter_power.charged") => 4.2,
             ("home-battery", "meter_power.discharged") => 3.6,
+            ("ev-charger", _) => 9.5,
             ("coffee", _) => 0.4,
             _ => 1.1,
         };

@@ -26,8 +26,8 @@ public sealed class TaskbarStrip : IDisposable
     readonly WeatherVM weatherData = HomeyStore.I.Weather;
     readonly DispatcherTimer timer;
     readonly Border root;
-    readonly TextBlock weather, home, solar, grid, battery, weatherIcon, solarIcon, gridIcon, batteryIcon;
-    readonly StackPanel weatherPart, homePart, solarPart, gridPart, batteryPart;
+    readonly TextBlock weather, home, solar, grid, battery, charger, weatherIcon, solarIcon, gridIcon, batteryIcon, chargerIcon;
+    readonly StackPanel weatherPart, homePart, solarPart, gridPart, batteryPart, chargerPart;
     HwndSource? source;
     IntPtr taskbar, failedOn;
     // Windows or a security program can refuse the window at first (access denied, seen right after a restart);
@@ -63,24 +63,26 @@ public sealed class TaskbarStrip : IDisposable
             Orientation = Orientation.Horizontal, Margin = new Thickness(left, 0, 0, 0), Children = { icon, value },
         };
 
-        weather = Value(); home = Value(); solar = Value(); grid = Value(); battery = Value();
+        weather = Value(); home = Value(); solar = Value(); grid = Value(); battery = Value(); charger = Value();
         weatherIcon = Glyph(Icons.Sun);
         var homeIcon = Glyph(Icons.Home);
         solarIcon = Glyph(Icons.Sun);
         gridIcon = Glyph(Icons.Energy);
         batteryIcon = Glyph(Icons.Battery);
+        chargerIcon = Glyph(Icons.Car);
         weatherPart = Part(weatherIcon, weather, 12);
         homePart = Part(homeIcon, home, 12);
         solarPart = Part(solarIcon, solar, 12);
         gridPart = Part(gridIcon, grid, 12);
         batteryPart = Part(batteryIcon, battery, 12);
+        chargerPart = Part(chargerIcon, charger, 12);
         root = new Border
         {
             // Nearly transparent, so the whole strip takes clicks
             Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)),
             Padding = new Thickness(8, 0, 8, 0),
             Cursor = Cursors.Hand,
-            Child = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { weatherPart, homePart, solarPart, gridPart, batteryPart } },
+            Child = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { weatherPart, homePart, solarPart, gridPart, batteryPart, chargerPart } },
         };
         root.MouseLeftButtonUp += (_, _) => Clicked?.Invoke();
         TextOptions.SetTextFormattingMode(root, TextFormattingMode.Display);
@@ -104,6 +106,8 @@ public sealed class TaskbarStrip : IDisposable
         if (items.Contains("solar") && e.HasSolar) list.Add("solar");
         if (items.Contains("grid") && e.HasGrid) list.Add("grid");
         if (items.Contains("battery") && e.BatteryPercent != null) list.Add("battery");
+        // The car only while it charges; an idle charger would just say 0 W
+        if (items.Contains("charger") && e.IsCharging) list.Add("charger");
         return list;
     }
 
@@ -164,7 +168,7 @@ public sealed class TaskbarStrip : IDisposable
         // Explorer can put its own content on top again; every tenth tick (20 s) the strip moves back to the top anyway
         // As an overlay the position is on the screen, and it is put on top again every time: the taskbar takes the top back
         var (px, py) = overlay ? (tb.Left + x, tb.Top) : (x, 0);
-        var now = (px, py, width, height, weatherData.Temperature + energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText + string.Join(',', Shown()) + App.Settings.TaskbarTextSize);
+        var now = (px, py, width, height, weatherData.Temperature + energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText + energy.ChargerText + energy.CarPercentText + string.Join(',', Shown()) + App.Settings.TaskbarTextSize);
         if (!overlay && now == last && ++ticks % 10 != 0) return;
         last = now;
         SetWindowPos(source.Handle, overlay ? HWND_TOPMOST : IntPtr.Zero, px, py, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
@@ -282,10 +286,13 @@ public sealed class TaskbarStrip : IDisposable
         battery.Text = energy.BatteryPercentText;
         // Green while charging, so the direction shows without the watts
         batteryIcon.Foreground = energy.BatteryW > 50 ? good : text;
+        // The power going into the car, and its charge when the charger knows it
+        charger.Text = energy.ChargerText + (energy.CarPercent != null ? " · " + energy.CarPercentText : "");
+        chargerIcon.Foreground = good;
 
         // Larger text when chosen, for readers who find the taskbar's own size small
         var large = App.Settings.TaskbarTextSize == "large";
-        foreach (var part in new[] { weatherPart, homePart, solarPart, gridPart, batteryPart })
+        foreach (var part in new[] { weatherPart, homePart, solarPart, gridPart, batteryPart, chargerPart })
         {
             ((TextBlock)part.Children[0]).FontSize = large ? 16 : 13;
             ((TextBlock)part.Children[1]).FontSize = large ? 15.5 : 12.5;
@@ -294,7 +301,7 @@ public sealed class TaskbarStrip : IDisposable
         // Only the parts picked in the settings; the first one needs no space before it
         var shown = Shown();
         var first = true;
-        foreach (var (id, part) in new[] { ("weather", weatherPart), ("home", homePart), ("solar", solarPart), ("grid", gridPart), ("battery", batteryPart) })
+        foreach (var (id, part) in new[] { ("weather", weatherPart), ("home", homePart), ("solar", solarPart), ("grid", gridPart), ("battery", batteryPart), ("charger", chargerPart) })
         {
             var visible = shown.Contains(id);
             part.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
@@ -308,6 +315,7 @@ public sealed class TaskbarStrip : IDisposable
             energy.HasSolar ? $"{Loc.T("Zon")}: {energy.SolarText}" : null,
             energy.HasGrid ? $"{energy.GridLabel}: {energy.GridText}" : null,
             energy.HasBattery ? $"{energy.BatteryLabel}: {energy.BatteryText}" + (energy.BatteryPercent != null ? $" · {energy.BatteryPercentText}" : "") : null,
+            energy.HasCharger ? $"{energy.ChargerLabel}: {energy.ChargerText}" + (energy.CarPercent != null ? $" · {energy.CarPercentText}" : "") : null,
         }.Where(s => s != null));
     }
 

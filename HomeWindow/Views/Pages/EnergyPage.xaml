@@ -70,6 +70,17 @@
                                    Visibility="{Binding BatteryChargeText, Converter={StaticResource Visible}}" />
                     </StackPanel>
                 </Border>
+                <Border Style="{StaticResource Card}" Margin="0,0,12,0" Visibility="{Binding HasCharger, Converter={StaticResource Visible}}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xEC81;" FontSize="13" Foreground="{DynamicResource AccentBrush}" Margin="0,0,8,0" />
+                            <TextBlock Text="{Binding ChargerLabel}" Style="{StaticResource Sub}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding ChargerText}" Style="{StaticResource Big}" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding CarChargeText}" Style="{StaticResource Sub}" Margin="0,2,0,0"
+                                   Visibility="{Binding CarChargeText, Converter={StaticResource Visible}}" />
+                    </StackPanel>
+                </Border>
             </UniformGrid>
 
             <!-- Totals and the last 14 days, side by side and equally high -->
@@ -96,7 +107,7 @@
                             <ColumnDefinition Width="Auto" MinWidth="96" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Column="1" Text="{c:T Vandaag}" Style="{StaticResource Sub}" FontWeight="SemiBold" />
                         <TextBlock Grid.Column="2" Text="{c:T 'Deze maand'}" Style="{StaticResource Sub}" FontWeight="SemiBold" />
@@ -125,9 +136,13 @@
                         <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding TodayDischarged}" Margin="0,6,0,0" Visibility="{Binding HasBatteryTotals, Converter={StaticResource Visible}}" />
                         <TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding MonthDischarged}" Margin="0,6,0,0" Visibility="{Binding HasBatteryTotals, Converter={StaticResource Visible}}" />
 
-                        <TextBlock Grid.Row="7" Text="{c:T Gas}" Style="{StaticResource Body}" Margin="0,6,0,0" Visibility="{Binding HasGas, Converter={StaticResource Visible}}" />
-                        <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding TodayGas}" Margin="0,6,0,0" />
-                        <TextBlock Grid.Row="7" Grid.Column="2" Text="{Binding MonthGas}" Margin="0,6,0,0" />
+                        <TextBlock Grid.Row="7" Text="{c:T 'Auto geladen'}" Style="{StaticResource Body}" Margin="0,6,0,0" Visibility="{Binding HasChargerTotals, Converter={StaticResource Visible}}" />
+                        <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding TodayCharger}" Margin="0,6,0,0" Visibility="{Binding HasChargerTotals, Converter={StaticResource Visible}}" />
+                        <TextBlock Grid.Row="7" Grid.Column="2" Text="{Binding MonthCharger}" Margin="0,6,0,0" Visibility="{Binding HasChargerTotals, Converter={StaticResource Visible}}" />
+
+                        <TextBlock Grid.Row="8" Text="{c:T Gas}" Style="{StaticResource Body}" Margin="0,6,0,0" Visibility="{Binding HasGas, Converter={StaticResource Visible}}" />
+                        <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding TodayGas}" Margin="0,6,0,0" />
+                        <TextBlock Grid.Row="8" Grid.Column="2" Text="{Binding MonthGas}" Margin="0,6,0,0" />
                     </Grid>
                 </Border>
 

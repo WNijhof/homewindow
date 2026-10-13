@@ -216,6 +216,7 @@
                             <ToggleButton Style="{StaticResource ToggleChip}" Tag="solar" Content="{c:T Zon}" Click="TaskbarItem_Click" />
                             <ToggleButton Style="{StaticResource ToggleChip}" Tag="grid" Content="{c:T Net}" Click="TaskbarItem_Click" />
                             <ToggleButton Style="{StaticResource ToggleChip}" Tag="battery" Content="{c:T Thuisbatterij}" Click="TaskbarItem_Click" />
+                            <ToggleButton Style="{StaticResource ToggleChip}" Tag="charger" Content="{c:T Laadpaal}" Click="TaskbarItem_Click" />
                         </WrapPanel>
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">

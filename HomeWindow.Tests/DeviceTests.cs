@@ -63,6 +63,24 @@ public class DeviceTests
     }
 
     [Fact]
+    public void An_EV_charger_is_known_by_its_class_or_energy_settings()
+    {
+        var byClass = Make("Laadpaal", "evcharger", [Cap("measure_power", "number", 7200.0), Cap("meter_power", "number", 2140.6)]);
+        Assert.True(byClass.IsEvCharger);
+        Assert.Equal("meter_power", byClass.ChargerMeterCapability);
+
+        // A charger in another class that says so in its energy settings, with its own kWh counter
+        var bySetting = Make("Wallbox", "socket", [Cap("meter_power.charged", "number", 1.0)],
+            new JsonObject { ["evCharger"] = true, ["meterPowerImportedCapability"] = "meter_power.charged" });
+        Assert.True(bySetting.IsEvCharger);
+        Assert.Equal("meter_power.charged", bySetting.ChargerMeterCapability);
+
+        var socket = Make("Stekker", "socket", [Cap("meter_power", "number", 1.0)]);
+        Assert.False(socket.IsEvCharger);
+        Assert.Null(socket.ChargerMeterCapability);
+    }
+
+    [Fact]
     public void Alarms_count_except_a_low_battery()
     {
         var smoke = Make("Rookmelder", "sensor", [Cap("alarm_smoke", "boolean", true), Cap("alarm_battery", "boolean", true)]);

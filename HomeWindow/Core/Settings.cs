@@ -83,8 +83,8 @@ public sealed class AppSettings
     public bool TaskbarEnergy { get; set; } = true;
     // left (default): at the start of the taskbar, clear of centred icons; right: next to the notification area
     public string TaskbarPosition { get; set; } = "left";
-    // What the taskbar strip shows: weather, home, solar, grid, battery
-    public List<string> TaskbarItems { get; set; } = ["home", "solar", "grid", "battery"];
+    // What the taskbar strip shows: weather, home, solar, grid, battery, charger
+    public List<string> TaskbarItems { get; set; } = ["home", "solar", "grid", "battery", "charger"];
     // The text of the taskbar strip: normal, large
     public string TaskbarTextSize { get; set; } = "normal";
     public string? Language { get; set; }
@@ -152,7 +152,7 @@ public sealed class AppSettings
         s.TaskbarPosition ??= "left";
         s.TaskbarTextSize ??= "normal";
         s.PinHash ??= "";
-        s.TaskbarItems ??= ["home", "solar", "grid", "battery"];
+        s.TaskbarItems ??= ["home", "solar", "grid", "battery", "charger"];
         foreach (var h in s.Homeys)
         {
             h.Id ??= Guid.NewGuid().ToString("N");

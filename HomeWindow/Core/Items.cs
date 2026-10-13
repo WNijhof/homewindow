@@ -442,6 +442,15 @@ public sealed class EnergyVM : ObservableObject
     public bool HasSolarChoice => SolarPanelCount > 1;
     public bool HasSolar { get; set; }
     public bool HasBattery { get; set; }
+    // EV chargers: what goes into the car now, and the car's charge when the charger reports it
+    public bool HasCharger { get; set; }
+    public double ChargerW { get; set; }
+    public double? CarPercent { get; set; }
+    public bool IsCharging => ChargerW > 50;
+    public string ChargerText => Watts(ChargerW);
+    public string ChargerLabel => Loc.T(IsCharging ? "Auto laadt" : "Laadpaal");
+    public string CarPercentText => CarPercent is { } p ? p.ToString("0", Loc.Culture) + " %" : "";
+    public string CarChargeText => CarPercent != null ? Loc.F("Auto {0}", CarPercentText) : "";
     public bool IsExporting => GridW is < 0;
     public bool HasData => HasGrid || HasSolar || Consumers.Count > 0;
 
@@ -492,6 +501,9 @@ public sealed class EnergyVM : ObservableObject
     public string TodayDischarged { get; set; } = "–";
     public string MonthCharged { get; set; } = "–";
     public string MonthDischarged { get; set; } = "–";
+    public bool HasChargerTotals { get; set; }
+    public string TodayCharger { get; set; } = "–";
+    public string MonthCharger { get; set; } = "–";
     public string ReportStatus { get; set; } = "";
     public bool ReportLoaded { get; set; }
     public ObservableCollection<BarVM> Days { get; } = [];

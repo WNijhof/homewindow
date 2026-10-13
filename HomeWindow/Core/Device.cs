@@ -52,6 +52,10 @@ public sealed class DeviceVM : ObservableObject
     public bool IsGridMeter { get; private set; }
     public bool IsSolar { get; private set; }
     public bool IsHomeBattery { get; private set; }
+    // A charger for an electric car: Homey's evcharger class, or a device that says so in its energy settings
+    public bool IsEvCharger { get; private set; }
+    // The charger's kWh counter for what went into the car
+    public string? ChargerMeterCapability { get; private set; }
     public string? ImportCapability { get; private set; }
     public string? ExportCapability { get; private set; }
     // A home battery's kWh counters for charging and discharging
@@ -365,6 +369,7 @@ public sealed class DeviceVM : ObservableObject
             IsGridMeter = J.Bool(energy, "cumulative") == true || Regex(name);
             IsSolar = cls == "solarpanel";
             IsHomeBattery = J.Bool(energy, "homeBattery") == true;
+            IsEvCharger = cls == "evcharger" || J.Bool(energy, "evCharger") == true;
             var alwaysOn = Core.AlwaysOn.In(d);
             if (alwaysOn != alwaysOnSetting)
             {
@@ -381,6 +386,7 @@ public sealed class DeviceVM : ObservableObject
             var order = J.Arr(d, "capabilities")?.Select(c => c?.ToString()).OfType<string>().ToList() ?? [];
             ChargedCapability = IsHomeBattery ? J.Str(energy, "meterPowerImportedCapability") ?? (order.Contains("meter_power.charged") ? "meter_power.charged" : null) : null;
             DischargedCapability = IsHomeBattery ? J.Str(energy, "meterPowerExportedCapability") ?? (order.Contains("meter_power.discharged") ? "meter_power.discharged" : null) : null;
+            ChargerMeterCapability = IsEvCharger ? J.Str(energy, "meterPowerImportedCapability") ?? (order.Contains("meter_power") ? "meter_power" : null) : null;
             var objs = J.Obj(d, "capabilitiesObj");
             if (objs != null)
             {
