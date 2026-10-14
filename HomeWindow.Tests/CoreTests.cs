@@ -152,6 +152,24 @@ public class EnergyMathTests
     }
 
     [Fact]
+    public void PerDay_skips_a_meter_that_drops_out_and_comes_back()
+    {
+        // A session counter of 42.4 kWh that reads 0 for a moment: coming back is no use
+        var entries = new List<(DateTime, double)>
+        {
+            (Day.AddHours(1), 42.4), (Day.AddHours(1.1), 0), (Day.AddHours(1.2), 0), (Day.AddHours(1.3), 42.4), (Day.AddHours(2), 42.5),
+        };
+        Assert.Equal(0.1, EnergyMath.PerDay(entries)[Day], 6);
+    }
+
+    [Fact]
+    public void PerDay_skips_more_than_a_home_can_draw_in_the_time()
+    {
+        var entries = new List<(DateTime, double)> { (Day.AddHours(1), 10), (Day.AddHours(1.1), 52.4), (Day.AddHours(5), 53) };
+        Assert.Equal(0.6, EnergyMath.PerDay(entries)[Day], 6);
+    }
+
+    [Fact]
     public void Use_without_a_battery_is_import_plus_solar_minus_export() =>
         Assert.Equal(12.5, EnergyMath.Use(7.5, 14, 9, 0, 0), 6);
 

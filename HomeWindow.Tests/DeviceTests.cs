@@ -95,6 +95,14 @@ public class DeviceTests
     }
 
     [Fact]
+    public void An_EV_charger_without_onoff_starts_and_stops_charging_from_its_tile()
+    {
+        var charger = Make("Car charger", "evcharger", [Cap("evcharger_charging", "boolean", false, true), Cap("measure_power", "number", 0.0)]);
+        Assert.Equal("evcharger_charging", charger.QuickAction);
+        Assert.Equal(Icons.Power, charger.QuickGlyph);
+    }
+
+    [Fact]
     public void Alarms_count_except_a_low_battery()
     {
         var smoke = Make("Rookmelder", "sensor", [Cap("alarm_smoke", "boolean", true), Cap("alarm_battery", "boolean", true)]);

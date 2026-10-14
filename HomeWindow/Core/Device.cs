@@ -383,7 +383,9 @@ public sealed class DeviceVM : ObservableObject
             ZoneId = zone;
             Available = available;
             UnavailableMessage = message;
-            QuickAction = J.Str(J.Obj(d, "ui"), "quickAction");
+            // An EV charger without a quick action of its own gets start/stop charging, as in the Homey app
+            QuickAction = J.Str(J.Obj(d, "ui"), "quickAction")
+                ?? (J.Arr(d, "capabilities")?.Any(c => c?.GetValueKind() == System.Text.Json.JsonValueKind.String && c.GetValue<string>() == "evcharger_charging") == true ? "evcharger_charging" : null);
             DriverName = J.Str(d, "driverId");
             var iconUrls = IconUrlsOf(d);
             if (!iconUrls.SequenceEqual(IconUrls))

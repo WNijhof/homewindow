@@ -934,13 +934,15 @@ public sealed class HomeyStore : ObservableObject
         }
 
         // Use per device today, from their own kWh counters
-        var consumers = Devices.Where(d => d.Has("meter_power") && !d.IsGridMeter && !d.IsSolar && !d.IsHomeBattery && d.Class != "battery").Take(40).ToList();
+        // An EV charger counts with the meter Homey Energy uses for it, which need not be meter_power
+        static string? MeterOf(DeviceVM d) => d.ChargerMeterCapability ?? (d.Has("meter_power") ? "meter_power" : null);
+        var consumers = Devices.Where(d => MeterOf(d) != null && !d.IsGridMeter && !d.IsSolar && !d.IsHomeBattery && d.Class != "battery").Take(40).ToList();
         var perDevice = new List<(DeviceVM d, double kwh)>();
         foreach (var d in consumers)
         {
             try
             {
-                var kwh = Sum(PerDay(await Entries(c, d.Id, "meter_power", "today", ct)), IsToday);
+                var kwh = Sum(PerDay(await Entries(c, d.Id, MeterOf(d)!, "today", ct)), IsToday);
                 if (kwh > 0.005) perDevice.Add((d, kwh));
             }
             catch (HomeyApiException) { }
