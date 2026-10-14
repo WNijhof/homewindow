@@ -60,6 +60,7 @@ public partial class SettingsPage : UserControl
         Check(TileSizeChoice, S.TileSize);
         Check(TaskbarPositionChoice, S.TaskbarPosition);
         Check(TaskbarTextSizeChoice, S.TaskbarTextSize);
+        Check(PowerUnitChoice, S.PowerUnit);
         foreach (var chip in TaskbarItemsChoice.Children.OfType<ToggleButton>())
             chip.IsChecked = S.TaskbarItems.Contains(chip.Tag as string ?? "");
         Check(LanguageChoice, S.Language ?? "");
@@ -315,6 +316,12 @@ public partial class SettingsPage : UserControl
     void TileSize_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TileSize = v);
     void TaskbarPosition_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TaskbarPosition = v);
     void TaskbarTextSize_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TaskbarTextSize = v);
+
+    void PowerUnit_Checked(object sender, RoutedEventArgs e)
+    {
+        Choose(sender, v => S.PowerUnit = v);
+        if (!loading) HomeyStore.I.PowerUnitChanged();
+    }
 
     // The parts of the taskbar strip, kept in the strip's own order
     void TaskbarItem_Click(object sender, RoutedEventArgs e)

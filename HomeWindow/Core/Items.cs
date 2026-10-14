@@ -514,8 +514,11 @@ public sealed class EnergyVM : ObservableObject
     public static string Watts(double? w)
     {
         if (w is not { } v) return "–";
-        return Math.Abs(v) >= 10000 ? (v / 1000).ToString("0.0", Loc.Culture) + " kW" : v.ToString("0", Loc.Culture) + " W";
+        return InKilowatts(v) ? (v / 1000).ToString("0.0", Loc.Culture) + " kW" : v.ToString("0", Loc.Culture) + " W";
     }
+
+    // From 1000 W on in kW, when the user chose that in the settings
+    public static bool InKilowatts(double watts) => App.Settings.PowerUnit == "kw" && Math.Abs(watts) >= 1000;
 
     public static string Kwh(double? kwh) => kwh is { } v ? v.ToString(v >= 100 ? "0" : "0.0", Loc.Culture) + " kWh" : "–";
 }

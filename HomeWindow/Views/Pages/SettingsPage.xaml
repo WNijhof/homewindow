@@ -244,6 +244,15 @@
                             </StackPanel>
                         </Border>
                     </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T Vermogen}" Style="{StaticResource Label}" />
+                        <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal" x:Name="PowerUnitChoice">
+                                <RadioButton Style="{StaticResource Segment}" GroupName="PowerUnit" Tag="w" Content="{c:T 'Alleen W'}" Checked="PowerUnit_Checked" />
+                                <RadioButton Style="{StaticResource Segment}" GroupName="PowerUnit" Tag="kw" Content="{c:T 'kW vanaf 1000 W'}" Checked="PowerUnit_Checked" />
+                            </StackPanel>
+                        </Border>
+                    </DockPanel>
                 </StackPanel>
             </Border>
 

@@ -122,6 +122,9 @@ public sealed class CapabilityVM(DeviceVM device, string id) : ObservableObject
         return changed;
     }
 
+    // Shown again, after a setting that changes how values read
+    public void Refresh() => OnPropertyChanged(string.Empty);
+
     void Hold(object? v)
     {
         value = v;
@@ -169,6 +172,7 @@ public sealed class CapabilityVM(DeviceVM device, string id) : ObservableObject
                 };
             case double d:
                 if (IsFraction) return (d * 100).ToString("0", ci) + " %";
+                if (Units == "W" && EnergyVM.InKilowatts(d)) return (d / 1000).ToString("0.0", ci) + " kW";
                 var text = Decimals is { } n ? d.ToString("N" + Math.Clamp(n, 0, 4), ci) : Smart(d, ci);
                 return string.IsNullOrEmpty(Units) ? text : Units is "%" ? $"{text} %" : $"{text} {Units}";
             case string s:

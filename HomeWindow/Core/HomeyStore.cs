@@ -390,6 +390,17 @@ public sealed class HomeyStore : ObservableObject
         if (list.Count > 0) _ = LoadDeviceIcons(c, list);
     }
 
+    // W or kW chosen in the settings
+    public void PowerUnitChanged()
+    {
+        foreach (var d in Devices)
+        {
+            foreach (var cap in d.Capabilities.Where(c => c.Units == "W")) cap.Refresh();
+            d.Refresh();
+        }
+        ComputeLiveEnergy(null);
+    }
+
     // Switched on or off in the settings
     public void HomeyIconsChanged()
     {

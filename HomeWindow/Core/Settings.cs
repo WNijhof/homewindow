@@ -89,6 +89,8 @@ public sealed class AppSettings
     public List<string> TaskbarItems { get; set; } = ["home", "solar", "grid", "battery", "charger"];
     // The text of the taskbar strip: normal, large
     public string TaskbarTextSize { get; set; } = "normal";
+    // Power from 1000 W on in kW (kw), or always in watts (w)
+    public string PowerUnit { get; set; } = "w";
     public string? Language { get; set; }
     public bool Hotkey { get; set; } = true;
     public bool Toasts { get; set; } = true;
@@ -153,6 +155,7 @@ public sealed class AppSettings
         s.FlyoutTab ??= "favorites";
         s.TaskbarPosition ??= "left";
         s.TaskbarTextSize ??= "normal";
+        s.PowerUnit ??= "w";
         s.PinHash ??= "";
         s.TaskbarItems ??= ["home", "solar", "grid", "battery", "charger"];
         foreach (var h in s.Homeys)

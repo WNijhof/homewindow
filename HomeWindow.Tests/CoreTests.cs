@@ -170,6 +170,21 @@ public class EnergyMathTests
     }
 
     [Fact]
+    public void Power_reads_in_kW_from_1000_W_only_when_chosen()
+    {
+        var before = App.Settings.PowerUnit;
+        try
+        {
+            App.Settings.PowerUnit = "w";
+            Assert.Equal("3182 W", EnergyVM.Watts(3182));
+            App.Settings.PowerUnit = "kw";
+            Assert.Equal((3.2).ToString("0.0", Loc.Culture) + " kW", EnergyVM.Watts(3182));
+            Assert.Equal("999 W", EnergyVM.Watts(999));
+        }
+        finally { App.Settings.PowerUnit = before; }
+    }
+
+    [Fact]
     public void Use_without_a_battery_is_import_plus_solar_minus_export() =>
         Assert.Equal(12.5, EnergyMath.Use(7.5, 14, 9, 0, 0), 6);
 
