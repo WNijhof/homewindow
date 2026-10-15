@@ -26,8 +26,8 @@ public sealed class TaskbarStrip : IDisposable
     readonly WeatherVM weatherData = HomeyStore.I.Weather;
     readonly DispatcherTimer timer;
     readonly Border root;
-    readonly TextBlock weather, home, solar, grid, battery, charger, weatherIcon, solarIcon, gridIcon, batteryIcon, chargerIcon;
-    readonly StackPanel weatherPart, homePart, solarPart, gridPart, batteryPart, chargerPart;
+    readonly TextBlock weather, home, solar, grid, battery, charger, top, weatherIcon, solarIcon, gridIcon, batteryIcon, chargerIcon, topIcon;
+    readonly StackPanel weatherPart, homePart, solarPart, gridPart, batteryPart, chargerPart, topPart;
     HwndSource? source;
     IntPtr taskbar, failedOn;
     // Windows or a security program can refuse the window at first (access denied, seen right after a restart);
@@ -63,26 +63,28 @@ public sealed class TaskbarStrip : IDisposable
             Orientation = Orientation.Horizontal, Margin = new Thickness(left, 0, 0, 0), Children = { icon, value },
         };
 
-        weather = Value(); home = Value(); solar = Value(); grid = Value(); battery = Value(); charger = Value();
+        weather = Value(); home = Value(); solar = Value(); grid = Value(); battery = Value(); charger = Value(); top = Value();
         weatherIcon = Glyph(Icons.Sun);
         var homeIcon = Glyph(Icons.Home);
         solarIcon = Glyph(Icons.Sun);
         gridIcon = Glyph(Icons.Energy);
         batteryIcon = Glyph(Icons.Battery);
         chargerIcon = Glyph(Icons.Car);
+        topIcon = Glyph(Icons.Power);
         weatherPart = Part(weatherIcon, weather, 12);
         homePart = Part(homeIcon, home, 12);
         solarPart = Part(solarIcon, solar, 12);
         gridPart = Part(gridIcon, grid, 12);
         batteryPart = Part(batteryIcon, battery, 12);
         chargerPart = Part(chargerIcon, charger, 12);
+        topPart = Part(topIcon, top, 12);
         root = new Border
         {
             // Nearly transparent, so the whole strip takes clicks
             Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)),
             Padding = new Thickness(8, 0, 8, 0),
             Cursor = Cursors.Hand,
-            Child = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { weatherPart, homePart, solarPart, gridPart, batteryPart, chargerPart } },
+            Child = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { weatherPart, homePart, solarPart, gridPart, batteryPart, chargerPart, topPart } },
         };
         root.MouseLeftButtonUp += (_, _) => Clicked?.Invoke();
         TextOptions.SetTextFormattingMode(root, TextFormattingMode.Display);
@@ -108,6 +110,8 @@ public sealed class TaskbarStrip : IDisposable
         if (items.Contains("battery") && e.BatteryPercent != null) list.Add("battery");
         // The car only while it charges; an idle charger would just say 0 W
         if (items.Contains("charger") && e.IsCharging) list.Add("charger");
+        // The biggest consumers right now, so a charger or a dryer shows up by itself while it draws power
+        if (items.Contains("top") && e.Consumers.Count > 0) list.Add("top");
         return list;
     }
 
@@ -168,7 +172,7 @@ public sealed class TaskbarStrip : IDisposable
         // Explorer can put its own content on top again; every tenth tick (20 s) the strip moves back to the top anyway
         // As an overlay the position is on the screen, and it is put on top again every time: the taskbar takes the top back
         var (px, py) = overlay ? (tb.Left + x, tb.Top) : (x, 0);
-        var now = (px, py, width, height, weatherData.Temperature + energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText + energy.ChargerText + energy.CarPercentText + string.Join(',', Shown()) + App.Settings.TaskbarTextSize);
+        var now = (px, py, width, height, weatherData.Temperature + energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText + energy.ChargerText + energy.CarPercentText + top.Text + string.Join(',', Shown()) + App.Settings.TaskbarTextSize);
         if (!overlay && now == last && ++ticks % 10 != 0) return;
         last = now;
         SetWindowPos(source.Handle, overlay ? HWND_TOPMOST : IntPtr.Zero, px, py, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
@@ -289,10 +293,11 @@ public sealed class TaskbarStrip : IDisposable
         // The power going into the car, and its charge when the charger knows it
         charger.Text = energy.ChargerText + (energy.CarPercent != null ? " · " + energy.CarPercentText : "");
         chargerIcon.Foreground = good;
+        top.Text = string.Join("  ·  ", energy.Consumers.Take(3).Select(c => (c.Name.Length > 14 ? c.Name[..13] + "…" : c.Name) + " " + c.ValueText.TrimEnd(' ', '*')));
 
         // Larger text when chosen, for readers who find the taskbar's own size small
         var large = App.Settings.TaskbarTextSize == "large";
-        foreach (var part in new[] { weatherPart, homePart, solarPart, gridPart, batteryPart, chargerPart })
+        foreach (var part in new[] { weatherPart, homePart, solarPart, gridPart, batteryPart, chargerPart, topPart })
         {
             ((TextBlock)part.Children[0]).FontSize = large ? 16 : 13;
             ((TextBlock)part.Children[1]).FontSize = large ? 15.5 : 12.5;
@@ -301,7 +306,7 @@ public sealed class TaskbarStrip : IDisposable
         // Only the parts picked in the settings; the first one needs no space before it
         var shown = Shown();
         var first = true;
-        foreach (var (id, part) in new[] { ("weather", weatherPart), ("home", homePart), ("solar", solarPart), ("grid", gridPart), ("battery", batteryPart), ("charger", chargerPart) })
+        foreach (var (id, part) in new[] { ("weather", weatherPart), ("home", homePart), ("solar", solarPart), ("grid", gridPart), ("battery", batteryPart), ("charger", chargerPart), ("top", topPart) })
         {
             var visible = shown.Contains(id);
             part.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;

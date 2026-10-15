@@ -25,6 +25,7 @@ public partial class MainWindow : Window, IDetailsHost
         {
             if (e.Key == Key.Escape && DetailPanel.Visibility == Visibility.Visible) { CloseDetail(); e.Handled = true; }
             if (e.Key == Key.F5) { store.Kick(); e.Handled = true; }
+            if (Keyboard.Modifiers == ModifierKeys.Control && Shortcuts.SlotOf(e.Key) is > 0 and var slot) { Shortcuts.Press(slot); e.Handled = true; }
         };
         App.Gate.Changed += UpdateLockToggle;
         UpdateLockToggle();

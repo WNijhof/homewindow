@@ -62,6 +62,23 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Home battery: charge, and whether it is charging or discharging -->
+                <Border Style="{StaticResource Card}" Width="300" Margin="0,0,12,12" DataContext="{Binding Energy}"
+                        Visibility="{Binding HasBattery, Converter={StaticResource Visible}}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Icon}" Text="&#xEBAA;" FontSize="12" Foreground="{DynamicResource GoodBrush}" Margin="0,0,6,0" />
+                            <TextBlock Text="{c:T Thuisbatterij}" Style="{StaticResource Sub}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding BatteryPercentText, TargetNullValue='–'}" Style="{StaticResource Big}" FontSize="30" />
+                        <ProgressBar Style="{StaticResource Meter}" Value="{Binding BatteryFraction, Mode=OneWay}" Margin="0,6,0,0" Foreground="{DynamicResource GoodBrush}"
+                                     Visibility="{Binding BatteryChargeText, Converter={StaticResource Visible}}" />
+                        <TextBlock Style="{StaticResource Sub}" Margin="0,8,0,0">
+                            <Run Text="{Binding BatteryStateText, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
                 <!-- Who is home -->
                 <Border Style="{StaticResource Card}" Width="300" Margin="0,0,12,12" Visibility="{Binding Users.Count, Converter={StaticResource Visible}}">
                     <StackPanel>
@@ -91,6 +108,24 @@
                     </DockPanel>
                 </Border>
             </WrapPanel>
+
+            <!-- Camera pictures -->
+            <TextBlock Text="{c:T Camerabeelden}" Style="{StaticResource Heading}" Visibility="{Binding Cameras.Count, Converter={StaticResource Visible}}" />
+            <ItemsControl ItemsSource="{Binding Cameras}" Visibility="{Binding Cameras.Count, Converter={StaticResource Visible}}" ItemsPanel="{StaticResource WrapItems}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type c:CameraVM}">
+                        <Border Style="{StaticResource Card}" Width="300" Margin="0,0,12,12" Padding="0" ClipToBounds="True">
+                            <StackPanel>
+                                <Image Source="{Binding Image}" Stretch="UniformToFill" Height="170" />
+                                <DockPanel Margin="12,8">
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding TimeText}" Style="{StaticResource Sub}" />
+                                    <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
             <!-- Favourites -->
             <TextBlock Text="{c:T Favorieten}" Style="{StaticResource Heading}" />

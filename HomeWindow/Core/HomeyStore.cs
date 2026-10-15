@@ -44,6 +44,9 @@ public sealed class HomeyStore : ObservableObject
     public ObservableCollection<FlowVM> Flows { get; } = [];
     public ObservableCollection<FolderVM> Folders { get; } = [];
     public ObservableCollection<MoodVM> Moods { get; } = [];
+    // Camera pictures, only looked up while a window is open
+    public ObservableCollection<CameraVM> Cameras { get; } = [];
+    readonly Dictionary<string, CameraVM> cameras = [];
     public ObservableCollection<VariableVM> Variables { get; } = [];
     public ObservableCollection<UserVM> Users { get; } = [];
     public ObservableCollection<AppVM> Apps { get; } = [];
@@ -129,7 +132,7 @@ public sealed class HomeyStore : ObservableObject
     void Clear()
     {
         foreach (var d in new System.Collections.IDictionary[] { devices, zones, flows, folders, moods, variables, users, apps, notifications }) d.Clear();
-        Devices.Clear(); Zones.Clear(); Flows.Clear(); Folders.Clear(); Moods.Clear(); Variables.Clear();
+        Devices.Clear(); Zones.Clear(); Flows.Clear(); Folders.Clear(); Moods.Clear(); Cameras.Clear(); cameras.Clear(); Variables.Clear();
         Users.Clear(); Apps.Clear(); Notifications.Clear(); FavoriteDevices.Clear(); FavoriteFlows.Clear();
         FlowGroups.Clear(); BatteryDevices.Clear(); Energy.Consumers.Clear(); Energy.Days.Clear(); Energy.TodayDevices.Clear();
         Energy.ReportLoaded = false;
@@ -184,6 +187,7 @@ public sealed class HomeyStore : ObservableObject
                     await Feature("variables", () => LoadVariables(c, ct));
                     await Feature("users", () => LoadUsers(c, ct));
                     await Feature("energy", () => LoadEnergyLive(c, ct));
+                    if (visibleWindows > 0) await LoadCameras(c, ct);
                     mid = now;
                 }
                 if (now - weather > TimeSpan.FromMinutes(10))
@@ -625,6 +629,45 @@ public sealed class HomeyStore : ObservableObject
             if (chain.Count > 10) break;
         }
         return chain;
+    }
+
+    // The pictures apps such as Eufy, Reolink and Ring give Homey for a camera device. An older Homey, or a key without
+    // the right, simply has none: this never shows an error, and the Overview then has no cameras section.
+    async Task LoadCameras(HomeyClient c, CancellationToken ct)
+    {
+        JsonNode? node;
+        try { node = await c.GetAsync("/api/manager/images/image", ct); }
+        catch (HomeyApiException) { return; }
+        ct.ThrowIfCancellationRequested();
+        var list = new List<CameraVM>();
+        foreach (var img in J.Items(node))
+        {
+            var owner = J.Str(img, "ownerUri");
+            if (J.Str(img, "id") is not { } id || J.Str(img, "url") is not { } url || owner is null || !owner.StartsWith("homey:device:", StringComparison.Ordinal)) continue;
+            var deviceId = owner["homey:device:".Length..];
+            var device = Devices.FirstOrDefault(d => d.Id == deviceId);
+            if (device == null) continue;
+            if (!cameras.TryGetValue(id, out var vm)) cameras[id] = vm = new CameraVM(id);
+            vm.Name = device.Name;
+            vm.ZoneName = ZoneName(device.ZoneId);
+            vm.DeviceId = deviceId;
+            var updated = J.Str(img, "lastUpdated") ?? "";
+            if (vm.Image == null || vm.Url != url || vm.Updated != updated)
+            {
+                byte[]? data = null;
+                try { data = await c.GetBytesAsync(url, ct, 8_000_000); }
+                catch (HomeyOfflineException) { return; }
+                if (data is { Length: > 0 } && Icons.FromFile(data) is { } image)
+                {
+                    vm.Image = image;
+                    vm.TimeText = DateTime.Now.ToString("t", Loc.Culture);
+                }
+            }
+            vm.Url = url;
+            vm.Updated = updated;
+            if (vm.Image != null) list.Add(vm);
+        }
+        Sync(Cameras, list.OrderBy(v => v.ZoneName).ThenBy(v => v.Name, StringComparer.CurrentCultureIgnoreCase).ToList());
     }
 
     async Task LoadMoods(HomeyClient c, CancellationToken ct)

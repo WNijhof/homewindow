@@ -129,6 +129,24 @@ public sealed class FlowVM : ObservableObject
     }
 }
 
+// The latest picture of a camera that Homey keeps for a device; refreshed now and then while a window is open
+public sealed class CameraVM(string id) : ObservableObject
+{
+    public string Id { get; } = id;
+    string name = "";
+    public string Name { get => name; set => Set(ref name, value); }
+    string zoneName = "";
+    public string ZoneName { get => zoneName; set => Set(ref zoneName, value); }
+    public string DeviceId { get; set; } = "";
+    // Homey's address of the picture, and when it was taken, to fetch it again only when it changed
+    public string Url { get; set; } = "";
+    public string Updated { get; set; } = "";
+    System.Windows.Media.ImageSource? image;
+    public System.Windows.Media.ImageSource? Image { get => image; set => Set(ref image, value); }
+    string time = "";
+    public string TimeText { get => time; set => Set(ref time, value); }
+}
+
 public sealed class MoodVM : ObservableObject
 {
     public MoodVM(string id)
@@ -464,6 +482,9 @@ public sealed class EnergyVM : ObservableObject
     // The charge of the home batteries, in percent
     public double? BatteryPercent { get; set; }
     public string BatteryPercentText => BatteryPercent is { } p ? p.ToString("0", Loc.Culture) + " %" : "";
+    public double BatteryFraction => (BatteryPercent ?? 0) / 100;
+    // Charging, discharging or idle, with the power; a few watts of noise count as idle
+    public string BatteryStateText => Math.Abs(BatteryW) < 20 ? Loc.T("Batterij rust") : $"{BatteryLabel} · {BatteryText}";
     public string BatteryChargeText => BatteryPercent != null ? Loc.F("Laadstand {0}", BatteryPercentText) : "";
 
     // Where the power comes from, as the energy dashboard decides it: "solar", "battery", "grid" or null

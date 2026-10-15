@@ -221,6 +221,7 @@
                             <ToggleButton Style="{StaticResource ToggleChip}" Tag="grid" Content="{c:T Net}" Click="TaskbarItem_Click" />
                             <ToggleButton Style="{StaticResource ToggleChip}" Tag="battery" Content="{c:T Thuisbatterij}" Click="TaskbarItem_Click" />
                             <ToggleButton Style="{StaticResource ToggleChip}" Tag="charger" Content="{c:T Laadpaal}" Click="TaskbarItem_Click" />
+                            <ToggleButton Style="{StaticResource ToggleChip}" Tag="top" Content="{c:T 'Grootste verbruikers'}" Click="TaskbarItem_Click" />
                         </WrapPanel>
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">
@@ -272,6 +273,13 @@
                         <StackPanel>
                             <TextBlock Text="{c:T Sneltoets}" Style="{StaticResource Body}" />
                             <TextBlock Text="{c:T 'Ctrl + Alt + H opent het paneel bij de klok.'}" Style="{StaticResource Sub}" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
+                        <ToggleButton x:Name="MidiSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" Click="General_Click" />
+                        <StackPanel>
+                            <TextBlock Text="{c:T 'Favorieten bedienen met het toetsenbord of MIDI'}" Style="{StaticResource Body}" />
+                            <TextBlock Text="{c:T 'Ctrl + 1 t/m 9 schakelt de eerste negen favorieten, in het paneel en in het venster. MIDI: aan de schakelaar zet je een MIDI-keyboard of -pad op deze pc aan; de noten vanaf de middelste C (60) schakelen dezelfde favorieten. De controller hoeft niet met Homey verbonden te zijn.'}" Style="{StaticResource Sub}" TextWrapping="Wrap" />
                         </StackPanel>
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">

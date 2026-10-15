@@ -96,6 +96,7 @@ public partial class SettingsPage : UserControl
         TaskbarSwitch.IsChecked = S.TaskbarEnergy;
         StartupSwitch.IsChecked = AppSettings.StartWithWindows;
         HotkeySwitch.IsChecked = S.Hotkey;
+        MidiSwitch.IsChecked = S.Midi;
         ToastSwitch.IsChecked = S.Toasts;
         AlarmSwitch.IsChecked = S.AlarmToasts;
         ActivitySwitch.IsChecked = S.ActivityToasts;
@@ -420,8 +421,11 @@ public partial class SettingsPage : UserControl
         S.ActivityToasts = ActivitySwitch.IsChecked == true;
         var hotkeyChanged = S.Hotkey != (HotkeySwitch.IsChecked == true);
         S.Hotkey = HotkeySwitch.IsChecked == true;
+        var midiChanged = S.Midi != (MidiSwitch.IsChecked == true);
+        S.Midi = MidiSwitch.IsChecked == true;
         S.Save();
         if (hotkeyChanged) App.Current.RegisterHotkey();
+        if (midiChanged) Midi.Apply(S.Midi);
     }
 
     async void HomeyFavorites_Click(object sender, RoutedEventArgs e)

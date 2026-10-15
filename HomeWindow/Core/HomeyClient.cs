@@ -151,7 +151,7 @@ public sealed class HomeyClient(HomeyConfig config)
     public Task<JsonNode?> DeleteAsync(string path, CancellationToken ct = default) => SendAsync(HttpMethod.Delete, path, null, ct);
 
     // A file such as an app icon; null when Homey does not have it. The key is only sent to Homey itself.
-    public async Task<byte[]?> GetBytesAsync(string url, CancellationToken ct = default)
+    public async Task<byte[]?> GetBytesAsync(string url, CancellationToken ct = default, int maxBytes = 2_000_000)
     {
         var baseUrl = BaseUrl ?? throw new HomeyOfflineException(Loc.T("Niet verbonden"));
         if (demo != null) return demo.File(url);
@@ -168,9 +168,9 @@ public sealed class HomeyClient(HomeyConfig config)
         {
             using var res = await Http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cts.Token);
             // An icon is small; a huge answer is not one
-            if (!res.IsSuccessStatusCode || res.Content.Headers.ContentLength > 2_000_000) return null;
+            if (!res.IsSuccessStatusCode || res.Content.Headers.ContentLength > maxBytes) return null;
             var data = await res.Content.ReadAsByteArrayAsync(cts.Token);
-            return data.Length > 2_000_000 ? null : data;
+            return data.Length > maxBytes ? null : data;
         }
         catch (Exception e) when (e is HttpRequestException or OperationCanceledException && !ct.IsCancellationRequested) { return null; }
     }

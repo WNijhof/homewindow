@@ -116,6 +116,7 @@ public partial class App : Application
 
         flyout = new FlyoutWindow();
         RegisterHotkey();
+        Midi.Apply(Settings.Midi);
         taskbarStrip = new TaskbarStrip();
         taskbarStrip.Clicked += ToggleFlyout;
         Settings.Saved += () => taskbarStrip?.Place();
@@ -280,6 +281,7 @@ public partial class App : Application
         tray = null;
         taskbarStrip?.Dispose();
         taskbarStrip = null;
+        Midi.Stop();
         Shutdown();
     }
 

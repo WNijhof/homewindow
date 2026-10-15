@@ -317,4 +317,19 @@ public class TranslationTests
                 Assert.True(nl.Contains($"{{{i}}}") == en.Contains($"{{{i}}}"), $"{{{i}}} in \"{nl}\"");
         }
     }
+
+    [Theory]
+    [InlineData(59, 0)]
+    [InlineData(60, 1)]
+    [InlineData(68, 9)]
+    [InlineData(69, 0)]
+    public void A_MIDI_note_from_middle_C_up_is_a_favourite_slot(int note, int slot) => Assert.Equal(slot, Shortcuts.SlotOfNote(note));
+
+    [Fact]
+    public void Ctrl_digits_are_favourite_slots()
+    {
+        Assert.Equal(1, Shortcuts.SlotOf(System.Windows.Input.Key.D1));
+        Assert.Equal(9, Shortcuts.SlotOf(System.Windows.Input.Key.NumPad9));
+        Assert.Equal(0, Shortcuts.SlotOf(System.Windows.Input.Key.D0));
+    }
 }

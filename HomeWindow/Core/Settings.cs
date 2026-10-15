@@ -93,6 +93,8 @@ public sealed class AppSettings
     public string PowerUnit { get; set; } = "w";
     public string? Language { get; set; }
     public bool Hotkey { get; set; } = true;
+    // MIDI keyboards and pads press the first nine favourites (middle C upwards)
+    public bool Midi { get; set; }
     public bool Toasts { get; set; } = true;
     // A Windows notification when a smoke, water or other safety alarm goes off, and when motion or a door does
     public bool AlarmToasts { get; set; } = true;

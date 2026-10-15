@@ -162,6 +162,7 @@ public partial class FlyoutWindow : Window, IDetailsHost
             e.Handled = true;
         }
         else if (e.Key == Key.F5) { store.Kick(); e.Handled = true; }
+        else if (Keyboard.Modifiers == ModifierKeys.Control && Shortcuts.SlotOf(e.Key) is > 0 and var slot) { Shortcuts.Press(slot); e.Handled = true; }
         else if (!App.Gate.IsLocked && !SearchBox.IsKeyboardFocused && tab != "favorites" && e.Key is >= Key.A and <= Key.Z && Keyboard.Modifiers == ModifierKeys.None)
         {
             // Typing starts a search right away
