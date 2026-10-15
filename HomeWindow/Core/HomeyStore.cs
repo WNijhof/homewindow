@@ -778,6 +778,22 @@ public sealed class HomeyStore : ObservableObject
 
     JsonNode? lastLive;
 
+    // For the diagnostics report: what Homey's live energy report holds and why a device does or does not count as a consumer
+    public string LiveSummary()
+    {
+        var items = J.Arr(lastLive, "items") ?? (lastLive as JsonArray);
+        var list = items?.OfType<JsonObject>().ToList() ?? [];
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"Live energy report: {(lastLive == null ? "none (not read, or not allowed)" : list.Count + " items")}; feature error: {FeatureError("energy") ?? "-"}");
+        foreach (var g in list.GroupBy(i => J.Str(i, "type") ?? "?"))
+            sb.AppendLine($"  type {g.Key}: {g.Count()}");
+        var counted = list.Where(i => J.Str(i, "type") == "device").Select(i => J.Str(i, "id")).OfType<string>().ToHashSet();
+        var withPower = Devices.Where(d => d.PowerW is > 0.5).ToList();
+        sb.AppendLine($"Devices with measure_power over 0.5 W: {withPower.Count}; of those in the live report: {withPower.Count(d => counted.Contains(d.Id))}; grid/solar/battery: {withPower.Count(d => d.IsGridMeter || d.IsSolar || d.IsHomeBattery || d.Class == "battery")}");
+        sb.AppendLine($"Consumers shown now: {Energy.Consumers.Count}");
+        return sb.ToString();
+    }
+
     // The grid meters Homey knows, best first: ones that count imported kWh come before those that only read watts
     public List<DeviceVM> GridMeters() => Devices
         .Where(d => d.IsGridMeter && (d.PowerW != null || d.ImportCapability != null || d.Has("meter_power.imported") || d.Has("meter_power")))

@@ -24,10 +24,11 @@ public static class Diagnostics
             sb.AppendLine($"Homey: mode {h.Mode}, sign-in {h.Auth}, grid meter {(h.GridMeterId == "" ? "automatic" : "chosen")}, {h.ExcludedSolar.Count} solar device(s) left out");
         sb.AppendLine($"Settings: language {s.Language ?? "auto"}, power unit {s.PowerUnit}, text size {s.TaskbarTextSize}, taskbar items {string.Join("+", s.TaskbarItems)}, tile size {s.TileSize}");
         sb.AppendLine();
+        sb.AppendLine(store.LiveSummary());
         sb.AppendLine($"Devices ({store.Devices.Count}):");
         foreach (var d in store.Devices.OrderBy(d => d.Name, StringComparer.CurrentCultureIgnoreCase))
         {
-            sb.AppendLine($"- {d.Name} [{d.Id}] class={d.Class} driver={d.DriverName} available={d.Available} quickAction={d.QuickAction ?? "-"} quickButton={d.QuickGlyph != null}");
+            sb.AppendLine($"- {d.Name} [{d.Id}] class={d.Class} driver={d.DriverName} available={d.Available} quickAction={d.QuickAction ?? "-"} quickButton={d.QuickGlyph != null} power={d.PowerW?.ToString("0.#") ?? "-"} grid={d.IsGridMeter} solar={d.IsSolar} battery={d.IsHomeBattery} charger={d.IsEvCharger}");
             foreach (var c in d.Capabilities)
                 sb.AppendLine($"    {c.Id}: {c.Type}{(c.Setable ? " setable" : "")}{(c.Getable ? "" : " not-getable")} = {c.Value}{(c.Units is { Length: > 0 } u ? " " + u : "")}");
         }
