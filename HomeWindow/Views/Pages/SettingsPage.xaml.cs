@@ -49,6 +49,28 @@ public partial class SettingsPage : UserControl
         else Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true });
     }
 
+    // Writes the diagnostics report and prepares an e-mail or a GitHub issue; the file itself is attached by hand
+    void Diagnostics_Click(object sender, RoutedEventArgs e)
+    {
+        string file;
+        try { file = Core.Diagnostics.Save(); }
+        catch (Exception ex)
+        {
+            Log.Error("Diagnostics", ex);
+            MessageBox.Show(ex.Message, "HomeWindow", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        Process.Start("explorer.exe", $"/select,\"{file}\"");
+        var answer = MessageBox.Show(Window.GetWindow(this), Loc.F("Het rapport staat in:\n{0}\n\nJa: e-mail naar {1} openen (voeg het bestand als bijlage toe).\nNee: een GitHub-issue openen (sleep het bestand erin).\nAnnuleren: alleen het bestand.", file, Core.Diagnostics.Mail),
+            "HomeWindow", MessageBoxButton.YesNoCancel, MessageBoxImage.Information);
+        var subject = Uri.EscapeDataString($"HomeWindow {Updater.CurrentText} diagnostics");
+        var body = Uri.EscapeDataString("What happened, and what did you expect?\n\n(Attach HomeWindow-diagnostics.txt)");
+        if (answer == MessageBoxResult.Yes)
+            Process.Start(new ProcessStartInfo($"mailto:{Core.Diagnostics.Mail}?subject={subject}&body={body}") { UseShellExecute = true });
+        else if (answer == MessageBoxResult.No)
+            Process.Start(new ProcessStartInfo($"{Core.Diagnostics.IssuesUrl}?title={subject}&body={body}") { UseShellExecute = true });
+    }
+
     void Load()
     {
         loading = true;

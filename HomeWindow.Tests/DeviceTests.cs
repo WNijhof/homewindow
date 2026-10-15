@@ -103,6 +103,29 @@ public class DeviceTests
     }
 
     [Fact]
+    public void An_EV_charger_keeps_its_start_stop_button_when_Homey_names_an_unusable_quick_action()
+    {
+        var obj = new JsonObject { ["evcharger_charging"] = Cap("evcharger_charging", "boolean", false, true), ["evcharger_charging_state"] = Cap("evcharger_charging_state", "string", "plugged_out") };
+        var d = new DeviceVM("dev");
+        d.Update(new JsonObject
+        {
+            ["id"] = "dev", ["name"] = "Car charger", ["class"] = "evcharger", ["zone"] = "z", ["available"] = true,
+            ["ui"] = new JsonObject { ["quickAction"] = "evcharger_charging_state" },
+            ["capabilities"] = new JsonArray("evcharger_charging", "evcharger_charging_state"),
+            ["capabilitiesObj"] = obj, ["energyObj"] = new JsonObject(),
+        });
+        Assert.Equal(Icons.Power, d.QuickGlyph);
+    }
+
+    [Fact]
+    public void Diagnostics_lists_the_version_and_does_not_throw_without_a_Homey()
+    {
+        var text = Core.Diagnostics.Build();
+        Assert.Contains("HomeWindow ", text);
+        Assert.Contains("Devices (", text);
+    }
+
+    [Fact]
     public void Alarms_count_except_a_low_battery()
     {
         var smoke = Make("Rookmelder", "sensor", [Cap("alarm_smoke", "boolean", true), Cap("alarm_battery", "boolean", true)]);

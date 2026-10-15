@@ -399,6 +399,13 @@
                             <TextBlock Text="{c:T 'Onverwachte fouten komen in dit bestand. Stuur het mee als je een probleem meldt.'}" Style="{StaticResource Sub}" TextWrapping="Wrap" />
                         </StackPanel>
                     </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
+                        <Button DockPanel.Dock="Right" Style="{StaticResource Btn}" Content="{c:T 'Diagnose sturen…'}" Click="Diagnostics_Click" />
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{c:T Diagnose}" Style="{StaticResource Body}" />
+                            <TextBlock Text="{c:T 'Een rapport met je versie, instellingen, apparaten en het logbestand, om bij een probleem te sturen. Zonder sleutels of adressen; wel de namen van je apparaten.'}" Style="{StaticResource Sub}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DockPanel>
                 </StackPanel>
             </Border>
         </StackPanel>
