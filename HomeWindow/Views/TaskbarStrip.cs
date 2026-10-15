@@ -31,6 +31,8 @@ public sealed class TaskbarStrip : IDisposable
     // The biggest consumers: per device the name above and the power below, side by side
     readonly StackPanel topItems = new() { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
     string topKey = "";
+    // How many of the biggest consumers fit; fewer at the left, so the widget stays where it was chosen
+    int topMax = 3;
     HwndSource? source;
     IntPtr taskbar, failedOn;
     // Windows or a security program can refuse the window at first (access denied, seen right after a restart);
@@ -152,11 +154,10 @@ public sealed class TaskbarStrip : IDisposable
             return;
         }
 
-        Fill();
         var scale = Native.ScaleAt(tb.Left + 1, tb.Top + 1);
-        root.Width = root.Height = double.NaN;
-        root.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-        var width = (int)Math.Ceiling(root.DesiredSize.Width * scale);
+        var gap = (int)(Gap * scale);
+        topMax = 3;
+        var width = Measure(scale);
         var height = tb.Bottom - tb.Top;
 
         // Left of the notification area; without one, keep clear of the clock
@@ -164,11 +165,28 @@ public sealed class TaskbarStrip : IDisposable
         var right = notify != IntPtr.Zero && GetWindowRect(notify, out var nr) && nr.Left > tb.Left && nr.Left < tb.Right
             ? nr.Left - tb.Left
             : tb.Right - tb.Left - (int)(260 * scale);
-        var gap = (int)(Gap * scale);
         var x = Math.Max(0, right - width - gap);
-        // At the far left when chosen and when it fits before the Start button; otherwise on the right after all
-        if (App.Settings.TaskbarPosition == "left" && LeftRoom(bar, tb) is { } room && room.to - room.from >= width + 2 * gap)
-            x = room.from + gap;
+        // At the far left when chosen and when it fits before the Start button, with fewer biggest consumers if need be;
+        // otherwise on the right after all, with all of them
+        if (App.Settings.TaskbarPosition == "left" && LeftRoom(bar, tb) is { } room)
+        {
+            var leftWidth = width;
+            while (room.to - room.from < leftWidth + 2 * gap && topMax > 0 && Shown().Contains("top"))
+            {
+                topMax--;
+                leftWidth = Measure(scale);
+            }
+            if (room.to - room.from >= leftWidth + 2 * gap)
+            {
+                x = room.from + gap;
+                width = leftWidth;
+            }
+            else if (topMax < 3)
+            {
+                topMax = 3;
+                Measure(scale);
+            }
+        }
         // The root does not stretch to the child window by itself; size it so the text sits in the middle
         root.Width = width / scale;
         root.Height = height / scale;
@@ -179,6 +197,15 @@ public sealed class TaskbarStrip : IDisposable
         if (!overlay && now == last && ++ticks % 10 != 0) return;
         last = now;
         SetWindowPos(source.Handle, overlay ? HWND_TOPMOST : IntPtr.Zero, px, py, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
+    }
+
+    // The width in pixels with what is in it now
+    int Measure(double scale)
+    {
+        Fill();
+        root.Width = root.Height = double.NaN;
+        root.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        return (int)Math.Ceiling(root.DesiredSize.Width * scale);
     }
 
     // The last known free room at the left; starts a new lookup when it is old or the taskbar is new.
@@ -279,15 +306,17 @@ public sealed class TaskbarStrip : IDisposable
     void FillTop(Brush text)
     {
         var large = App.Settings.TaskbarTextSize == "large";
-        var shown = energy.Consumers.Take(3).ToList();
-        var key = string.Join("|", shown.Select(c => c.Name + c.ValueText)) + large + text;
+        var shown = energy.Consumers.Take(topMax).ToList();
+        var key = string.Join("|", shown.Select(c => c.Name + c.ValueText)) + large + text + topMax;
         if (key == topKey) return;
         topKey = key;
         topItems.Children.Clear();
         foreach (var c in shown)
         {
+            // A fixed width, so the widget does not grow and shrink with the names and the power
             topItems.Children.Add(new StackPanel
             {
+                Width = large ? 96 : 76,
                 Margin = new Thickness(topItems.Children.Count == 0 ? 0 : 10, 0, 0, 0),
                 VerticalAlignment = VerticalAlignment.Center,
                 Children =
@@ -336,7 +365,7 @@ public sealed class TaskbarStrip : IDisposable
         var first = true;
         foreach (var (id, part) in new[] { ("weather", weatherPart), ("home", homePart), ("solar", solarPart), ("grid", gridPart), ("battery", batteryPart), ("charger", chargerPart), ("top", topPart) })
         {
-            var visible = shown.Contains(id);
+            var visible = shown.Contains(id) && (id != "top" || topItems.Children.Count > 0);
             part.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
             part.Margin = new Thickness(visible && !first ? 12 : 0, 0, 0, 0);
             first &= !visible;
