@@ -26,8 +26,11 @@ public sealed class TaskbarStrip : IDisposable
     readonly WeatherVM weatherData = HomeyStore.I.Weather;
     readonly DispatcherTimer timer;
     readonly Border root;
-    readonly TextBlock weather, home, solar, grid, battery, charger, top, weatherIcon, solarIcon, gridIcon, batteryIcon, chargerIcon, topIcon;
+    readonly TextBlock weather, home, solar, grid, battery, charger, weatherIcon, solarIcon, gridIcon, batteryIcon, chargerIcon, topIcon;
     readonly StackPanel weatherPart, homePart, solarPart, gridPart, batteryPart, chargerPart, topPart;
+    // The biggest consumers: per device the name above and the power below, side by side
+    readonly StackPanel topItems = new() { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+    string topKey = "";
     HwndSource? source;
     IntPtr taskbar, failedOn;
     // Windows or a security program can refuse the window at first (access denied, seen right after a restart);
@@ -63,7 +66,7 @@ public sealed class TaskbarStrip : IDisposable
             Orientation = Orientation.Horizontal, Margin = new Thickness(left, 0, 0, 0), Children = { icon, value },
         };
 
-        weather = Value(); home = Value(); solar = Value(); grid = Value(); battery = Value(); charger = Value(); top = Value();
+        weather = Value(); home = Value(); solar = Value(); grid = Value(); battery = Value(); charger = Value();
         weatherIcon = Glyph(Icons.Sun);
         var homeIcon = Glyph(Icons.Home);
         solarIcon = Glyph(Icons.Sun);
@@ -77,7 +80,7 @@ public sealed class TaskbarStrip : IDisposable
         gridPart = Part(gridIcon, grid, 12);
         batteryPart = Part(batteryIcon, battery, 12);
         chargerPart = Part(chargerIcon, charger, 12);
-        topPart = Part(topIcon, top, 12);
+        topPart = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 0, 0, 0), Children = { topIcon, topItems } };
         root = new Border
         {
             // Nearly transparent, so the whole strip takes clicks
@@ -172,7 +175,7 @@ public sealed class TaskbarStrip : IDisposable
         // Explorer can put its own content on top again; every tenth tick (20 s) the strip moves back to the top anyway
         // As an overlay the position is on the screen, and it is put on top again every time: the taskbar takes the top back
         var (px, py) = overlay ? (tb.Left + x, tb.Top) : (x, 0);
-        var now = (px, py, width, height, weatherData.Temperature + energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText + energy.ChargerText + energy.CarPercentText + top.Text + string.Join(',', Shown()) + App.Settings.TaskbarTextSize);
+        var now = (px, py, width, height, weatherData.Temperature + energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText + energy.ChargerText + energy.CarPercentText + topKey + string.Join(',', Shown()) + App.Settings.TaskbarTextSize);
         if (!overlay && now == last && ++ticks % 10 != 0) return;
         last = now;
         SetWindowPos(source.Handle, overlay ? HWND_TOPMOST : IntPtr.Zero, px, py, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
@@ -272,6 +275,30 @@ public sealed class TaskbarStrip : IDisposable
         }
     }
 
+    // Two lines per consumer, so the names stay readable: the name small above, the power below
+    void FillTop(Brush text)
+    {
+        var large = App.Settings.TaskbarTextSize == "large";
+        var shown = energy.Consumers.Take(3).ToList();
+        var key = string.Join("|", shown.Select(c => c.Name + c.ValueText)) + large + text;
+        if (key == topKey) return;
+        topKey = key;
+        topItems.Children.Clear();
+        foreach (var c in shown)
+        {
+            topItems.Children.Add(new StackPanel
+            {
+                Margin = new Thickness(topItems.Children.Count == 0 ? 0 : 10, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                Children =
+                {
+                    new TextBlock { Text = c.Name, FontSize = large ? 11.5 : 9.5, Opacity = 0.75, MaxWidth = large ? 96 : 76, TextTrimming = TextTrimming.CharacterEllipsis, LineHeight = large ? 13 : 11, LineStackingStrategy = LineStackingStrategy.BlockLineHeight },
+                    new TextBlock { Text = c.ValueText.TrimEnd(' ', '*'), FontSize = large ? 14 : 12, FontWeight = FontWeights.SemiBold, LineHeight = large ? 16 : 14, LineStackingStrategy = LineStackingStrategy.BlockLineHeight },
+                },
+            });
+        }
+    }
+
     void Fill()
     {
         light = Theme.TaskbarIsLight();
@@ -293,15 +320,16 @@ public sealed class TaskbarStrip : IDisposable
         // The power going into the car, and its charge when the charger knows it
         charger.Text = energy.ChargerText + (energy.CarPercent != null ? " · " + energy.CarPercentText : "");
         chargerIcon.Foreground = good;
-        top.Text = string.Join("  ·  ", energy.Consumers.Take(3).Select(c => (c.Name.Length > 14 ? c.Name[..13] + "…" : c.Name) + " " + c.ValueText.TrimEnd(' ', '*')));
+        FillTop(text);
 
         // Larger text when chosen, for readers who find the taskbar's own size small
         var large = App.Settings.TaskbarTextSize == "large";
-        foreach (var part in new[] { weatherPart, homePart, solarPart, gridPart, batteryPart, chargerPart, topPart })
+        foreach (var part in new[] { weatherPart, homePart, solarPart, gridPart, batteryPart, chargerPart })
         {
             ((TextBlock)part.Children[0]).FontSize = large ? 16 : 13;
             ((TextBlock)part.Children[1]).FontSize = large ? 15.5 : 12.5;
         }
+        topIcon.FontSize = large ? 16 : 13;
 
         // Only the parts picked in the settings; the first one needs no space before it
         var shown = Shown();
