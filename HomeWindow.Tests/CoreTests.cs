@@ -332,4 +332,13 @@ public class TranslationTests
         Assert.Equal(9, Shortcuts.SlotOf(System.Windows.Input.Key.NumPad9));
         Assert.Equal(0, Shortcuts.SlotOf(System.Windows.Input.Key.D0));
     }
+
+    [Fact]
+    public void A_live_report_without_any_measuring_device_does_not_filter_consumers()
+    {
+        HashSet<string> reported = ["meter", "inverter"];
+        Assert.Null(EnergyMath.CountedFilter(reported, ["plug1", "plug2"]));
+        Assert.Null(EnergyMath.CountedFilter([], ["plug1"]));
+        Assert.Same(reported, EnergyMath.CountedFilter(reported, ["plug1", "inverter"]));
+    }
 }

@@ -857,7 +857,9 @@ public sealed class HomeyStore : ObservableObject
 
         var items = J.Arr(lastLive, "items") ?? (lastLive as JsonArray);
         // Homey Energy's live report only lists devices that count in Energy; one it leaves out stays out here too
-        var counted = items?.OfType<JsonObject>().Where(i => J.Str(i, "type") == "device").Select(i => J.Str(i, "id")).OfType<string>().ToHashSet();
+        var counted = EnergyMath.CountedFilter(
+            items?.OfType<JsonObject>().Where(i => J.Str(i, "type") == "device").Select(i => J.Str(i, "id")).OfType<string>().ToHashSet(),
+            Devices.Where(d => d.PowerW is > 0.5).Select(d => d.Id));
         var consumers = Devices
             .Where(d => !d.IsGridMeter && !d.IsSolar && !d.IsHomeBattery && d.Class != "battery" && d.PowerW is > 0.5 && (counted == null || counted.Count == 0 || counted.Contains(d.Id)))
             .Select(d => (name: d.Name, watts: d.PowerW!.Value, estimated: false, glyph: d.Glyph))

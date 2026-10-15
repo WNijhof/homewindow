@@ -43,4 +43,9 @@ public static class EnergyMath
         var known = levels.OfType<double>().ToList();
         return known.Count > 0 ? known.Average() : null;
     }
+
+    // The devices Homey's live report lists are the ones that count in Homey Energy. A report that lists none of the
+    // devices with a power reading (it can hold only meters and the like) says nothing about them: no filter then.
+    public static HashSet<string>? CountedFilter(HashSet<string>? reported, IEnumerable<string> measured) =>
+        reported is { Count: > 0 } && measured.Any(reported.Contains) ? reported : null;
 }
