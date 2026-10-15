@@ -176,6 +176,11 @@ public sealed class DeviceVM : ObservableObject
 
     public string Glyph => CustomGlyph ?? Icons.ForClass(Class, Has);
 
+    // The capability the round button switches: the quick action Homey names, else an EV charger's start/stop
+    CapabilityVM? QuickCap =>
+        (QuickAction != null && Cap(QuickAction) is { Setable: true, Type: "boolean" } q ? q : null)
+        ?? (Cap("evcharger_charging") is { Setable: true, Type: "boolean" } c ? c : null);
+
     // The small toggle button on a tile, like in the Homey web app; null when there is nothing to toggle
     public string? QuickGlyph
     {
@@ -184,7 +189,7 @@ public sealed class DeviceVM : ObservableObject
             if (!Available) return null;
             // Always on and on: there is nothing to switch
             if (AlwaysOn && IsOn && QuickAction is null or "onoff") return null;
-            if ((QuickAction != null && Cap(QuickAction) is { Setable: true, Type: "boolean" }) || HasOnOff) return Icons.Power;
+            if (QuickCap != null || HasOnOff) return Icons.Power;
             if (HasLock) return IsLocked ? Icons.Lock : Icons.Unlock;
             if (Cap("speaker_playing") is { Setable: true }) return IsPlaying ? Icons.Pause : Icons.Play;
             if (HasCovering) return Icons.Blinds;
@@ -462,7 +467,7 @@ public sealed class DeviceVM : ObservableObject
     void Quick(object? source)
     {
         if (!Available) { DetailsCommand.Execute(source); return; }
-        if (QuickAction != null && Cap(QuickAction) is { Setable: true, Type: "boolean" } quick)
+        if (QuickCap is { } quick)
         {
             if (quick.Kind == CapKind.Button) quick.PressCommand.Execute(null);
             else quick.Send(quick.Value is not true);
