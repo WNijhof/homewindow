@@ -631,10 +631,15 @@ public sealed class HomeyStore : ObservableObject
         return chain;
     }
 
-    // The pictures apps such as Eufy, Reolink and Ring give Homey for a camera device. An older Homey, or a key without
-    // the right, simply has none: this never shows an error, and the Overview then has no cameras section.
+    // The pictures apps such as Eufy, Reolink and Ring give Homey for a camera device. A device lists the ids of its
+    // camera pictures; the picture itself belongs to the app. An older Homey, or a key without the right, simply has
+    // none: this never shows an error, and the Overview then has no cameras section.
     async Task LoadCameras(HomeyClient c, CancellationToken ct)
     {
+        var owners = new Dictionary<string, DeviceVM>();
+        foreach (var d in Devices)
+            foreach (var imageId in d.CameraImageIds) owners.TryAdd(imageId, d);
+        if (owners.Count == 0) { Sync(Cameras, []); return; }
         JsonNode? node;
         try { node = await c.GetAsync("/api/manager/images/image", ct); }
         catch (HomeyApiException) { return; }
@@ -642,11 +647,8 @@ public sealed class HomeyStore : ObservableObject
         var list = new List<CameraVM>();
         foreach (var img in J.Items(node))
         {
-            var owner = J.Str(img, "ownerUri");
-            if (J.Str(img, "id") is not { } id || J.Str(img, "url") is not { } url || owner is null || !owner.StartsWith("homey:device:", StringComparison.Ordinal)) continue;
-            var deviceId = owner["homey:device:".Length..];
-            var device = Devices.FirstOrDefault(d => d.Id == deviceId);
-            if (device == null) continue;
+            if (J.Str(img, "id") is not { } id || J.Str(img, "url") is not { } url || !owners.TryGetValue(id, out var device)) continue;
+            var deviceId = device.Id;
             if (!cameras.TryGetValue(id, out var vm)) cameras[id] = vm = new CameraVM(id);
             vm.Name = device.Name;
             vm.ZoneName = ZoneName(device.ZoneId);

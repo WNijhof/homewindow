@@ -70,10 +70,24 @@ public class DeviceTests
             ["iconOverride"] = "light-bulb", ["iconObj"] = new JsonObject { ["url"] = "/icons/abc.svg" },
             ["driverId"] = "homey:app:com.philips.hue.zigbee:bulb",
         });
-        Assert.Equal(["https://icons-cdn.athom.com/light-bulb.svg?ver=1", "/icons/abc.svg", "/app/com.philips.hue.zigbee/drivers/bulb/assets/icon.svg"], all);
+        Assert.Equal(["https://my.homey.app/img/devices/light-bulb.svg", "/icons/abc.svg", "/app/com.philips.hue.zigbee/drivers/bulb/assets/icon.svg"], all);
 
         // A virtual device of Homey itself has no app driver
         Assert.Empty(DeviceVM.IconUrlsOf(new JsonObject { ["driverId"] = "homey:manager:vdevice:light" }));
+    }
+
+    [Fact]
+    public void A_camera_picture_is_found_through_the_images_of_its_device()
+    {
+        var ids = DeviceVM.CameraImageIdsOf(new JsonObject
+        {
+            ["images"] = new JsonArray(
+                new JsonObject { ["id"] = "front", ["type"] = "camera", ["imageObj"] = new JsonObject { ["id"] = "img-1" } },
+                new JsonObject { ["id"] = "albumart", ["type"] = "media", ["imageObj"] = new JsonObject { ["id"] = "img-2" } },
+                new JsonObject { ["id"] = "empty", ["type"] = "camera" }),
+        });
+        Assert.Equal(["img-1"], ids);
+        Assert.Empty(DeviceVM.CameraImageIdsOf(new JsonObject()));
     }
 
     [Fact]

@@ -74,17 +74,24 @@ public sealed class DeviceVM : ObservableObject
     // Where Homey serves the device's own icon, best first: the one picked in the Homey app, the device's, its driver's
     public IReadOnlyList<string> IconUrls { get; private set; } = [];
     public bool IconRequested { get; set; }
+    // Homey's ids of the camera pictures an app keeps for this device, as the Homey app shows them
+    public IReadOnlyList<string> CameraImageIds { get; private set; } = [];
     ImageSource? homeyIcon;
     public ImageSource? HomeyIcon { get => homeyIcon; set { if (Set(ref homeyIcon, value)) OnPropertyChanged(nameof(IconImage)); } }
     // The icon from Homey when it is shown: switched on, and no icon of the user's own choice
     public ImageSource? IconImage => CustomGlyph == null && App.Settings.HomeyIcons ? HomeyIcon : null;
     public void IconSettingChanged() => OnPropertyChanged(nameof(IconImage));
 
+    public static IReadOnlyList<string> CameraImageIdsOf(JsonObject d) =>
+        J.Arr(d, "images")?.OfType<JsonObject>()
+            .Where(i => J.Str(i, "type") == "camera")
+            .Select(i => J.Str(J.Obj(i, "imageObj"), "id")).OfType<string>().Where(id => id.Length > 0).ToList() ?? [];
+
     public static IReadOnlyList<string> IconUrlsOf(JsonObject d)
     {
         var urls = new List<string>();
-        // An icon picked in the Homey app is only a name; Homey's apps fetch it from Athom's icon library
-        if (J.Str(d, "iconOverride") is { Length: > 0 } picked) urls.Add($"https://icons-cdn.athom.com/{Uri.EscapeDataString(picked)}.svg?ver=1");
+        // An icon picked in the Homey app is only a name; the Homey web app shows it from its own image folder
+        if (J.Str(d, "iconOverride") is { Length: > 0 } picked) urls.Add($"https://my.homey.app/img/devices/{Uri.EscapeDataString(picked)}.svg");
         if (J.Str(J.Obj(d, "iconObj"), "url") is { Length: > 0 } own) urls.Add(own);
         // homey:app:<app id>:<driver id>
         if (J.Str(d, "driverId")?.Split(':') is ["homey", "app", var app, var driver, ..])
@@ -392,6 +399,7 @@ public sealed class DeviceVM : ObservableObject
             QuickAction = J.Str(J.Obj(d, "ui"), "quickAction")
                 ?? (J.Arr(d, "capabilities")?.Any(c => c?.GetValueKind() == System.Text.Json.JsonValueKind.String && c.GetValue<string>() == "evcharger_charging") == true ? "evcharger_charging" : null);
             DriverName = J.Str(d, "driverId");
+            CameraImageIds = CameraImageIdsOf(d);
             var iconUrls = IconUrlsOf(d);
             if (!iconUrls.SequenceEqual(IconUrls))
             {
