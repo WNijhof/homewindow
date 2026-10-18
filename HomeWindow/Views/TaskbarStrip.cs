@@ -46,9 +46,12 @@ public sealed class TaskbarStrip : IDisposable
     bool overlay;
     int ticks;
     bool light;
-    // Free room at the left of the taskbar, in pixels from its left edge: from the end of the buttons there
-    // (Widgets) to the Start button. Looked up in the background now and then; null when there is none.
-    (int from, int to)? leftRoom;
+    // Free room on the taskbar, in pixels from its left edge. Left: from the end of the buttons there (Widgets) to the
+    // Start button, null when there is none. ButtonsEnd: where the last taskbar button ends, so the strip next to the
+    // notification area does not cover the icons of open programs; null when unknown.
+    // Looked up in the background now and then, because the icons move as programs open and close.
+    readonly record struct Rooms((int from, int to)? Left, int? ButtonsEnd);
+    Rooms? rooms;
     IntPtr roomBar;
     DateTime roomChecked;
     bool checkingRoom;
@@ -156,8 +159,6 @@ public sealed class TaskbarStrip : IDisposable
 
         var scale = Native.ScaleAt(tb.Left + 1, tb.Top + 1);
         var gap = (int)(Gap * scale);
-        topMax = 3;
-        var width = Measure(scale);
         var height = tb.Bottom - tb.Top;
 
         // Left of the notification area; without one, keep clear of the clock
@@ -165,27 +166,32 @@ public sealed class TaskbarStrip : IDisposable
         var right = notify != IntPtr.Zero && GetWindowRect(notify, out var nr) && nr.Left > tb.Left && nr.Left < tb.Right
             ? nr.Left - tb.Left
             : tb.Right - tb.Left - (int)(260 * scale);
-        var x = Math.Max(0, right - width - gap);
-        // At the far left when chosen and when it fits before the Start button, with fewer biggest consumers if need be;
-        // otherwise on the right after all, with all of them
-        if (App.Settings.TaskbarPosition == "left" && LeftRoom(bar, tb) is { } room)
+        // Until the first lookup of the free room is back the strip waits, rather than showing up on top of the icons
+        // and jumping away a moment later
+        if (FreeRoom(bar, tb, right) is not { } room)
         {
-            var leftWidth = width;
-            while (room.to - room.from < leftWidth + 2 * gap && topMax > 0 && Shown().Contains("top"))
+            Hide();
+            return;
+        }
+        int x, width;
+        // At the far left when chosen and when it fits before the Start button, with fewer biggest consumers if need be;
+        // otherwise on the right, also with fewer when the icons of open programs reach far to the right
+        if (App.Settings.TaskbarPosition == "left" && room.Left is { } left && Fit(left.to - left.from - 2 * gap, scale) is { } leftWidth)
+        {
+            x = left.from + gap;
+            width = leftWidth;
+        }
+        else
+        {
+            var from = room.ButtonsEnd is { } end && end < right ? end : 0;
+            if (Fit(right - from - 2 * gap, scale) is not { } rightWidth)
             {
-                topMax--;
-                leftWidth = Measure(scale);
+                // Not even without the biggest consumers: rather no strip than one on top of the taskbar icons
+                Hide();
+                return;
             }
-            if (room.to - room.from >= leftWidth + 2 * gap)
-            {
-                x = room.from + gap;
-                width = leftWidth;
-            }
-            else if (topMax < 3)
-            {
-                topMax = 3;
-                Measure(scale);
-            }
+            width = rightWidth;
+            x = Math.Max(0, right - width - gap);
         }
         // The root does not stretch to the child window by itself; size it so the text sits in the middle
         root.Width = width / scale;
@@ -199,6 +205,26 @@ public sealed class TaskbarStrip : IDisposable
         SetWindowPos(source.Handle, overlay ? HWND_TOPMOST : IntPtr.Zero, px, py, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
     }
 
+    void Hide()
+    {
+        if (source != null && last != default) ShowWindow(source.Handle, 0);
+        last = default;
+    }
+
+    // The width in pixels with as many of the biggest consumers as fit in the room (3, 2, 1, none), and the strip
+    // filled with those; null when it does not fit at all
+    int? Fit(int room, double scale)
+    {
+        topMax = 3;
+        var width = Measure(scale);
+        while (width > room && topMax > 0 && Shown().Contains("top"))
+        {
+            topMax--;
+            width = Measure(scale);
+        }
+        return width <= room ? width : null;
+    }
+
     // The width in pixels with what is in it now
     int Measure(double scale)
     {
@@ -208,58 +234,61 @@ public sealed class TaskbarStrip : IDisposable
         return (int)Math.Ceiling(root.DesiredSize.Width * scale);
     }
 
-    // The last known free room at the left; starts a new lookup when it is old or the taskbar is new.
-    // UI Automation asks Explorer, which can be slow or hang, so it runs off the UI thread.
-    (int from, int to)? LeftRoom(IntPtr bar, RECT tb)
+    // The last known free room; starts a new lookup when it is old or the taskbar is new. Null until the first lookup
+    // on this taskbar is back. UI Automation asks Explorer, which can be slow or hang, so it runs off the UI thread.
+    Rooms? FreeRoom(IntPtr bar, RECT tb, int notifyLeft)
     {
-        if (!checkingRoom && (bar != roomBar || DateTime.UtcNow - roomChecked > TimeSpan.FromSeconds(30)))
+        if (bar != roomBar) rooms = null;
+        if (!checkingRoom && (bar != roomBar || DateTime.UtcNow - roomChecked > TimeSpan.FromSeconds(5)))
         {
             checkingRoom = true;
             roomBar = bar;
             roomChecked = DateTime.UtcNow;
             var left = tb.Left;
-            Task.Run(() => FindLeftRoom(bar, left)).ContinueWith(t =>
+            Task.Run(() => FindRooms(bar, left, notifyLeft)).ContinueWith(t =>
             {
                 checkingRoom = false;
-                var found = t.IsCompletedSuccessfully ? t.Result : null;
-                if (found != leftRoom)
+                if (bar != roomBar) return;
+                // A failed lookup counts as done too: the strip then goes where it always went
+                var found = t.IsCompletedSuccessfully ? t.Result : new Rooms(null, null);
+                if (found != rooms)
                 {
-                    leftRoom = found;
+                    rooms = found;
                     last = default;
                     Place();
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
-        return leftRoom;
+        return rooms;
     }
 
-    // From the right edge of the buttons left of Start (Widgets, if shown) to the Start button.
-    // None when Start sits at the left itself (taskbar alignment: Left).
-    static (int from, int to)? FindLeftRoom(IntPtr bar, int taskbarLeft)
+    // Left: from the right edge of the buttons left of Start (Widgets, if shown) to the Start button; none when Start
+    // sits at the left itself (taskbar alignment: Left). ButtonsEnd: the right edge of the last button before the
+    // notification area, which with many programs open reaches far to the right.
+    static Rooms FindRooms(IntPtr bar, int taskbarLeft, int notifyLeft)
     {
         try
         {
             var taskbar = System.Windows.Automation.AutomationElement.FromHandle(bar);
             var start = taskbar.FindFirst(System.Windows.Automation.TreeScope.Descendants,
                 new System.Windows.Automation.PropertyCondition(System.Windows.Automation.AutomationElement.AutomationIdProperty, "StartButton"));
-            if (start == null) return null;
-            var startLeft = (int)start.Current.BoundingRectangle.Left - taskbarLeft;
-            if (startLeft < 200) return null;
+            int? startLeft = start == null ? null : (int)start.Current.BoundingRectangle.Left - taskbarLeft;
             var buttons = taskbar.FindAll(System.Windows.Automation.TreeScope.Descendants,
                 new System.Windows.Automation.PropertyCondition(System.Windows.Automation.AutomationElement.ControlTypeProperty, System.Windows.Automation.ControlType.Button));
-            var from = 0;
+            int from = 0, end = 0;
             foreach (System.Windows.Automation.AutomationElement b in buttons)
             {
                 var r = b.Current.BoundingRectangle;
                 if (r.IsEmpty || r.Width <= 0) continue;
                 var bRight = (int)r.Right - taskbarLeft;
                 if (bRight <= startLeft && bRight > from) from = bRight;
+                if (bRight <= notifyLeft && bRight > end) end = bRight;
             }
-            return (from, startLeft);
+            return new Rooms(startLeft >= 200 ? (from, startLeft.Value) : null, end > 0 ? end : null);
         }
         catch (Exception e) when (e is System.Windows.Automation.ElementNotAvailableException or InvalidOperationException or COMException)
         {
-            return null;
+            return new Rooms(null, null);
         }
     }
 
