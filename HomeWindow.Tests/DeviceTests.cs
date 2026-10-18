@@ -79,15 +79,16 @@ public class DeviceTests
     [Fact]
     public void A_camera_picture_is_found_through_the_images_of_its_device()
     {
-        var ids = DeviceVM.CameraImageIdsOf(new JsonObject
+        var pictures = DeviceVM.CameraImagesOf(new JsonObject
         {
             ["images"] = new JsonArray(
-                new JsonObject { ["id"] = "front", ["type"] = "camera", ["imageObj"] = new JsonObject { ["id"] = "img-1" } },
+                new JsonObject { ["id"] = "front", ["type"] = "camera", ["title"] = "Event snapshot", ["imageObj"] = new JsonObject { ["id"] = "img-1" } },
                 new JsonObject { ["id"] = "albumart", ["type"] = "media", ["imageObj"] = new JsonObject { ["id"] = "img-2" } },
-                new JsonObject { ["id"] = "empty", ["type"] = "camera" }),
+                new JsonObject { ["id"] = "empty", ["type"] = "camera" },
+                new JsonObject { ["id"] = "person", ["type"] = "camera", ["title"] = new JsonObject { ["en"] = "Person detected" }, ["imageObj"] = new JsonObject { ["id"] = "img-3" } }),
         });
-        Assert.Equal(["img-1"], ids);
-        Assert.Empty(DeviceVM.CameraImageIdsOf(new JsonObject()));
+        Assert.Equal([new CameraImage("img-1", "front", "Event snapshot"), new CameraImage("img-3", "person", "Person detected")], pictures);
+        Assert.Empty(DeviceVM.CameraImagesOf(new JsonObject()));
     }
 
     [Fact]

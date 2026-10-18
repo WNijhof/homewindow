@@ -133,6 +133,10 @@ public sealed class FlowVM : ObservableObject
 public sealed class CameraVM(string id) : ObservableObject
 {
     public string Id { get; } = id;
+    // What the hidden list keeps; the picture's own id changes when its app restarts
+    public string Key { get; set; } = "";
+    public static string KeyOf(string deviceId, string slot) => $"{deviceId}/{slot}";
+    public RelayCommand HideCommand { get; } = new(o => { if (o is CameraVM c) HomeyStore.I.HideCamera(c); });
     string name = "";
     public string Name { get => name; set => Set(ref name, value); }
     string zoneName = "";

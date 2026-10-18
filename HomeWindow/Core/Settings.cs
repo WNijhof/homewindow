@@ -34,6 +34,8 @@ public sealed class HomeyConfig
     public string GridMeterId { get; set; } = "";
     // Solar devices left out of the totals: an inverter and a kWh meter on the same panels would otherwise count the sun twice
     public List<string> ExcludedSolar { get; set; } = [];
+    // Camera pictures left off the Overview, as "<device id>/<picture name on the device>"
+    public List<string> HiddenCameras { get; set; } = [];
 
     [JsonIgnore]
     public bool UsesAccount => Auth == "account";
@@ -178,6 +180,7 @@ public sealed class AppSettings
             h.CollapsedFolders ??= [];
             h.GridMeterId ??= "";
             h.ExcludedSolar ??= [];
+            h.HiddenCameras ??= [];
         }
         return s;
     }

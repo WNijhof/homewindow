@@ -37,6 +37,7 @@ public sealed class HomeyStore : ObservableObject
         errorTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(6) };
         errorTimer.Tick += (_, _) => { errorTimer.Stop(); Error = null; };
         Theme.Changed += () => { foreach (var d in Devices) d.Refresh(); };
+        ShowHiddenCamerasCommand = new RelayCommand(ShowHiddenCameras);
     }
 
     public ObservableCollection<DeviceVM> Devices { get; } = [];
@@ -47,6 +48,12 @@ public sealed class HomeyStore : ObservableObject
     // Camera pictures, only looked up while a window is open
     public ObservableCollection<CameraVM> Cameras { get; } = [];
     readonly Dictionary<string, CameraVM> cameras = [];
+    // The camera pictures the user hid on the Overview, so the Overview can offer to show them again
+    int hiddenCameraCount;
+    public int HiddenCameraCount { get => hiddenCameraCount; private set { if (Set(ref hiddenCameraCount, value)) OnPropertyChanged(nameof(HasCameraSection)); } }
+    public bool HasCameraSection => Cameras.Count > 0 || HiddenCameraCount > 0;
+    public RelayCommand ShowHiddenCamerasCommand { get; }
+    bool camerasRequested;
     public ObservableCollection<VariableVM> Variables { get; } = [];
     public ObservableCollection<UserVM> Users { get; } = [];
     public ObservableCollection<AppVM> Apps { get; } = [];
@@ -189,6 +196,11 @@ public sealed class HomeyStore : ObservableObject
                     await Feature("energy", () => LoadEnergyLive(c, ct));
                     if (visibleWindows > 0) await LoadCameras(c, ct);
                     mid = now;
+                }
+                if (camerasRequested && visibleWindows > 0)
+                {
+                    camerasRequested = false;
+                    await LoadCameras(c, ct);
                 }
                 if (now - weather > TimeSpan.FromMinutes(10))
                 {
@@ -636,10 +648,17 @@ public sealed class HomeyStore : ObservableObject
     // none: this never shows an error, and the Overview then has no cameras section.
     async Task LoadCameras(HomeyClient c, CancellationToken ct)
     {
-        var owners = new Dictionary<string, DeviceVM>();
+        var owners = new Dictionary<string, (DeviceVM device, CameraImage picture)>();
+        var hidden = Config?.HiddenCameras ?? [];
+        var hiddenCount = 0;
         foreach (var d in Devices)
-            foreach (var imageId in d.CameraImageIds) owners.TryAdd(imageId, d);
-        if (owners.Count == 0) { Sync(Cameras, []); return; }
+            foreach (var picture in d.CameraImages)
+            {
+                if (hidden.Contains(CameraVM.KeyOf(d.Id, picture.Slot))) hiddenCount++;
+                else owners.TryAdd(picture.ImageId, (d, picture));
+            }
+        HiddenCameraCount = hiddenCount;
+        if (owners.Count == 0) { SyncCameras([]); return; }
         JsonNode? node;
         try { node = await c.GetAsync("/api/manager/images/image", ct); }
         catch (HomeyApiException) { return; }
@@ -647,10 +666,13 @@ public sealed class HomeyStore : ObservableObject
         var list = new List<CameraVM>();
         foreach (var img in J.Items(node))
         {
-            if (J.Str(img, "id") is not { } id || J.Str(img, "url") is not { } url || !owners.TryGetValue(id, out var device)) continue;
+            if (J.Str(img, "id") is not { } id || J.Str(img, "url") is not { } url || !owners.TryGetValue(id, out var owner)) continue;
+            var (device, picture) = owner;
             var deviceId = device.Id;
             if (!cameras.TryGetValue(id, out var vm)) cameras[id] = vm = new CameraVM(id);
-            vm.Name = device.Name;
+            vm.Key = CameraVM.KeyOf(deviceId, picture.Slot);
+            // A camera with more than one picture (Eufy: event and person) says which one this is
+            vm.Name = device.CameraImages.Count > 1 && picture.Title.Length > 0 ? $"{device.Name} · {picture.Title}" : device.Name;
             vm.ZoneName = ZoneName(device.ZoneId);
             vm.DeviceId = deviceId;
             var updated = J.Str(img, "lastUpdated") ?? "";
@@ -669,7 +691,33 @@ public sealed class HomeyStore : ObservableObject
             vm.Updated = updated;
             if (vm.Image != null) list.Add(vm);
         }
-        Sync(Cameras, list.OrderBy(v => v.ZoneName).ThenBy(v => v.Name, StringComparer.CurrentCultureIgnoreCase).ToList());
+        SyncCameras(list.OrderBy(v => v.ZoneName).ThenBy(v => v.Name, StringComparer.CurrentCultureIgnoreCase).ToList());
+    }
+
+    void SyncCameras(List<CameraVM> list)
+    {
+        Sync(Cameras, list);
+        OnPropertyChanged(nameof(HasCameraSection));
+    }
+
+    // Right-click on a camera picture on the Overview: leave it off, e.g. the second picture of a camera
+    public void HideCamera(CameraVM camera)
+    {
+        if (Config == null || camera.Key.Length == 0) return;
+        if (!Config.HiddenCameras.Contains(camera.Key)) Config.HiddenCameras.Add(camera.Key);
+        App.Settings.Save();
+        Cameras.Remove(camera);
+        HiddenCameraCount++;
+        OnPropertyChanged(nameof(HasCameraSection));
+    }
+
+    public void ShowHiddenCameras()
+    {
+        if (Config == null) return;
+        Config.HiddenCameras.Clear();
+        App.Settings.Save();
+        camerasRequested = true;
+        Kick();
     }
 
     async Task LoadMoods(HomeyClient c, CancellationToken ct)

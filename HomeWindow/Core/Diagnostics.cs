@@ -28,7 +28,7 @@ public static class Diagnostics
         sb.AppendLine($"Devices ({store.Devices.Count}):");
         foreach (var d in store.Devices.OrderBy(d => d.Name, StringComparer.CurrentCultureIgnoreCase))
         {
-            sb.AppendLine($"- {d.Name} [{d.Id}] class={d.Class} driver={d.DriverName} available={d.Available} quickAction={d.QuickAction ?? "-"} quickButton={d.QuickGlyph != null} power={d.PowerW?.ToString("0.#") ?? "-"} grid={d.IsGridMeter} solar={d.IsSolar} battery={d.IsHomeBattery} charger={d.IsEvCharger} cameras={d.CameraImageIds.Count} icons={d.IconUrls.Count}");
+            sb.AppendLine($"- {d.Name} [{d.Id}] class={d.Class} driver={d.DriverName} available={d.Available} quickAction={d.QuickAction ?? "-"} quickButton={d.QuickGlyph != null} power={d.PowerW?.ToString("0.#") ?? "-"} grid={d.IsGridMeter} solar={d.IsSolar} battery={d.IsHomeBattery} charger={d.IsEvCharger} cameras={d.CameraImages.Count} icons={d.IconUrls.Count}");
             foreach (var c in d.Capabilities)
                 sb.AppendLine($"    {c.Id}: {c.Type}{(c.Setable ? " setable" : "")}{(c.Getable ? "" : " not-getable")} = {c.Value}{(c.Units is { Length: > 0 } u ? " " + u : "")}");
         }

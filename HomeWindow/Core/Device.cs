@@ -74,18 +74,20 @@ public sealed class DeviceVM : ObservableObject
     // Where Homey serves the device's own icon, best first: the one picked in the Homey app, the device's, its driver's
     public IReadOnlyList<string> IconUrls { get; private set; } = [];
     public bool IconRequested { get; set; }
-    // Homey's ids of the camera pictures an app keeps for this device, as the Homey app shows them
-    public IReadOnlyList<string> CameraImageIds { get; private set; } = [];
+    // The camera pictures an app keeps for this device, as the Homey app shows them
+    public IReadOnlyList<CameraImage> CameraImages { get; private set; } = [];
     ImageSource? homeyIcon;
     public ImageSource? HomeyIcon { get => homeyIcon; set { if (Set(ref homeyIcon, value)) OnPropertyChanged(nameof(IconImage)); } }
     // The icon from Homey when it is shown: switched on, and no icon of the user's own choice
     public ImageSource? IconImage => CustomGlyph == null && App.Settings.HomeyIcons ? HomeyIcon : null;
     public void IconSettingChanged() => OnPropertyChanged(nameof(IconImage));
 
-    public static IReadOnlyList<string> CameraImageIdsOf(JsonObject d) =>
+    // Some apps keep more than one per camera (Eufy: the last event and the last person seen), each with a title
+    public static IReadOnlyList<CameraImage> CameraImagesOf(JsonObject d) =>
         J.Arr(d, "images")?.OfType<JsonObject>()
-            .Where(i => J.Str(i, "type") == "camera")
-            .Select(i => J.Str(J.Obj(i, "imageObj"), "id")).OfType<string>().Where(id => id.Length > 0).ToList() ?? [];
+            .Where(i => J.Str(i, "type") == "camera" && J.Str(J.Obj(i, "imageObj"), "id") is { Length: > 0 })
+            .Select(i => new CameraImage(J.Str(J.Obj(i, "imageObj"), "id")!, J.Str(i, "id") ?? "", J.Text(i, "title") ?? ""))
+            .ToList() ?? [];
 
     public static IReadOnlyList<string> IconUrlsOf(JsonObject d)
     {
@@ -399,7 +401,7 @@ public sealed class DeviceVM : ObservableObject
             QuickAction = J.Str(J.Obj(d, "ui"), "quickAction")
                 ?? (J.Arr(d, "capabilities")?.Any(c => c?.GetValueKind() == System.Text.Json.JsonValueKind.String && c.GetValue<string>() == "evcharger_charging") == true ? "evcharger_charging" : null);
             DriverName = J.Str(d, "driverId");
-            CameraImageIds = CameraImageIdsOf(d);
+            CameraImages = CameraImagesOf(d);
             var iconUrls = IconUrlsOf(d);
             if (!iconUrls.SequenceEqual(IconUrls))
             {
@@ -515,3 +517,7 @@ public sealed class DeviceVM : ObservableObject
         }
     }
 }
+
+// One camera picture of a device: Homey's id of the picture, the app's own name for it on the device
+// (the same after the app restarts, unlike the picture's id) and its title, e.g. "Person detected"
+public sealed record CameraImage(string ImageId, string Slot, string Title);
