@@ -64,7 +64,7 @@ Want to look around first? Run `HomeWindow.exe --demo`.
 
 ## Privacy
 
-HomeWindow only talks to your own Homey: directly on your network, or through Athom's cloud relay (`<homey-id>.connect.athom.com`) when you are away. It also asks GitHub whether there is a new version. Signing in goes through Athom's own sign-in page (`api.athom.com`); HomeWindow never sees or keeps your password. Nothing about your Homey goes anywhere else. Your settings are in `%APPDATA%\HomeWindow\settings.json`; the key to connect (an API key or the sign-in) is encrypted in it with your Windows account.
+HomeWindow only talks to your own Homey: directly on your network, or through Athom's cloud relay (`<homey-id>.connect.athom.com`) when you are away. It also asks GitHub whether there is a new version. Signing in goes through Athom's own sign-in page (`api.athom.com`); HomeWindow never sees or keeps your password. For a device icon you picked in the Homey app, it loads that icon from Athom's `my.homey.app`; the request only names the icon. No other information about your Homey goes to anyone else. Your settings are in `%APPDATA%\HomeWindow\settings.json`; the key to connect (an API key or the sign-in) is encrypted in it with your Windows account.
 
 ## Code signing policy
 
@@ -75,7 +75,7 @@ Free code signing provided by [SignPath.io](https://about.signpath.io), certific
 
 Only what GitHub Actions builds from this repository is signed, and the maintainer approves each release separately. See [docs/SIGNING.md](docs/SIGNING.md).
 
-Privacy: HomeWindow will not transfer any information to other networked systems unless specifically requested by the user, apart from what [Privacy](#privacy) above describes: your own Homey, and GitHub to check for a new version (you can turn that off under Settings → Updates).
+Privacy: HomeWindow will not transfer any information to other networked systems unless specifically requested by the user, apart from what [Privacy](#privacy) above describes: your own Homey, Athom (sign-in, cloud relay, device icons), and GitHub to check for a new version (you can turn that off under Settings → Updates).
 
 ## License
 

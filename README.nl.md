@@ -59,7 +59,7 @@ Eerst rondkijken zonder Homey? Start `HomeWindow.exe --demo`.
 
 ## Privacy
 
-HomeWindow praat met je eigen Homey: rechtstreeks in je netwerk, of via de cloud-doorgang van Athom (`<homey-id>.connect.athom.com`) als je niet thuis bent. Daarnaast vraagt hij bij GitHub of er een nieuwe versie is. Inloggen gaat via de eigen inlogpagina van Athom (`api.athom.com`); HomeWindow ziet en bewaart je wachtwoord nooit. Er gaat geen informatie over je Homey naar andere partijen. Je instellingen staan in `%APPDATA%\HomeWindow\settings.json`; de sleutel om te verbinden (een API-key of de inlog) is daarin versleuteld met je Windows-account.
+HomeWindow praat met je eigen Homey: rechtstreeks in je netwerk, of via de cloud-doorgang van Athom (`<homey-id>.connect.athom.com`) als je niet thuis bent. Daarnaast vraagt hij bij GitHub of er een nieuwe versie is. Inloggen gaat via de eigen inlogpagina van Athom (`api.athom.com`); HomeWindow ziet en bewaart je wachtwoord nooit. Voor een pictogram dat je in de Homey-app voor een apparaat hebt gekozen, haalt hij dat pictogram op bij `my.homey.app` van Athom; daarbij gaat alleen de naam van het pictogram mee. Verder gaat er geen informatie over je Homey naar andere partijen. Je instellingen staan in `%APPDATA%\HomeWindow\settings.json`; de sleutel om te verbinden (een API-key of de inlog) is daarin versleuteld met je Windows-account.
 
 ## Code signing policy
 
@@ -70,7 +70,7 @@ Gratis code signing door [SignPath.io](https://about.signpath.io), certificaat v
 
 Alleen wat GitHub Actions uit deze repository bouwt wordt ondertekend; elke release keurt de beheerder apart goed. Zie [docs/SIGNING.md](docs/SIGNING.md).
 
-Privacy: HomeWindow stuurt geen informatie naar andere systemen in het netwerk, behalve waar je er zelf om vraagt of wat hierboven bij [Privacy](#privacy) staat: je eigen Homey, en GitHub om te zien of er een nieuwe versie is (uit te zetten bij Instellingen → Updates).
+Privacy: HomeWindow stuurt geen informatie naar andere systemen in het netwerk, behalve waar je er zelf om vraagt of wat hierboven bij [Privacy](#privacy) staat: je eigen Homey, Athom (inloggen, cloud-doorgang, pictogrammen) en GitHub om te zien of er een nieuwe versie is (uit te zetten bij Instellingen → Updates).
 
 ## Licentie
 
