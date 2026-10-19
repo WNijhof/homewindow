@@ -45,6 +45,7 @@ public sealed class TaskbarStrip : IDisposable
     // administrator. The strip is then a separate window on top of the taskbar instead.
     bool overlay;
     int ticks;
+    string lastInput = "";
     bool light;
     // Free room on the taskbar, in pixels from its left edge. Left: from the end of the buttons there (Widgets) to the
     // Start button, null when there is none. ButtonsEnd: where the last taskbar button ends, so the strip next to the
@@ -173,6 +174,13 @@ public sealed class TaskbarStrip : IDisposable
             Hide();
             return;
         }
+        // Nothing changed since the last time: do not measure and refill, that redraws the strip and makes it blink.
+        // Now and then it is put on top again anyway (Explorer can cover it).
+        var input = string.Join("|", room, right, tb.Left, tb.Top, height, scale, Theme.TaskbarIsLight(), weatherData.Temperature, energy.HomeText, energy.SolarText,
+            energy.GridText, energy.BatteryPercentText, energy.ChargerText, energy.CarPercentText, string.Join(',', Shown()),
+            string.Join(",", energy.Consumers.Select(c => c.Name + c.ValueText)), App.Settings.TaskbarTextSize, App.Settings.TaskbarPosition);
+        if (last != default && input == lastInput && ++ticks % (overlay ? 15 : 10) != 0) return;
+        lastInput = input;
         int x, width;
         // At the far left when chosen and when it fits before the Start button, with fewer biggest consumers if need be;
         // otherwise on the right, also with fewer when the icons of open programs reach far to the right
@@ -197,10 +205,9 @@ public sealed class TaskbarStrip : IDisposable
         root.Width = width / scale;
         root.Height = height / scale;
         // Explorer can put its own content on top again; every tenth tick (20 s) the strip moves back to the top anyway
-        // As an overlay the position is on the screen, and it is put on top again every time: the taskbar takes the top back
+        // As an overlay the position is on the screen
         var (px, py) = overlay ? (tb.Left + x, tb.Top) : (x, 0);
-        var now = (px, py, width, height, weatherData.Temperature + energy.HomeText + energy.SolarText + energy.GridText + energy.BatteryPercentText + energy.ChargerText + energy.CarPercentText + topKey + string.Join(',', Shown()) + App.Settings.TaskbarTextSize);
-        if (!overlay && now == last && ++ticks % 10 != 0) return;
+        var now = (px, py, width, height, "");
         last = now;
         SetWindowPos(source.Handle, overlay ? HWND_TOPMOST : IntPtr.Zero, px, py, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
     }
@@ -230,6 +237,10 @@ public sealed class TaskbarStrip : IDisposable
     {
         Fill();
         root.Width = root.Height = double.NaN;
+        topItems.InvalidateMeasure();
+        topPart.InvalidateMeasure();
+        root.InvalidateMeasure();
+        root.UpdateLayout();
         root.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         return (int)Math.Ceiling(root.DesiredSize.Width * scale);
     }
