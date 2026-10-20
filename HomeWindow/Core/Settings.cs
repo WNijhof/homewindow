@@ -36,6 +36,8 @@ public sealed class HomeyConfig
     public List<string> ExcludedSolar { get; set; } = [];
     // Camera pictures left off the Overview, as "<device id>/<picture name on the device>"
     public List<string> HiddenCameras { get; set; } = [];
+    // Devices left off the biggest consumers (Energy page and taskbar widget), by device id
+    public List<string> HiddenConsumers { get; set; } = [];
 
     [JsonIgnore]
     public bool UsesAccount => Auth == "account";
@@ -82,6 +84,8 @@ public sealed class AppSettings
     public string MainView { get; set; } = "grid";
     public string TileSize { get; set; } = "normal";       // xsmall, small, normal, large
     public string FlyoutTab { get; set; } = "favorites";
+    // The panel's last tab: moods, or lights (every light per room)
+    public string FlyoutLastTab { get; set; } = "moods";
     public bool FlyoutEnergy { get; set; } = true;
     public bool FlyoutWeather { get; set; } = true;
     public bool TaskbarEnergy { get; set; } = true;
@@ -157,6 +161,7 @@ public sealed class AppSettings
         s.MainView ??= "grid";
         s.TileSize ??= "normal";
         s.FlyoutTab ??= "favorites";
+        s.FlyoutLastTab ??= "moods";
         s.TaskbarPosition ??= "left";
         s.TaskbarTextSize ??= "normal";
         s.PowerUnit ??= "w";
@@ -181,6 +186,7 @@ public sealed class AppSettings
             h.GridMeterId ??= "";
             h.ExcludedSolar ??= [];
             h.HiddenCameras ??= [];
+            h.HiddenConsumers ??= [];
         }
         return s;
     }

@@ -433,6 +433,8 @@ public sealed class WeatherVM : ObservableObject
 
 public sealed class ConsumerVM
 {
+    public string DeviceId { get; init; } = "";
+    public RelayCommand HideCommand { get; } = new(o => { if (o is ConsumerVM c) HomeyStore.I.HideConsumer(c.DeviceId); });
     public string Name { get; init; } = "";
     public double Value { get; init; }
     public double Fraction { get; init; }
@@ -510,6 +512,8 @@ public sealed class EnergyVM : ObservableObject
     }
 
     public ObservableCollection<ConsumerVM> Consumers { get; } = [];
+    public int HiddenConsumerCount { get; set; }
+    public RelayCommand ShowHiddenConsumersCommand { get; } = new(() => HomeyStore.I.ShowHiddenConsumers());
 
     // Today and this month, from Insights
     public string TodayImport { get; set; } = "–";

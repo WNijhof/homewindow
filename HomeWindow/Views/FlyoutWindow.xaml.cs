@@ -14,6 +14,8 @@ public partial class FlyoutWindow : Window, IDetailsHost
 {
     readonly HomeyStore store = HomeyStore.I;
     readonly DeviceBrowser rooms = new();
+    readonly DeviceBrowser lights = new() { ClassFilter = "light" };
+    readonly Debounce search;
     DateTime hiddenAt = DateTime.MinValue;
     bool hiding;
     string tab = "favorites";
@@ -21,6 +23,7 @@ public partial class FlyoutWindow : Window, IDetailsHost
     public FlyoutWindow()
     {
         InitializeComponent();
+        search = new(ApplySearch);
         DataContext = store;
         RoomsPanel.DataContext = rooms;
         SourceInitialized += (_, _) => Theme.ApplyToWindow(this, transient: true);
@@ -76,6 +79,16 @@ public partial class FlyoutWindow : Window, IDetailsHost
         Resources["FlyoutDevicePanel"] = FindResource(grid ? "WrapItems" : "StackItems");
         Resources["FlyoutItemsMargin"] = grid ? new Thickness(-4, 0, -4, 0) : new Thickness(0);
         ViewToggle.Content = grid ? Icons.List : Icons.Grid;
+
+        // The last tab shows the moods, or instead every light
+        var last = App.Settings.FlyoutLastTab == "lights" ? "lights" : "moods";
+        if ((string)TabMoods.Tag != last)
+        {
+            var open = tab == (string)TabMoods.Tag;
+            TabMoods.Tag = last;
+            TabMoods.Content = Loc.T(last == "lights" ? "Lampen" : "Sferen");
+            if (open) { tab = last; ShowTab(); }
+        }
     }
 
     void ViewToggle_Click(object sender, RoutedEventArgs e)
@@ -96,7 +109,7 @@ public partial class FlyoutWindow : Window, IDetailsHost
 
     public void SelectTab(string t)
     {
-        var button = t switch { "rooms" => TabRooms, "flows" => TabFlows, "moods" => TabMoods, _ => TabFavorites };
+        var button = t switch { "rooms" => TabRooms, "flows" => TabFlows, "moods" or "lights" => TabMoods, _ => TabFavorites };
         tab = (string)button.Tag;
         button.IsChecked = true;
         ShowTab();
@@ -105,7 +118,8 @@ public partial class FlyoutWindow : Window, IDetailsHost
     void ShowTab()
     {
         FavoritesPanel.Visibility = tab == "favorites" ? Visibility.Visible : Visibility.Collapsed;
-        RoomsPanel.Visibility = tab == "rooms" ? Visibility.Visible : Visibility.Collapsed;
+        RoomsPanel.Visibility = tab is "rooms" or "lights" ? Visibility.Visible : Visibility.Collapsed;
+        RoomsPanel.DataContext = tab == "lights" ? lights : rooms;
         FlowsPanel.Visibility = tab == "flows" ? Visibility.Visible : Visibility.Collapsed;
         MoodsPanel.Visibility = tab == "moods" ? Visibility.Visible : Visibility.Collapsed;
         // Favourites has no search: the list is short and chosen by hand
@@ -117,7 +131,13 @@ public partial class FlyoutWindow : Window, IDetailsHost
     void Search_Changed(object sender, TextChangedEventArgs e)
     {
         SearchHint.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        search.Kick();
+    }
+
+    void ApplySearch()
+    {
         rooms.Search = SearchBox.Text;
+        lights.Search = SearchBox.Text;
         FilterFlows();
         FilterMoods();
     }

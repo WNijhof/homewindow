@@ -132,15 +132,19 @@ public sealed class DeviceBrowser : ObservableObject
         App.Settings.Save();
     }
 
-    // Related Homey classes share one filter
+    // Related Homey classes share one filter, and every class without a title of its own goes under Other
     static string Group(string? cls, DeviceVM d) => cls switch
     {
+        "light" or "socket" or "sensor" or "lock" or "doorbell" or "solarpanel" or "battery" or "homealarm" or "camera" => cls,
         "blinds" or "curtain" or "sunshade" or "awning" or "windowcoverings" or "garagedoor" => "windowcoverings",
-        "heater" or "heatpump" or "boiler" or "thermostat" or "airconditioning" => "thermostat",
-        "tv" or "settopbox" or "mediaplayer" or "speaker" or "amplifier" => "speaker",
+        "heater" or "heatpump" or "boiler" or "thermostat" or "airconditioning" or "airtreatment" => "thermostat",
+        "tv" or "settopbox" or "mediaplayer" or "speaker" or "amplifier" or "gameconsole" => "speaker",
         "button" or "remote" => "remote",
-        null or "" or "other" => d.Has("onoff") ? "socket" : "other",
-        _ => cls,
+        "evcharger" or "car" => "car",
+        "fan" or "vacuumcleaner" => "fan",
+        "kettle" or "coffeemachine" => "kettle",
+        "waterheater" or "sprinkler" or "waterpump" => "waterheater",
+        _ => d.Has("onoff") ? "socket" : "other",
     };
 
     public static string ClassTitle(string? cls) => Loc.T(cls switch

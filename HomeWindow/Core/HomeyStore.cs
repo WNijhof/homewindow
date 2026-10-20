@@ -711,6 +711,29 @@ public sealed class HomeyStore : ObservableObject
         OnPropertyChanged(nameof(HasCameraSection));
     }
 
+    // Right-click on a consumer on the Energy page: leave it off both lists and the taskbar widget
+    public void HideConsumer(string deviceId)
+    {
+        if (Config == null || deviceId.Length == 0) return;
+        if (!Config.HiddenConsumers.Contains(deviceId)) Config.HiddenConsumers.Add(deviceId);
+        App.Settings.Save();
+        foreach (var list in new[] { Energy.Consumers, Energy.TodayDevices })
+            foreach (var x in list.Where(x => x.DeviceId == deviceId).ToList()) list.Remove(x);
+        Energy.HiddenConsumerCount = Config.HiddenConsumers.Count;
+        Energy.Changed();
+    }
+
+    public void ShowHiddenConsumers()
+    {
+        if (Config == null) return;
+        Config.HiddenConsumers.Clear();
+        App.Settings.Save();
+        Energy.HiddenConsumerCount = 0;
+        Energy.Changed();
+        EnergyReportRequested = true;
+        Kick();
+    }
+
     public void ShowHiddenCameras()
     {
         if (Config == null) return;
@@ -912,21 +935,26 @@ public sealed class HomeyStore : ObservableObject
             Devices.Where(d => d.PowerW is > 0.5).Select(d => d.Id));
         var consumers = Devices
             .Where(d => !d.IsGridMeter && !d.IsSolar && !d.IsHomeBattery && d.Class != "battery" && d.PowerW is > 0.5 && (counted == null || counted.Count == 0 || counted.Contains(d.Id)))
-            .Select(d => (name: d.Name, watts: d.PowerW!.Value, estimated: false, glyph: d.Glyph))
+            .Select(d => (id: d.Id, name: d.Name, watts: d.PowerW!.Value, estimated: false, glyph: d.Glyph))
             .ToList();
         foreach (var item in items?.OfType<JsonObject>() ?? [])
         {
             if (J.Str(item, "type") != "device" || J.Num(J.Obj(item, "values"), "W") is not > 0.5) continue;
             var id = J.Str(item, "id");
             if (id == null || !devices.TryGetValue(id, out var d) || d.Has("measure_power") || d.IsGridMeter || d.IsSolar || d.IsHomeBattery) continue;
-            consumers.Add((d.Name, J.Num(J.Obj(item, "values"), "W")!.Value, true, d.Glyph));
+            consumers.Add((d.Id, d.Name, J.Num(J.Obj(item, "values"), "W")!.Value, true, d.Glyph));
         }
         consumers = consumers.OrderByDescending(x => x.watts).ToList();
         e.HomeW = e.GridW is { } g ? Math.Max(0, g + e.SolarW - e.BatteryW) : consumers.Count > 0 ? consumers.Sum(x => x.watts) : null;
 
+        // Hidden devices still count in the home's use, they are only left off the list
+        var hidden = Config?.HiddenConsumers ?? [];
+        e.HiddenConsumerCount = hidden.Count;
+        consumers = consumers.Where(x => !hidden.Contains(x.id)).ToList();
         var max = consumers.Count > 0 ? consumers[0].watts : 1;
         var list = consumers.Take(12).Select(x => new ConsumerVM
         {
+            DeviceId = x.id,
             Name = x.name,
             Value = x.watts,
             Fraction = x.watts / max,
@@ -1070,11 +1098,12 @@ public sealed class HomeyStore : ObservableObject
             catch (HomeyApiException) { }
         }
         ct.ThrowIfCancellationRequested();
-        perDevice = perDevice.OrderByDescending(x => x.kwh).ToList();
+        var hiddenToday = Config?.HiddenConsumers ?? [];
+        perDevice = perDevice.Where(x => !hiddenToday.Contains(x.d.Id)).OrderByDescending(x => x.kwh).ToList();
         e.TodayDevices.Clear();
         var top = perDevice.Count > 0 ? perDevice[0].kwh : 1;
         foreach (var (d, kwh) in perDevice.Take(15))
-            e.TodayDevices.Add(new ConsumerVM { Name = d.Name, Value = kwh, Fraction = kwh / top, Glyph = d.Glyph, ValueText = kwh.ToString("0.00", Loc.Culture) + " kWh" });
+            e.TodayDevices.Add(new ConsumerVM { DeviceId = d.Id, Name = d.Name, Value = kwh, Fraction = kwh / top, Glyph = d.Glyph, ValueText = kwh.ToString("0.00", Loc.Culture) + " kWh" });
 
         e.ReportLoaded = true;
         e.ReportStatus = meter == null ? Loc.T("Geen slimme meter gevonden; alleen apparaten met een kWh-meter worden geteld.") : "";

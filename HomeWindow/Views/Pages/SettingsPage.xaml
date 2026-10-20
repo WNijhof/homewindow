@@ -192,6 +192,15 @@
                         </Border>
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Tabblad naast Flows'}" Style="{StaticResource Label}" />
+                        <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
+                            <StackPanel Orientation="Horizontal" x:Name="FlyoutLastTabChoice">
+                                <RadioButton Style="{StaticResource Segment}" GroupName="FlyLastTab" Tag="moods" Content="{c:T Sferen}" Checked="FlyoutLastTab_Checked" />
+                                <RadioButton Style="{StaticResource Segment}" GroupName="FlyLastTab" Tag="lights" Content="{c:T Lampen}" Checked="FlyoutLastTab_Checked" />
+                            </StackPanel>
+                        </Border>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
                         <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T Hoofdvenster}" Style="{StaticResource Label}" />
                         <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
                             <StackPanel Orientation="Horizontal" x:Name="MainViewChoice">

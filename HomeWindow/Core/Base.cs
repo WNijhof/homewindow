@@ -38,6 +38,20 @@ public sealed class RelayCommand(Action<object?> run, Func<object?, bool>? canRu
     public void Execute(object? parameter) => run(parameter);
 }
 
+// Runs an action once typing has paused, so a search does not rebuild the list on every key
+public sealed class Debounce(Action run, int ms = 200)
+{
+    readonly System.Windows.Threading.DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(ms) };
+    bool hooked;
+
+    public void Kick()
+    {
+        if (!hooked) { timer.Tick += (_, _) => { timer.Stop(); run(); }; hooked = true; }
+        timer.Stop();
+        timer.Start();
+    }
+}
+
 // Lenient readers for Homey's JSON, which differs a little between apps and firmware versions
 public static class J
 {

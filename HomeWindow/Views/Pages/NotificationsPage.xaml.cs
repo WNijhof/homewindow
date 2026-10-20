@@ -7,13 +7,24 @@ namespace HomeWindow.Views.Pages;
 
 public partial class NotificationsPage : UserControl
 {
-    public NotificationsPage() => InitializeComponent();
+    readonly Debounce filter;
+
+    public NotificationsPage()
+    {
+        InitializeComponent();
+        filter = new(Filter);
+    }
 
     void Search_Changed(object sender, TextChangedEventArgs e)
     {
-        var q = SearchBox.Text.Trim();
         Hint.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
         ClearBtn.Visibility = SearchBox.Text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+        filter.Kick();
+    }
+
+    void Filter()
+    {
+        var q = SearchBox.Text.Trim();
         if (((CollectionViewSource)Resources["Grouped"]).View is { } view)
             view.Filter = q.Length == 0 ? null : o => o is NotificationVM n
                 && (n.Text.Contains(q, StringComparison.CurrentCultureIgnoreCase) || n.Owner.Contains(q, StringComparison.CurrentCultureIgnoreCase));

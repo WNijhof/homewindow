@@ -78,6 +78,7 @@ public partial class SettingsPage : UserControl
         Check(ThemeChoice, S.Theme);
         Check(BackdropChoice, S.Backdrop);
         Check(FlyoutViewChoice, S.FlyoutView);
+        Check(FlyoutLastTabChoice, S.FlyoutLastTab);
         Check(MainViewChoice, S.MainView);
         Check(TileSizeChoice, S.TileSize);
         Check(TaskbarPositionChoice, S.TaskbarPosition);
@@ -335,6 +336,7 @@ public partial class SettingsPage : UserControl
     void Theme_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.Theme = v);
     void Backdrop_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.Backdrop = v);
     void FlyoutView_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.FlyoutView = v);
+    void FlyoutLastTab_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.FlyoutLastTab = v);
     void MainView_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.MainView = v);
     void TileSize_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TileSize = v);
     void TaskbarPosition_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TaskbarPosition = v);

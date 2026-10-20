@@ -7,9 +7,11 @@ namespace HomeWindow.Views.Pages;
 public partial class FlowsPage : UserControl
 {
     readonly HomeyStore store = HomeyStore.I;
+    readonly Debounce filter;
 
     public FlowsPage()
     {
+        filter = new(Filter);
         InitializeComponent();
         store.FlowGroups.CollectionChanged += (_, _) => Filter();
         Filter();
@@ -19,7 +21,7 @@ public partial class FlowsPage : UserControl
     {
         Hint.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
         ClearBtn.Visibility = SearchBox.Text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
-        Filter();
+        filter.Kick();
     }
 
     void ClearSearch_Click(object sender, RoutedEventArgs e) => SearchBox.Clear();

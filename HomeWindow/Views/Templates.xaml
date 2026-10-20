@@ -304,7 +304,7 @@
                 <TextBlock Text="{Binding Title}" Style="{StaticResource Body}" />
             </DockPanel>
             <Slider Minimum="{Binding MinD, Mode=OneWay}" Maximum="{Binding MaxD, Mode=OneWay}" SmallChange="{Binding StepD, Mode=OneWay}"
-                    Value="{Binding NumberValue}" Margin="0,4,0,0" />
+                    TickFrequency="{Binding StepD, Mode=OneWay}" IsSnapToTickEnabled="True" Value="{Binding NumberValue}" Margin="0,4,0,0" />
         </StackPanel>
     </DataTemplate>
 
@@ -583,7 +583,12 @@
 
     <!-- A bar row for power or energy per device -->
     <DataTemplate x:Key="ConsumerRow" DataType="{x:Type c:ConsumerVM}">
-        <Grid Margin="0,5">
+        <Grid Margin="0,5" Background="Transparent" ToolTip="{c:T 'Rechtsklik om dit apparaat te verbergen'}">
+            <Grid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="{c:T Verbergen}" Command="{Binding HideCommand}" CommandParameter="{Binding}" />
+                </ContextMenu>
+            </Grid.ContextMenu>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="26" />
                 <ColumnDefinition Width="*" />

@@ -195,6 +195,12 @@ public partial class App : Application
             await Task.Delay(400);
             Render((FrameworkElement)flyout.Content, Path.Combine(folder, $"flyout-{tab}-{view}.png"));
         }
+        Settings.FlyoutLastTab = "lights";
+        flyout.ApplyView();
+        flyout.SelectTab("lights");
+        await Task.Delay(400);
+        Render((FrameworkElement)flyout.Content, Path.Combine(folder, "flyout-lights-list.png"));
+        Settings.FlyoutLastTab = "moods";
 
         // Each tile size, to check that names, state and buttons fit
         Settings.FlyoutView = "grid";

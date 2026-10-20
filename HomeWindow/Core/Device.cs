@@ -105,8 +105,16 @@ public sealed class DeviceVM : ObservableObject
     public bool IsExpanded { get => isExpanded; set => Set(ref isExpanded, value); }
 
     public ObservableCollection<CapabilityVM> Capabilities { get; } = [];
-    public List<CapabilityVM> Controls => Capabilities.Where(c => c.Setable).ToList();
-    public List<CapabilityVM> Sensors => Capabilities.Where(c => !c.Setable && c.Getable).ToList();
+    // The same list while nothing in it changes: a new one rebuilds every control, and breaks off a slider being dragged
+    List<CapabilityVM> controls = [], sensors = [];
+    public List<CapabilityVM> Controls => Keep(ref controls, Capabilities.Where(c => c.Setable));
+    public List<CapabilityVM> Sensors => Keep(ref sensors, Capabilities.Where(c => !c.Setable && c.Getable));
+
+    static List<CapabilityVM> Keep(ref List<CapabilityVM> kept, IEnumerable<CapabilityVM> now)
+    {
+        var list = now.ToList();
+        return list.SequenceEqual(kept) ? kept : kept = list;
+    }
 
     public ICommand QuickCommand { get; }
     public ICommand DetailsCommand { get; }

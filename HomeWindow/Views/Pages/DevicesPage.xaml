@@ -7,7 +7,7 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                     <Grid Width="240" Margin="0,0,8,0">
-                        <TextBox x:Name="SearchBox" Padding="30,6,8,6" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox x:Name="SearchBox" Padding="30,6,8,6" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
                         <TextBlock Style="{StaticResource Icon}" Text="&#xE721;" FontSize="12" HorizontalAlignment="Left" Margin="11,0,0,0" Foreground="{DynamicResource SubTextBrush}" IsHitTestVisible="False" />
                         <TextBlock Text="{c:T 'Zoek apparaat of kamer'}" Style="{StaticResource Sub}" FontSize="13" Margin="31,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False"
                                    Visibility="{Binding Search, Converter={StaticResource Visible}, ConverterParameter=not}" />

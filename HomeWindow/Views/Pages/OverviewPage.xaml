@@ -118,8 +118,8 @@
             <ItemsControl ItemsSource="{Binding Cameras}" Visibility="{Binding Cameras.Count, Converter={StaticResource Visible}}" ItemsPanel="{StaticResource WrapItems}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type c:CameraVM}">
-                        <Border Style="{StaticResource Card}" Width="300" Margin="0,0,12,12" Padding="0" ClipToBounds="True"
-                                ToolTip="{c:T 'Rechtsklik om dit beeld te verbergen'}">
+                        <Border Style="{StaticResource Card}" Width="300" Margin="0,0,12,12" Padding="0" ClipToBounds="True" Cursor="Hand"
+                                ToolTip="{c:T 'Klik voor een groot beeld, rechtsklik om het te verbergen'}" MouseLeftButtonUp="Camera_Click">
                             <Border.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="{c:T Verbergen}" Command="{Binding HideCommand}" CommandParameter="{Binding}" />
