@@ -18,8 +18,11 @@ public partial class FlowsPage : UserControl
     void Search_Changed(object sender, TextChangedEventArgs e)
     {
         Hint.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        ClearBtn.Visibility = SearchBox.Text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
         Filter();
     }
+
+    void ClearSearch_Click(object sender, RoutedEventArgs e) => SearchBox.Clear();
 
     void CollapseAll_Click(object sender, RoutedEventArgs e) => SetAll(false);
     void ExpandAll_Click(object sender, RoutedEventArgs e) => SetAll(true);

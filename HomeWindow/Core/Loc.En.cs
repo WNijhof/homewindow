@@ -289,6 +289,7 @@ public static partial class Loc
         ["Zoek apparaat of kamer"] = "Search device or room",
         ["Zoek een flow"] = "Search a flow",
         ["Zoeken"] = "Search",
+        ["Wissen"] = "Clear",
         ["Zon"] = "Solar",
         ["Zon opgewekt"] = "Solar generated",
         ["Zon telt mee van"] = "Solar counts from",

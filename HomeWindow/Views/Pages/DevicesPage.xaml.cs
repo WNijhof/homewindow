@@ -16,6 +16,8 @@ public partial class DevicesPage : UserControl
 
     void UpdateToggle() => ViewToggle.Content = App.Settings.MainView == "grid" ? Icons.List : Icons.Grid;
 
+    void ClearSearch_Click(object sender, RoutedEventArgs e) => SearchBox.Clear();
+
     void ViewToggle_Click(object sender, RoutedEventArgs e)
     {
         App.Settings.MainView = App.Settings.MainView == "grid" ? "list" : "grid";

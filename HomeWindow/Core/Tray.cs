@@ -25,6 +25,7 @@ public sealed class Tray : IDisposable
         baseIcon = new Icon(stream, SystemInformation.SmallIconSize);
         icon = new NotifyIcon { Icon = baseIcon, Text = "HomeWindow", Visible = true, ContextMenuStrip = new ContextMenuStrip() };
         icon.MouseUp += (_, e) => { if (e.Button == MouseButtons.Left) Clicked?.Invoke(); };
+        icon.MouseDoubleClick += (_, e) => { if (e.Button == MouseButtons.Left) OpenMain?.Invoke(); };
         icon.BalloonTipClicked += (_, _) => OpenMain?.Invoke();
         icon.ContextMenuStrip.Opening += (_, _) => BuildMenu();
         store.PropertyChanged += OnStoreChanged;
