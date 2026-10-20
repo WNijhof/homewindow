@@ -128,6 +128,9 @@
             <DataTrigger Binding="{Binding QuickGlyph}" Value="{x:Null}">
                 <Setter TargetName="Star" Property="Margin" Value="0,14,14,0" />
             </DataTrigger>
+            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="NoStar">
+                <Setter TargetName="Star" Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
             <DataTrigger Binding="{Binding IsAlarm}" Value="True">
                 <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource AlarmBrush}" />
             </DataTrigger>
@@ -518,6 +521,9 @@
                     Margin="0,4,4,0" Foreground="{DynamicResource FaintTextBrush}" Command="{Binding FavoriteCommand}" ToolTip="{c:T Favoriet}" />
         </Grid>
         <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="NoStar">
+                <Setter TargetName="Fav" Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
             <DataTrigger Binding="{Binding IsFavorite}" Value="True">
                 <Setter TargetName="Fav" Property="Content" Value="&#xE735;" />
                 <Setter TargetName="Fav" Property="Foreground" Value="{DynamicResource SolarBrush}" />

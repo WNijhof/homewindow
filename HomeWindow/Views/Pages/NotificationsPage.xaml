@@ -15,7 +15,16 @@
             <TextBlock Text="{c:T 'Wat er gebeurde en wanneer, uit de tijdlijn van je Homey.'}" Style="{StaticResource Sub}" Margin="0,0,0,6" />
             <TextBlock Text="{Binding NotificationsError}" Style="{StaticResource Body}" Foreground="{DynamicResource WarnBrush}" Margin="0,0,0,10"
                        Visibility="{Binding NotificationsError, Converter={StaticResource Visible}}" />
-            <ItemsControl ItemsSource="{Binding Source={StaticResource Grouped}}">
+            <DockPanel Margin="0,8,0,0">
+                <Grid Width="240" HorizontalAlignment="Left" DockPanel.Dock="Left">
+                <TextBox x:Name="SearchBox" Padding="30,6,30,6" TextChanged="Search_Changed" />
+                <TextBlock Style="{StaticResource Icon}" Text="&#xE721;" FontSize="12" HorizontalAlignment="Left" Margin="11,0,0,0" Foreground="{DynamicResource SubTextBrush}" IsHitTestVisible="False" />
+                <TextBlock x:Name="Hint" Text="{c:T Zoeken}" Style="{StaticResource Sub}" FontSize="13" Margin="31,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                <Button x:Name="ClearBtn" Style="{StaticResource IconBtn}" Width="24" Height="24" FontSize="10" Content="&#xE711;" HorizontalAlignment="Right" Margin="0,0,3,0" ToolTip="{c:T Wissen}" Click="ClearSearch_Click" Visibility="Collapsed" />
+            </Grid>
+                <Button x:Name="DeleteSelected" Style="{StaticResource AccentBtn}" Content="{c:T 'Geselecteerde verwijderen'}" HorizontalAlignment="Right" Visibility="Collapsed" Click="DeleteSelected_Click" />
+            </DockPanel>
+            <ItemsControl ItemsSource="{Binding Source={StaticResource Grouped}}" CheckBox.Click="Selection_Changed">
                 <ItemsControl.GroupStyle>
                     <GroupStyle>
                         <GroupStyle.HeaderTemplate>
@@ -29,6 +38,7 @@
                     <DataTemplate DataType="{x:Type c:NotificationVM}">
                         <Border Style="{StaticResource Card}" Margin="0,0,0,6" Padding="14,10">
                             <DockPanel>
+                                <CheckBox DockPanel.Dock="Left" IsChecked="{Binding IsSelected}" VerticalAlignment="Top" Margin="0,2,10,0" />
                                 <Button DockPanel.Dock="Right" Style="{StaticResource IconBtn}" Content="&#xE74D;" FontSize="13" Margin="8,-4,-6,-4"
                                         Foreground="{DynamicResource SubTextBrush}" ToolTip="{c:T Verwijderen}" Command="{Binding DeleteCommand}" />
                                 <TextBlock DockPanel.Dock="Left" Text="{Binding TimeText}" FontSize="12.5" FontWeight="SemiBold" Width="50" Margin="0,1,0,0" />

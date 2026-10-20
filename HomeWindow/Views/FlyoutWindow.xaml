@@ -104,11 +104,11 @@
             <Grid>
                 <!-- Favourites -->
                 <StackPanel x:Name="FavoritesPanel">
-                    <ItemsControl ItemsSource="{Binding FavoriteDevices}" ItemTemplate="{DynamicResource FlyoutDeviceTemplate}"
+                    <ItemsControl Tag="NoStar" ItemsSource="{Binding FavoriteDevices}" ItemTemplate="{DynamicResource FlyoutDeviceTemplate}"
                                   ItemsPanel="{DynamicResource FlyoutDevicePanel}" Margin="{DynamicResource FlyoutItemsMargin}" />
                     <TextBlock Text="{c:T Flows}" Style="{StaticResource Heading}" Margin="2,10,0,4"
                                Visibility="{Binding FavoriteFlows.Count, Converter={StaticResource Visible}}" />
-                    <ItemsControl ItemsSource="{Binding FavoriteFlows}" ItemTemplate="{StaticResource FlowTile}" Margin="-4,0">
+                    <ItemsControl Tag="NoStar" ItemsSource="{Binding FavoriteFlows}" ItemTemplate="{StaticResource FlowTile}" Margin="-4,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>

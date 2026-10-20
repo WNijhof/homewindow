@@ -290,6 +290,7 @@ public static partial class Loc
         ["Zoek een flow"] = "Search a flow",
         ["Zoeken"] = "Search",
         ["Wissen"] = "Clear",
+        ["Geselecteerde verwijderen"] = "Delete selected",
         ["Zon"] = "Solar",
         ["Zon opgewekt"] = "Solar generated",
         ["Zon telt mee van"] = "Solar counts from",

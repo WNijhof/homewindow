@@ -267,6 +267,8 @@ public sealed class NotificationVM : ObservableObject
         }
     }
     public ICommand DeleteCommand { get; }
+    bool selected;
+    public bool IsSelected { get => selected; set => Set(ref selected, value); }
 }
 
 public sealed class UserVM(string id) : ObservableObject

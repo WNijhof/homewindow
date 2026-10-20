@@ -141,6 +141,7 @@ public partial class FlyoutWindow : Window, IDetailsHost
 
     public void ShowDetails(DeviceVM device)
     {
+        if (DetailPanel.Visibility == Visibility.Visible && ReferenceEquals(DetailContent.Content, device)) { CloseDetail(); return; }
         DetailContent.Content = device;
         DetailPanel.Visibility = Visibility.Visible;
     }

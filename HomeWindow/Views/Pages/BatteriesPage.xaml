@@ -3,20 +3,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:c="clr-namespace:HomeWindow.Core">
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,22,22,28">
-        <StackPanel MaxWidth="760" HorizontalAlignment="Left">
+        <StackPanel MaxWidth="1180" HorizontalAlignment="Left">
             <TextBlock Text="{c:T Batterijen}" Style="{StaticResource Title}" Margin="0,0,0,6" />
             <TextBlock Text="{c:T 'Alle apparaten op batterijen, de leegste bovenaan. Klik op een apparaat voor meer.'}" Style="{StaticResource Sub}" Margin="0,0,0,14" />
             <ItemsControl ItemsSource="{Binding BatteryDevices}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type c:DeviceVM}">
-                        <Grid Margin="0,0,0,8">
+                        <Grid Margin="0,0,10,8" Width="370">
                             <Border Style="{StaticResource Card}" Padding="0" />
                             <Button Style="{StaticResource TileBtn}" Command="{Binding DetailsCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}">
                                 <Grid Margin="12,10">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="180" />
+                                        <ColumnDefinition Width="110" />
                                     </Grid.ColumnDefinitions>
                                     <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource DeviceIcon}" Margin="0,0,12,0" />
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
