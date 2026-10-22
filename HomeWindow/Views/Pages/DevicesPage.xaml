@@ -18,11 +18,11 @@
                     <Button x:Name="ViewToggle" Style="{StaticResource IconBtn}" ToolTip="{c:T 'Lijst of raster'}" Click="ViewToggle_Click" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{c:T Apparaten}" Style="{StaticResource Title}" />
+                    <TextBlock x:Name="Heading" Text="{c:T Apparaten}" Style="{StaticResource Title}" />
                     <TextBlock Text="{Binding Count}" Style="{StaticResource Sub}" FontSize="14" Margin="10,0,0,4" VerticalAlignment="Bottom" />
                 </StackPanel>
             </DockPanel>
-            <ItemsControl ItemsSource="{Binding Classes}" Margin="0,14,0,0">
+            <ItemsControl x:Name="ClassChips" ItemsSource="{Binding Classes}" Margin="0,14,0,0">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>

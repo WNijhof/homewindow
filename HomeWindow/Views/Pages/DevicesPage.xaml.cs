@@ -14,6 +14,18 @@ public partial class DevicesPage : UserControl
         Theme.Changed += UpdateToggle;
     }
 
+    // The same page, with only the lights: the Lights item in the sidebar
+    public bool LightsOnly
+    {
+        get => ((DeviceBrowser)DataContext).ClassFilter == "light";
+        set
+        {
+            ((DeviceBrowser)DataContext).ClassFilter = value ? "light" : null;
+            Heading.Text = Loc.T(value ? "Lampen" : "Apparaten");
+            ClassChips.Visibility = value ? Visibility.Collapsed : Visibility.Visible;
+        }
+    }
+
     void UpdateToggle() => ViewToggle.Content = App.Settings.MainView == "grid" ? Icons.List : Icons.Grid;
 
     void ClearSearch_Click(object sender, RoutedEventArgs e) => SearchBox.Clear();

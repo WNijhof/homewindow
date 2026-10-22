@@ -9,14 +9,19 @@ public static class Log
         Environment.GetEnvironmentVariable("HOMEWINDOW_DATA") is { Length: > 0 } dir ? dir : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "HomeWindow", "HomeWindow.log");
 
-    public static void Error(string where, Exception e)
+    public static void Error(string where, Exception e) => Write(where, e.ToString());
+
+    // Something that is not an error but helps to trace a problem, such as a page that took long to show
+    public static void Note(string where, string text) => Write(where, text);
+
+    static void Write(string where, string text)
     {
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
             // Keep the file small: start over once it passes 1 MB
             if (File.Exists(FilePath) && new FileInfo(FilePath).Length > 1_000_000) File.Delete(FilePath);
-            File.AppendAllText(FilePath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {Updater.CurrentText} {where}: {e}{Environment.NewLine}{Environment.NewLine}");
+            File.AppendAllText(FilePath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {Updater.CurrentText} {where}: {text}{Environment.NewLine}{Environment.NewLine}");
         }
         catch
         {

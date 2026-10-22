@@ -174,7 +174,7 @@ public partial class App : Application
         main = new MainWindow { WindowStartupLocation = WindowStartupLocation.Manual, Left = -30000, Top = -30000, ShowActivated = false };
         main.Show();
         await Task.Delay(2500);
-        foreach (var page in new[] { "overview", "devices", "flows", "moods", "variables", "energy", "batteries", "notifications", "system", "settings" })
+        foreach (var page in new[] { "overview", "devices", "lights", "flows", "moods", "variables", "energy", "batteries", "notifications", "system", "settings" })
         {
             main.Navigate(page);
             await Task.Delay(page is "energy" or "system" ? 3500 : 500);

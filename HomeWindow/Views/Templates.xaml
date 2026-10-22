@@ -70,7 +70,8 @@
         </StackPanel>
     </DataTemplate>
 
-    <ContextMenu x:Key="DeviceMenu" x:Shared="False">
+    <!-- One menu for all tiles, which takes the tile it opens on; a menu per tile made long lists slow to show -->
+    <ContextMenu x:Key="DeviceMenu" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
         <MenuItem Header="{c:T Favoriet}" IsCheckable="True" IsChecked="{Binding IsFavorite, Mode=OneWay}" Command="{Binding FavoriteCommand}" />
         <MenuItem Header="{c:T 'Eerder in favorieten'}" Command="{Binding MoveUpCommand}" Visibility="{Binding IsFavorite, Converter={StaticResource Visible}}" />
         <MenuItem Header="{c:T 'Later in favorieten'}" Command="{Binding MoveDownCommand}" Visibility="{Binding IsFavorite, Converter={StaticResource Visible}}" />
@@ -78,7 +79,7 @@
                   CommandParameter="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
     </ContextMenu>
 
-    <ContextMenu x:Key="FlowMenu" x:Shared="False">
+    <ContextMenu x:Key="FlowMenu" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
         <MenuItem Header="{c:T Starten}" Command="{Binding RunCommand}" />
         <MenuItem Header="{c:T Favoriet}" IsCheckable="True" IsChecked="{Binding IsFavorite, Mode=OneWay}" Command="{Binding FavoriteCommand}" />
         <MenuItem Header="{c:T 'Eerder in favorieten'}" Command="{Binding MoveUpCommand}" Visibility="{Binding IsFavorite, Converter={StaticResource Visible}}" />

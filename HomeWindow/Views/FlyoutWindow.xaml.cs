@@ -44,6 +44,8 @@ public partial class FlyoutWindow : Window, IDetailsHost
         SelectTab(tab);
         UpdateStatus();
         UpdateEmpty();
+        FilterFlows();
+        FilterMoods();
     }
 
     void OnStoreChanged(object? sender, PropertyChangedEventArgs e)
@@ -126,6 +128,16 @@ public partial class FlyoutWindow : Window, IDetailsHost
         SearchBox.IsEnabled = tab != "favorites";
         SearchBox.Opacity = SearchHint.Opacity = tab == "favorites" ? 0.5 : 1;
         Scroller.ScrollToTop();
+
+        // A tab that takes long to show goes in the log, with the numbers that make a list heavy
+        var shown = System.Diagnostics.Stopwatch.StartNew();
+        var name = tab;
+        Dispatcher.BeginInvoke(() =>
+        {
+            if (shown.ElapsedMilliseconds > 1500)
+                Log.Note("Panel", $"tab {name} took {shown.ElapsedMilliseconds} ms to show ({store.Flows.Count} flows in {store.FlowGroups.Count} folders, " +
+                    $"{store.Devices.Count} devices, {store.Moods.Count} moods, view {App.Settings.FlyoutView}, shadows {App.Settings.Shadows})");
+        }, System.Windows.Threading.DispatcherPriority.ContextIdle);
     }
 
     void Search_Changed(object sender, TextChangedEventArgs e)

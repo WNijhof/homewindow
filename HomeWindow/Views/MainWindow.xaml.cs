@@ -124,7 +124,7 @@ public partial class MainWindow : Window, IDetailsHost
     {
         var pages = new Dictionary<string, FrameworkElement>
         {
-            ["overview"] = OverviewPage, ["devices"] = DevicesPage, ["flows"] = FlowsPage, ["moods"] = MoodsPage,
+            ["overview"] = OverviewPage, ["devices"] = DevicesPage, ["lights"] = LightsPage, ["flows"] = FlowsPage, ["moods"] = MoodsPage,
             ["variables"] = VariablesPage, ["energy"] = EnergyPage, ["batteries"] = BatteriesPage,
             ["notifications"] = NotificationsPage, ["system"] = SystemPage, ["settings"] = SettingsPage,
         };
@@ -132,7 +132,7 @@ public partial class MainWindow : Window, IDetailsHost
         store.EnergyPageVisible = page == "energy";
         store.SystemPageVisible = page == "system";
         if (page is "energy" or "system") store.Kick();
-        if (page != "devices" && page != "overview" && page != "batteries") CloseDetail();
+        if (page is not ("devices" or "lights" or "overview" or "batteries")) CloseDetail();
     }
 
     public void ShowDetails(DeviceVM device)
