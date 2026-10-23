@@ -118,3 +118,9 @@ Staat er een bestand `docs/releases/<versie>.md`, dan worden dat de releasenotes
 | `scripts` | `build-installer.ps1` bouwt de installer, `make-icon.ps1` maakt het logo, `strings.js` toont teksten zonder Engelse vertaling, `screenshot.ps1` maakt een schermafbeelding van een venster |
 
 Teksten staan in het Nederlands in de code; `HomeWindow/Core/Loc.En.cs` vertaalt ze naar het Engels. HomeWindow gebruikt de Web API van Homey Pro (`/api/manager/...`) met een API-key en haalt elke paar seconden nieuwe gegevens op terwijl een venster open is.
+
+## Steunen
+
+HomeWindow is gratis. Vind je het handig, dan kun je een kop koffie doneren:
+
+[![Steun op Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/wnijhof)

@@ -40,14 +40,22 @@ public partial class SettingsPage : UserControl
         CheckButton.IsEnabled = true;
     }
 
-    // Shows the log in Explorer, selected, so it can be attached to an issue
+    // Shows the log in Explorer, selected, so it can be attached to an issue. Without any errors yet there is no file,
+    // and an empty folder looked like a fault: the log then starts with a line that says so.
     void Log_Click(object sender, RoutedEventArgs e)
     {
-        var folder = System.IO.Path.GetDirectoryName(Log.FilePath)!;
-        System.IO.Directory.CreateDirectory(folder);
+        if (!System.IO.File.Exists(Log.FilePath)) Log.Note("Log", "No errors so far.");
         if (System.IO.File.Exists(Log.FilePath)) Process.Start("explorer.exe", $"/select,\"{Log.FilePath}\"");
-        else Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true });
+        else
+        {
+            var folder = System.IO.Path.GetDirectoryName(Log.FilePath)!;
+            System.IO.Directory.CreateDirectory(folder);
+            Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true });
+        }
     }
+
+    void Donate_Click(object sender, RoutedEventArgs e) =>
+        Process.Start(new ProcessStartInfo("https://ko-fi.com/wnijhof") { UseShellExecute = true });
 
     // Writes the diagnostics report and prepares an e-mail or a GitHub issue; the file itself is attached by hand
     void Diagnostics_Click(object sender, RoutedEventArgs e)

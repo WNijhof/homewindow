@@ -82,3 +82,9 @@ Privacy: HomeWindow will not transfer any information to other networked systems
 HomeWindow is open source under the [GNU General Public License v3.0](LICENSE): you may use, change and share it, as long as changed versions are also shared under the GPL-3.0, with their source.
 
 Version 0.4.0 was released under the PolyForm Noncommercial License 1.0.0; from 0.4.1 on it is GPL-3.0 again.
+
+## Support
+
+HomeWindow is free. If you find it useful, you can buy me a coffee:
+
+[![Support on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/wnijhof)

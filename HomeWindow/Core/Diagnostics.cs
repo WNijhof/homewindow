@@ -23,6 +23,7 @@ public static class Diagnostics
         if (s.ActiveHomey is { } h)
             sb.AppendLine($"Homey: mode {h.Mode}, sign-in {h.Auth}, grid meter {(h.GridMeterId == "" ? "automatic" : "chosen")}, {h.ExcludedSolar.Count} solar device(s) left out");
         sb.AppendLine($"Settings: language {s.Language ?? "auto"}, power unit {s.PowerUnit}, text size {s.TaskbarTextSize}, taskbar items {string.Join("+", s.TaskbarItems)}, tile size {s.TileSize}");
+        sb.AppendLine($"Taskbar widget: {HomeWindow.Views.TaskbarStrip.Status}");
         sb.AppendLine();
         sb.AppendLine(store.LiveSummary());
         sb.AppendLine($"Devices ({store.Devices.Count}):");

@@ -140,7 +140,7 @@
             <!-- Favourites -->
             <TextBlock Text="{c:T Favorieten}" Style="{StaticResource Heading}" />
             <ItemsControl ItemsSource="{Binding FavoriteDevices}" ItemTemplate="{DynamicResource MainDeviceTemplate}"
-                          ItemsPanel="{DynamicResource MainDevicePanel}" Margin="{DynamicResource MainItemsMargin}" MaxWidth="{DynamicResource MainRowWidth}" HorizontalAlignment="Left" />
+                          ItemsPanel="{DynamicResource MainDevicePanel}" Margin="{DynamicResource MainItemsMargin}" MaxWidth="{DynamicResource MainRowWidth}" MinWidth="{DynamicResource MainRowMinWidth}" HorizontalAlignment="Left" />
             <TextBlock Text="{c:T 'Markeer apparaten als favoriet met de ster in hun instellingen, of klik er met de rechtermuisknop op.'}"
                        Style="{StaticResource Body}" Foreground="{DynamicResource SubTextBrush}"
                        Visibility="{Binding FavoriteDevices.Count, Converter={StaticResource Visible}, ConverterParameter=not}" />

@@ -425,6 +425,18 @@
                     </DockPanel>
                 </StackPanel>
             </Border>
+
+            <!-- A small thank-you link at the very bottom -->
+            <DockPanel Margin="2,22,0,0">
+                <Button DockPanel.Dock="Left" Style="{StaticResource Btn}" Padding="12,5" Click="Donate_Click" ToolTip="ko-fi.com/wnijhof">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Icon}" Text="&#xEB52;" FontSize="12" Foreground="#FF5E5B" VerticalAlignment="Center" Margin="0,0,7,0" />
+                        <TextBlock Text="{c:T 'Steun op Ko-fi'}" FontSize="12.5" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <TextBlock Text="{c:T 'HomeWindow is gratis. Vind je het handig, dan kun je een kop koffie doneren.'}" Style="{StaticResource Sub}"
+                           TextWrapping="Wrap" VerticalAlignment="Center" Margin="12,0,0,0" />
+            </DockPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

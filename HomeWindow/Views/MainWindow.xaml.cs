@@ -86,11 +86,19 @@ public partial class MainWindow : Window, IDetailsHost
 
     void ApplyView()
     {
-        var grid = App.Settings.MainView == "grid";
-        Resources["MainDeviceTemplate"] = FindResource(grid ? "DeviceTile" : "DeviceRow");
-        Resources["MainDevicePanel"] = FindResource(grid ? "WrapItems" : "StackItems");
-        Resources["MainItemsMargin"] = grid ? new Thickness(-4, 0, -4, 0) : new Thickness(0);
-        Resources["MainRowWidth"] = grid ? double.PositiveInfinity : 680.0;
+        ApplyView(Resources, App.Settings.MainView == "grid");
+        // The Lights page has a list-or-grid choice of its own
+        ApplyView(LightsPage.Resources, App.Settings.LightsView == "grid");
+    }
+
+    void ApplyView(ResourceDictionary resources, bool grid)
+    {
+        resources["MainDeviceTemplate"] = FindResource(grid ? "DeviceTile" : "DeviceRow");
+        resources["MainDevicePanel"] = FindResource(grid ? "WrapItems" : "StackItems");
+        resources["MainItemsMargin"] = grid ? new Thickness(-4, 0, -4, 0) : new Thickness(0);
+        resources["MainRowWidth"] = grid ? double.PositiveInfinity : 680.0;
+        // Rows of one width, also in a room with only short names
+        resources["MainRowMinWidth"] = grid ? 0.0 : 440.0;
     }
 
     public void ShowPage(string? name)

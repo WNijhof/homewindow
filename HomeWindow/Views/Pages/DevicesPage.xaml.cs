@@ -23,16 +23,24 @@ public partial class DevicesPage : UserControl
             ((DeviceBrowser)DataContext).ClassFilter = value ? "light" : null;
             Heading.Text = Loc.T(value ? "Lampen" : "Apparaten");
             ClassChips.Visibility = value ? Visibility.Collapsed : Visibility.Visible;
+            UpdateToggle();
         }
     }
 
-    void UpdateToggle() => ViewToggle.Content = App.Settings.MainView == "grid" ? Icons.List : Icons.Grid;
+    // Devices and Lights each keep their own list or grid
+    string View
+    {
+        get => LightsOnly ? App.Settings.LightsView : App.Settings.MainView;
+        set { if (LightsOnly) App.Settings.LightsView = value; else App.Settings.MainView = value; }
+    }
+
+    void UpdateToggle() => ViewToggle.Content = View == "grid" ? Icons.List : Icons.Grid;
 
     void ClearSearch_Click(object sender, RoutedEventArgs e) => SearchBox.Clear();
 
     void ViewToggle_Click(object sender, RoutedEventArgs e)
     {
-        App.Settings.MainView = App.Settings.MainView == "grid" ? "list" : "grid";
+        View = View == "grid" ? "list" : "grid";
         App.Settings.Save();
         Theme.Apply();
     }

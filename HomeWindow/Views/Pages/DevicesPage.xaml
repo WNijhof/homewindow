@@ -55,7 +55,7 @@
                                     </StackPanel>
                                 </ToggleButton>
                                 <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{DynamicResource MainDeviceTemplate}" ItemsPanel="{DynamicResource MainDevicePanel}"
-                                              Margin="{DynamicResource MainItemsMargin}" MaxWidth="{DynamicResource MainRowWidth}" HorizontalAlignment="Left"
+                                              Margin="{DynamicResource MainItemsMargin}" MaxWidth="{DynamicResource MainRowWidth}" MinWidth="{DynamicResource MainRowMinWidth}" HorizontalAlignment="Left"
                                               Visibility="{Binding IsExpanded, Converter={StaticResource Visible}}" />
                             </StackPanel>
                         </DataTemplate>

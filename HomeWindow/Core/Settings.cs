@@ -82,6 +82,8 @@ public sealed class AppSettings
     public double TextScale { get; set; } = 1.0;
     public string FlyoutView { get; set; } = "list";       // list, grid
     public string MainView { get; set; } = "grid";
+    // The Lights page in the main window: a list for a new install, as MainView was for one that had it already
+    public string LightsView { get; set; } = "";
     public string TileSize { get; set; } = "normal";       // xsmall, small, normal, large
     public string FlyoutTab { get; set; } = "favorites";
     // The panel's last tab: moods, or lights (every light per room)
@@ -143,7 +145,7 @@ public sealed class AppSettings
             // A damaged file is kept aside so the user can recover it
             try { File.Copy(FilePath, FilePath + ".bak", true); } catch { }
         }
-        return new() { StyleVersion = 1 };
+        return new() { StyleVersion = 1, LightsView = "list" };
     }
 
     // The dashboard look became the default; existing settings move to it once
@@ -159,6 +161,7 @@ public sealed class AppSettings
         s.Backdrop ??= "dashboard";
         s.FlyoutView ??= "list";
         s.MainView ??= "grid";
+        if (string.IsNullOrEmpty(s.LightsView)) s.LightsView = s.MainView;
         s.TileSize ??= "normal";
         s.FlyoutTab ??= "favorites";
         s.FlyoutLastTab ??= "moods";

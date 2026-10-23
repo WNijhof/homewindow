@@ -739,6 +739,10 @@ public sealed class HomeyStore : ObservableObject
         if (Config == null) return;
         Config.HiddenCameras.Clear();
         App.Settings.Save();
+        // Pictures seen before come back at once; the next load brings any new ones and newer pictures
+        var known = cameras.Values.Where(v => v.Image != null && v.Key.Length > 0).Union(Cameras);
+        SyncCameras(known.OrderBy(v => v.ZoneName).ThenBy(v => v.Name, StringComparer.CurrentCultureIgnoreCase).ToList());
+        HiddenCameraCount = 0;
         camerasRequested = true;
         Kick();
     }

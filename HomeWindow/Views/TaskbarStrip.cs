@@ -56,6 +56,9 @@ public sealed class TaskbarStrip : IDisposable
     IntPtr roomBar;
     DateTime roomChecked;
     bool checkingRoom;
+    // What the last placement and lookup found, for the diagnostics report
+    public static string Status { get; private set; } = "not placed";
+    static string lookup = "no lookup yet";
 
     public event Action? Clicked;
 
@@ -207,6 +210,8 @@ public sealed class TaskbarStrip : IDisposable
         // Explorer can put its own content on top again; every tenth tick (20 s) the strip moves back to the top anyway
         // As an overlay the position is on the screen
         var (px, py) = overlay ? (tb.Left + x, tb.Top) : (x, 0);
+        Status = $"taskbar {tb.Left},{tb.Top} {tb.Right - tb.Left}x{height}, scale {scale}, notification area at {right}, {lookup}, "
+            + $"room left {room.Left?.ToString() ?? "-"}, buttons end {room.ButtonsEnd?.ToString() ?? "-"}, strip at {x} width {width}{(overlay ? " (overlay)" : "")}";
         var now = (px, py, width, height, "");
         last = now;
         SetWindowPos(source.Handle, overlay ? HWND_TOPMOST : IntPtr.Zero, px, py, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
@@ -261,6 +266,7 @@ public sealed class TaskbarStrip : IDisposable
                 checkingRoom = false;
                 if (bar != roomBar) return;
                 // A failed lookup counts as done too: the strip then goes where it always went
+                if (!t.IsCompletedSuccessfully) lookup = $"lookup failed: {t.Exception?.InnerException?.GetType().Name}";
                 var found = t.IsCompletedSuccessfully ? t.Result : new Rooms(null, null);
                 if (found != rooms)
                 {
@@ -286,19 +292,22 @@ public sealed class TaskbarStrip : IDisposable
             int? startLeft = start == null ? null : (int)start.Current.BoundingRectangle.Left - taskbarLeft;
             var buttons = taskbar.FindAll(System.Windows.Automation.TreeScope.Descendants,
                 new System.Windows.Automation.PropertyCondition(System.Windows.Automation.AutomationElement.ControlTypeProperty, System.Windows.Automation.ControlType.Button));
-            int from = 0, end = 0;
+            int from = 0, end = 0, count = 0;
             foreach (System.Windows.Automation.AutomationElement b in buttons)
             {
                 var r = b.Current.BoundingRectangle;
                 if (r.IsEmpty || r.Width <= 0) continue;
+                count++;
                 var bRight = (int)r.Right - taskbarLeft;
                 if (bRight <= startLeft && bRight > from) from = bRight;
                 if (bRight <= notifyLeft && bRight > end) end = bRight;
             }
+            lookup = $"{count} buttons, start at {startLeft?.ToString() ?? "-"}";
             return new Rooms(startLeft >= 200 ? (from, startLeft.Value) : null, end > 0 ? end : null);
         }
         catch (Exception e) when (e is System.Windows.Automation.ElementNotAvailableException or InvalidOperationException or COMException)
         {
+            lookup = $"lookup failed: {e.GetType().Name}";
             return new Rooms(null, null);
         }
     }
