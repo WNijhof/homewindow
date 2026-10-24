@@ -57,6 +57,16 @@ public sealed class ScaleConverter : IValueConverter
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotSupportedException();
 }
 
+// Only the top and bottom of a Thickness. A TextBox or PasswordBox already applies its own Padding inside the
+// content host, so a template that also puts the whole Padding around it would indent the text twice.
+public sealed class VerticalOnlyConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is Thickness t ? new Thickness(0, t.Top, 0, t.Bottom) : new Thickness();
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotSupportedException();
+}
+
 // Compares a value with the parameter, for radio buttons bound to a text setting
 public sealed class EqualsConverter : IValueConverter
 {

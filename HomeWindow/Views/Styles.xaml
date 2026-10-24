@@ -55,6 +55,7 @@
     <c:StarConverter x:Key="Star" />
     <c:ScaleConverter x:Key="Scale" />
     <c:EqualsConverter x:Key="Equals" />
+    <c:VerticalOnlyConverter x:Key="VerticalOnly" />
 
     <Style x:Key="Icon" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
@@ -550,7 +551,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
                     <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="7">
-                        <ScrollViewer x:Name="PART_ContentHost" PanningMode="None" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        <ScrollViewer x:Name="PART_ContentHost" PanningMode="None" Margin="{Binding Padding, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource VerticalOnly}}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocused" Value="True">
@@ -573,7 +574,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="PasswordBox">
                     <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="7">
-                        <ScrollViewer x:Name="PART_ContentHost" PanningMode="None" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
+                        <ScrollViewer x:Name="PART_ContentHost" PanningMode="None" Margin="{Binding Padding, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource VerticalOnly}}" VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocused" Value="True">

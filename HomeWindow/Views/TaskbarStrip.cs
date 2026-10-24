@@ -7,6 +7,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 using HomeWindow.Core;
+using UIA = System.Windows.Automation;
 
 namespace HomeWindow.Views;
 
@@ -261,7 +262,7 @@ public sealed class TaskbarStrip : IDisposable
             roomBar = bar;
             roomChecked = DateTime.UtcNow;
             var left = tb.Left;
-            Task.Run(() => FindRooms(bar, left, notifyLeft)).ContinueWith(t =>
+            Task.Run(() => FindRooms(bar, left, notifyLeft, tb.Right - tb.Left)).ContinueWith(t =>
             {
                 checkingRoom = false;
                 if (bar != roomBar) return;
@@ -282,33 +283,78 @@ public sealed class TaskbarStrip : IDisposable
     // Left: from the right edge of the buttons left of Start (Widgets, if shown) to the Start button; none when Start
     // sits at the left itself (taskbar alignment: Left). ButtonsEnd: the right edge of the last button before the
     // notification area, which with many programs open reaches far to the right.
-    static Rooms FindRooms(IntPtr bar, int taskbarLeft, int notifyLeft)
+    static Rooms FindRooms(IntPtr bar, int taskbarLeft, int notifyLeft, int taskbarWidth)
     {
         try
         {
-            var taskbar = System.Windows.Automation.AutomationElement.FromHandle(bar);
-            var start = taskbar.FindFirst(System.Windows.Automation.TreeScope.Descendants,
-                new System.Windows.Automation.PropertyCondition(System.Windows.Automation.AutomationElement.AutomationIdProperty, "StartButton"));
-            int? startLeft = start == null ? null : (int)start.Current.BoundingRectangle.Left - taskbarLeft;
-            var buttons = taskbar.FindAll(System.Windows.Automation.TreeScope.Descendants,
-                new System.Windows.Automation.PropertyCondition(System.Windows.Automation.AutomationElement.ControlTypeProperty, System.Windows.Automation.ControlType.Button));
-            int from = 0, end = 0, count = 0;
-            foreach (System.Windows.Automation.AutomationElement b in buttons)
+            var taskbar = UIA.AutomationElement.FromHandle(bar);
+            // Buttons, but also list items and split buttons: not every Windows build shows the program buttons as buttons
+            var kinds = new UIA.OrCondition(
+                new UIA.PropertyCondition(UIA.AutomationElement.ControlTypeProperty, UIA.ControlType.Button),
+                new UIA.PropertyCondition(UIA.AutomationElement.ControlTypeProperty, UIA.ControlType.ListItem),
+                new UIA.PropertyCondition(UIA.AutomationElement.ControlTypeProperty, UIA.ControlType.SplitButton),
+                new UIA.PropertyCondition(UIA.AutomationElement.ControlTypeProperty, UIA.ControlType.MenuItem));
+            var found = new Found(taskbarLeft, notifyLeft, taskbarWidth);
+            foreach (UIA.AutomationElement e in taskbar.FindAll(UIA.TreeScope.Descendants, kinds)) found.Add(e);
+            // Neither Start nor a single program button: the control view hides them, so walk the whole tree once
+            var raw = found.StartLeft == null && found.Apps == 0;
+            if (raw)
             {
-                var r = b.Current.BoundingRectangle;
-                if (r.IsEmpty || r.Width <= 0) continue;
-                count++;
-                var bRight = (int)r.Right - taskbarLeft;
-                if (bRight <= startLeft && bRight > from) from = bRight;
-                if (bRight <= notifyLeft && bRight > end) end = bRight;
+                found = new Found(taskbarLeft, notifyLeft, taskbarWidth);
+                Walk(UIA.TreeWalker.RawViewWalker, taskbar, found);
             }
-            lookup = $"{count} buttons, start at {startLeft?.ToString() ?? "-"}";
-            return new Rooms(startLeft >= 200 ? (from, startLeft.Value) : null, end > 0 ? end : null);
+            lookup = $"{found.Count} buttons ({found.Apps} programs{(raw ? ", full tree" : "")}), start at {found.StartLeft?.ToString() ?? "-"}"
+                + (found.Apps == 0 ? $", kinds {string.Join(" ", found.Kinds.OrderByDescending(k => k.Value).Take(8).Select(k => $"{k.Key}:{k.Value}"))}" : "");
+            return new Rooms(found.StartLeft >= 200 ? (found.From, found.StartLeft.Value) : null, found.End > 0 ? found.End : null);
         }
-        catch (Exception e) when (e is System.Windows.Automation.ElementNotAvailableException or InvalidOperationException or COMException)
+        catch (Exception e) when (e is UIA.ElementNotAvailableException or InvalidOperationException or COMException)
         {
             lookup = $"lookup failed: {e.GetType().Name}";
             return new Rooms(null, null);
+        }
+    }
+
+    static void Walk(UIA.TreeWalker walker, UIA.AutomationElement parent, Found found, int depth = 0)
+    {
+        // Explorer's tree is small; the limits only guard against a runaway one
+        if (depth > 12) return;
+        for (var e = walker.GetFirstChild(parent); e != null && found.Seen < 3000; e = walker.GetNextSibling(e))
+        {
+            found.Seen++;
+            found.Add(e);
+            Walk(walker, e, found, depth + 1);
+        }
+    }
+
+    // What a lookup collects: Start, the right edge of what lies before it and before the notification area
+    sealed class Found(int taskbarLeft, int notifyLeft, int taskbarWidth)
+    {
+        public int? StartLeft;
+        public int Count, Apps, Seen;
+        public readonly Dictionary<string, int> Kinds = [];
+        readonly List<int> rights = [];
+
+        public int From => rights.Where(x => x <= StartLeft).DefaultIfEmpty(0).Max();
+        public int End => rights.Where(x => x <= notifyLeft).DefaultIfEmpty(0).Max();
+
+        public void Add(UIA.AutomationElement e)
+        {
+            var c = e.Current;
+            var r = c.BoundingRectangle;
+            if (r.IsEmpty || r.Width <= 0) return;
+            var id = c.AutomationId ?? "";
+            var cls = c.ClassName ?? "";
+            var app = cls.Contains("TaskListButton") || id.StartsWith("Appid:", StringComparison.Ordinal);
+            var kind = c.ControlType.ProgrammaticName.Replace("ControlType.", "");
+            if (id == "StartButton") StartLeft = (int)r.Left - taskbarLeft;
+            // Only things the size of a button: a pane around all of them would claim the whole taskbar
+            else if (!app && (c.ControlType != UIA.ControlType.Button && c.ControlType != UIA.ControlType.ListItem
+                && c.ControlType != UIA.ControlType.SplitButton && c.ControlType != UIA.ControlType.MenuItem || r.Width > taskbarWidth / 3)) return;
+            Count++;
+            if (app) Apps++;
+            var key = kind + (cls.Length > 0 ? "/" + cls : "");
+            Kinds[key] = Kinds.GetValueOrDefault(key) + 1;
+            rights.Add((int)r.Right - taskbarLeft);
         }
     }
 

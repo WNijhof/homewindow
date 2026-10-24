@@ -93,7 +93,7 @@
             <Grid Margin="0,8,0,0">
                 <TextBox x:Name="SearchBox" Padding="30,6,30,6" TextChanged="Search_Changed" />
                 <TextBlock Style="{StaticResource Icon}" Text="&#xE721;" FontSize="12" HorizontalAlignment="Left" Margin="11,0,0,0" Foreground="{DynamicResource SubTextBrush}" IsHitTestVisible="False" />
-                <TextBlock x:Name="SearchHint" Text="{c:T Zoeken}" Style="{StaticResource Sub}" FontSize="13" Margin="31,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                <TextBlock x:Name="SearchHint" Text="{c:T Zoeken}" Style="{StaticResource Sub}" FontSize="13" Margin="33,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
                 <Button x:Name="ViewToggle" Style="{StaticResource IconBtn}" Width="26" Height="26" FontSize="12" HorizontalAlignment="Right" Margin="0,0,3,0"
                         Content="&#xE80A;" Click="ViewToggle_Click" ToolTip="{c:T 'Lijst of raster'}" />
             </Grid>

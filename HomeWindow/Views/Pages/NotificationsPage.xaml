@@ -19,7 +19,7 @@
                 <Grid Width="240" HorizontalAlignment="Left" DockPanel.Dock="Left">
                 <TextBox x:Name="SearchBox" Padding="30,6,30,6" TextChanged="Search_Changed" />
                 <TextBlock Style="{StaticResource Icon}" Text="&#xE721;" FontSize="12" HorizontalAlignment="Left" Margin="11,0,0,0" Foreground="{DynamicResource SubTextBrush}" IsHitTestVisible="False" />
-                <TextBlock x:Name="Hint" Text="{c:T Zoeken}" Style="{StaticResource Sub}" FontSize="13" Margin="31,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                <TextBlock x:Name="Hint" Text="{c:T Zoeken}" Style="{StaticResource Sub}" FontSize="13" Margin="33,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
                 <Button x:Name="ClearBtn" Style="{StaticResource IconBtn}" Width="24" Height="24" FontSize="10" Content="&#xE711;" HorizontalAlignment="Right" Margin="0,0,3,0" ToolTip="{c:T Wissen}" Click="ClearSearch_Click" Visibility="Collapsed" />
             </Grid>
                 <Button x:Name="DeleteSelected" Style="{StaticResource AccentBtn}" Content="{c:T 'Geselecteerde verwijderen'}" HorizontalAlignment="Right" Visibility="Collapsed" Click="DeleteSelected_Click" />
