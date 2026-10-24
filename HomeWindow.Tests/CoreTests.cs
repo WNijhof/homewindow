@@ -301,6 +301,13 @@ public class AthomLoginTests
     [InlineData("", "")]
     public void The_local_url_of_a_homey_becomes_the_address(string? url, string expected) =>
         Assert.Equal(expected, AthomLogin.HostOf(url));
+
+    [Fact]
+    public void The_delegation_token_is_bound_to_the_homey()
+    {
+        Assert.Equal("https://api.athom.com/delegation/token?audience=homey&homeyId=5f1a2b3c", AthomLogin.DelegationUrl("5f1a2b3c"));
+        Assert.Equal("https://api.athom.com/delegation/token?audience=homey", AthomLogin.DelegationUrl(""));
+    }
 }
 
 public class TranslationTests

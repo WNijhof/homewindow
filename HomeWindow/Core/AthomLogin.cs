@@ -139,10 +139,11 @@ public static class AthomLogin
     internal static string HostOf(string? url) =>
         Uri.TryCreate(url, UriKind.Absolute, out var u) ? (u.IsDefaultPort ? u.Host : $"{u.Host}:{u.Port}") : "";
 
-    // A session on the Homey at baseUrl: a delegation token from Athom, exchanged at the Homey
-    public static async Task<string> SessionAsync(string access, string baseUrl, CancellationToken ct)
+    // A session on the Homey at baseUrl: a delegation token from Athom, exchanged at the Homey. With the Homey's id the
+    // token is bound to that one Homey, as Athom asks; Athom will refuse unbound ones in the future.
+    public static async Task<string> SessionAsync(string access, string baseUrl, string homeyId, CancellationToken ct)
     {
-        using var del = new HttpRequestMessage(HttpMethod.Post, $"{Api}/delegation/token?audience=homey") { Content = new StringContent("{}", Encoding.UTF8, "application/json") };
+        using var del = new HttpRequestMessage(HttpMethod.Post, DelegationUrl(homeyId)) { Content = new StringContent("{}", Encoding.UTF8, "application/json") };
         del.Headers.Authorization = new AuthenticationHeaderValue("Bearer", access);
         var delegation = AsString(await SendAsync(del, ct)) ?? throw new HomeyApiException(401, Loc.T("Athom gaf geen toegang."));
 
@@ -150,6 +151,9 @@ public static class AthomLogin
         using var login = new HttpRequestMessage(HttpMethod.Post, baseUrl + "/api/manager/users/login") { Content = new StringContent(body, Encoding.UTF8, "application/json") };
         return AsString(await SendAsync(login, ct)) ?? throw new HomeyApiException(401, Loc.T("De Homey gaf geen sessie."));
     }
+
+    internal static string DelegationUrl(string homeyId) =>
+        $"{Api}/delegation/token?audience=homey" + (homeyId.Length > 0 ? "&homeyId=" + Uri.EscapeDataString(homeyId) : "");
 
     static string? AsString(JsonNode? n) => n is JsonValue v && v.TryGetValue<string>(out var s) && s.Length > 0 ? s : J.Str(n, "token");
 

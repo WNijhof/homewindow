@@ -212,7 +212,7 @@ public sealed class HomeyClient(HomeyConfig config)
             {
                 throw new HomeyApiException(401, Loc.T("Log opnieuw in met je Homey-account."));
             }
-            Config.Token = await AthomLogin.SessionAsync(access, baseUrl, ct);
+            Config.Token = await AthomLogin.SessionAsync(access, baseUrl, Config.CloudId.Trim(), ct);
             CredentialsChanged?.Invoke();
         }
         finally { renewing.Release(); }
