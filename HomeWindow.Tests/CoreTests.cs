@@ -369,15 +369,36 @@ public class WeatherTests
     public void Device_rain_and_wind_follow_Homeys_details_and_show_the_card_without_Homeys_weather()
     {
         var w = new WeatherVM();
-        w.SetDeviceParts(["Rain 0.4 mm/h", "Wind 3.6 m/s"]);
+        w.SetDevice(new DeviceWeather(null, null, null, ["Rain 0.4 mm/h", "Wind 3.6 m/s"]), true);
         Assert.True(w.HasData);
         Assert.Equal("Rain 0.4 mm/h · Wind 3.6 m/s", w.Details);
 
         w.Update(JsonNode.Parse("""{ "temperature": 17, "pressure": 1.016 }"""), null);
+        Assert.Equal("17°", w.Temperature);
         Assert.Equal("1016 hPa\nRain 0.4 mm/h · Wind 3.6 m/s", w.Details);
+    }
 
+    [Fact]
+    public void A_weather_device_stands_in_when_Homey_gives_no_weather()
+    {
+        var w = new WeatherVM();
         w.Update(null, null);
-        w.SetDeviceParts([]);
-        Assert.False(w.HasData);
+        w.SetDevice(new DeviceWeather(3.1, "Clouds", 86, ["Wind 6 km/h"]), true);
+        Assert.True(w.HasData);
+        Assert.False(w.Missing);
+        Assert.Equal("3°", w.Temperature);
+        Assert.EndsWith(" 86 %\nWind 6 km/h", w.Details); // the word for humidity follows the language
+    }
+
+    [Fact]
+    public void Missing_only_when_weather_is_wanted_tried_and_absent()
+    {
+        var w = new WeatherVM();
+        w.SetDevice(null, true);
+        Assert.False(w.Missing); // Homey not asked yet
+        w.MarkLoaded();
+        Assert.True(w.Missing);
+        w.SetDevice(null, false);
+        Assert.False(w.Missing);
     }
 }

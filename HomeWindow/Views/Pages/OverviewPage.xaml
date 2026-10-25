@@ -107,6 +107,19 @@
                         </StackPanel>
                     </DockPanel>
                 </Border>
+
+                <!-- Weather switched on, but neither Homey nor a weather device gives any -->
+                <Border Style="{StaticResource Card}" Width="300" Margin="0,0,12,12" DataContext="{Binding Weather}"
+                        Visibility="{Binding Missing, Converter={StaticResource Visible}}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Left" Style="{StaticResource Icon}" Text="{x:Static c:Icons.Cloud}" FontSize="24" Foreground="{DynamicResource SubTextBrush}" Margin="0,0,14,0" />
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{c:T 'Geen weer beschikbaar'}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock Text="{c:T 'Homey geeft HomeWindow zijn weer niet. Installeer een weer-app op je Homey, zoals OpenWeatherMap of Open-Meteo, dan neemt HomeWindow het weer daaruit over. Geen weer nodig? Zet het uit bij Instellingen.'}"
+                                       Style="{StaticResource Sub}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
             </WrapPanel>
 
             <!-- Camera pictures -->

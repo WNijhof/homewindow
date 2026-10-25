@@ -186,7 +186,7 @@ public sealed class HomeyStore : ObservableObject
                 }
 
                 await LoadDevices(c, ct);
-                Weather.SetDeviceParts(WeatherDeviceParts());
+                Weather.SetDevice(WeatherFromDevices(), App.Settings.FlyoutWeather || App.Settings.TaskbarItems.Contains("weather"));
                 await Feature("favorites", () => TakeOverFavoritesOnce(c, ct));
 
                 if (now - mid > TimeSpan.FromSeconds(30))
@@ -206,6 +206,7 @@ public sealed class HomeyStore : ObservableObject
                 if (now - weather > TimeSpan.FromMinutes(10))
                 {
                     await Feature("weather", () => LoadWeather(c, ct));
+                    Weather.MarkLoaded();
                     weather = now;
                 }
                 if (SystemPageVisible && now - system > TimeSpan.FromSeconds(10))
@@ -837,21 +838,30 @@ public sealed class HomeyStore : ObservableObject
         return last switch { "flow" => "Flow", "energy" => Loc.T("Energie"), "updates" => "Updates", "apps" => "Apps", _ => last };
     }
 
-    // Rain and wind for the weather card, each from the first device (by name) that measures it. A sub-capability
-    // such as measure_rain.next_hour keeps the title its app gave it.
-    List<string> WeatherDeviceParts()
+    // The weather from devices: temperature, condition and humidity from a weather device (the first by name that
+    // measures the temperature and also rain or wind, so not a sensor indoors), and rain and wind, each from the first
+    // device that measures it. A sub-capability such as measure_rain.last_hour keeps the title its app gave it.
+    DeviceWeather? WeatherFromDevices()
     {
+        var devices = Devices.Where(d => d.Available).OrderBy(d => d.Name).ToList();
         var parts = new List<string>();
         foreach (var (prefix, label) in new[] { ("measure_rain", "Regen"), ("measure_wind_strength", "Wind") })
         {
-            var device = Devices.Where(d => d.Available && d.Capabilities.Any(k => Measures(k, prefix))).OrderBy(d => d.Name).FirstOrDefault();
+            var device = devices.FirstOrDefault(d => d.Capabilities.Any(k => Measures(k, prefix)));
             foreach (var k in device?.Capabilities.Where(k => Measures(k, prefix)).Take(2) ?? [])
                 parts.Add((k.Id.Contains('.') ? k.Title : Loc.T(label)) + " " + k.Display);
         }
-        return parts;
+        var station = devices.FirstOrDefault(d => Number(d, "measure_temperature") != null
+            && d.Capabilities.Any(k => Measures(k, "measure_rain") || Measures(k, "measure_wind_strength")));
+        if (station == null && parts.Count == 0) return null;
+        var state = new[] { "conditioncode_text", "weatherCondition", "conditioncode", "description" }
+            .Select(id => station?.Cap(id)?.Value as string).FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
+        return new DeviceWeather(station == null ? null : Number(station, "measure_temperature"), state,
+            station == null ? null : Number(station, "measure_humidity"), parts);
 
         static bool Measures(CapabilityVM k, string prefix) =>
             k.Value is double && (k.Id == prefix || k.Id.StartsWith(prefix + ".", StringComparison.Ordinal));
+        static double? Number(DeviceVM d, string id) => d.Cap(id)?.Value as double?;
     }
 
     async Task LoadWeather(HomeyClient c, CancellationToken ct)

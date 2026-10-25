@@ -370,6 +370,15 @@ public sealed class HourVM
     public string Glyph { get; init; } = Icons.Sun;
 }
 
+// The weather a device on Homey measures; Parts are rain and wind, ready to show
+public sealed record DeviceWeather(double? Temperature, string? State, double? Humidity, IReadOnlyList<string> Parts)
+{
+    // A record compares a list by reference; the parts by their text
+    public bool Equals(DeviceWeather? other) => other is not null && Temperature == other.Temperature && State == other.State
+        && Humidity == other.Humidity && Parts.SequenceEqual(other.Parts);
+    public override int GetHashCode() => HashCode.Combine(Temperature, State, Humidity, Parts.Count);
+}
+
 public sealed class WeatherVM : ObservableObject
 {
     public bool HasData { get; private set; }
@@ -379,40 +388,64 @@ public sealed class WeatherVM : ObservableObject
     public string Details { get; private set; } = "";
     public ObservableCollection<HourVM> Hours { get; } = [];
 
+    // Homey's own weather; null when Homey gives none (signed in with a Homey account, or no location)
+    double? homeyTemp;
+    string? homeyState;
     List<string> homeyParts = [];
-    IReadOnlyList<string> deviceParts = [];
-    bool homeyData;
+    DeviceWeather? device;
+    bool loaded, wanted;
 
-    // Rain and wind from a weather device (an app such as Buienradar or a weather station): Homey's own weather
-    // does not give them
-    public void SetDeviceParts(IReadOnlyList<string> parts)
+    // Weather is switched on (panel or taskbar widget), Homey's weather was asked for, and there is none at all:
+    // the Overview then says where to get it
+    public bool Missing => loaded && wanted && !HasData;
+
+    // The weather from a weather device (an app such as OpenWeatherMap, Open-Meteo or a weather station): the
+    // temperature and condition when Homey gives none, and rain and wind, which Homey's own weather does not have
+    public void SetDevice(DeviceWeather? weather, bool weatherWanted)
     {
-        if (parts.SequenceEqual(deviceParts)) return;
-        deviceParts = parts;
-        Details = JoinDetails();
-        HasData = homeyData || deviceParts.Count > 0;
-        OnPropertyChanged(string.Empty);
+        if (weather == device && weatherWanted == wanted) return;
+        device = weather;
+        wanted = weatherWanted;
+        Compose();
     }
 
-    // Homey's own details on the first line, the device ones below
-    string JoinDetails() => string.Join("\n", new[] { homeyParts, deviceParts }.Where(p => p.Count > 0).Select(p => string.Join(" · ", p)));
+    // After the first try to read Homey's weather, whether that worked or not
+    public void MarkLoaded()
+    {
+        if (loaded) return;
+        loaded = true;
+        Compose();
+    }
+
+    void Compose()
+    {
+        var ci = Loc.Culture;
+        var fromDevice = homeyTemp == null && device?.Temperature != null;
+        var temp = fromDevice ? device!.Temperature : homeyTemp;
+        var state = fromDevice ? device!.State : homeyState;
+        var first = homeyParts;
+        if (fromDevice && device!.Humidity is { } h) first = [Loc.F("Vochtigheid {0} %", h.ToString("0", ci))];
+        else if (fromDevice) first = [];
+        var second = device?.Parts ?? [];
+        Temperature = temp is { } t ? t.ToString("0", ci) + "°" : "";
+        Description = Translate(state);
+        Glyph = Icons.ForWeather(state, DateTime.Now.Hour is < 7 or >= 21);
+        // Homey's own details (or the device's humidity) on the first line, rain and wind below
+        Details = string.Join("\n", new[] { first, second }.Where(p => p.Count > 0).Select(p => string.Join(" · ", p)));
+        HasData = temp != null || second.Count > 0;
+        OnPropertyChanged(string.Empty);
+    }
 
     public void Update(JsonNode? now, JsonNode? hourly)
     {
         var ci = Loc.Culture;
-        var night = DateTime.Now.Hour is < 7 or >= 21;
-        var temp = J.Num(now, "temperature") ?? J.Num(now, "temp");
-        var state = J.Str(now, "state") ?? J.Str(now, "condition") ?? J.Str(now, "description");
-        homeyData = temp != null;
-        Temperature = temp is { } t ? t.ToString("0", ci) + "°" : "";
-        Description = Translate(state);
-        Glyph = Icons.ForWeather(state, night);
+        homeyTemp = J.Num(now, "temperature") ?? J.Num(now, "temp");
+        homeyState = J.Str(now, "state") ?? J.Str(now, "condition") ?? J.Str(now, "description");
         var parts = new List<string>();
         if (J.Num(now, "humidity") is { } h) parts.Add(Loc.F("Vochtigheid {0} %", (h <= 1 ? h * 100 : h).ToString("0", ci)));
         if (J.Num(now, "pressure") is { } p) parts.Add((p < 10 ? p * 1000 : p).ToString("0", ci) + " hPa");
         homeyParts = parts;
-        Details = JoinDetails();
-        HasData = homeyData || deviceParts.Count > 0;
+        loaded = true;
 
         Hours.Clear();
         var list = hourly as JsonArray ?? J.Arr(hourly, "hourly") ?? J.Arr(hourly, "list") ?? J.Arr(hourly, "forecast");
@@ -429,7 +462,7 @@ public sealed class WeatherVM : ObservableObject
             });
             if (Hours.Count >= 8) break;
         }
-        OnPropertyChanged(string.Empty);
+        Compose();
     }
 
     static string Translate(string? state)
@@ -443,7 +476,7 @@ public sealed class WeatherVM : ObservableObject
             _ when s.Contains("drizzle") => "Motregen",
             _ when s.Contains("rain") => "Regen",
             _ when s.Contains("fog") || s.Contains("mist") => "Mist",
-            _ when s.Contains("cloud") => "Bewolkt",
+            _ when s.Contains("cloud") || s.Contains("overcast") => "Bewolkt",
             _ when s.Contains("clear") || s.Contains("sun") => "Helder",
             _ => state,
         };

@@ -22,7 +22,7 @@ HomeWindow zet je Homey Pro in het Windows-systeemvak, naast de klok. Deze handl
 
 HomeWindow werkt met een **Homey Pro (2023)** of **Homey Pro mini**, en waarschijnlijk ook met de **Homey Self-Hosted Server**. Een **Homey Pro (Early 2019)** of ouder werkt waarschijnlijk ook (nieuw in 0.4.3, nog niet op zo'n Homey getest). Een gewone Homey met Homey Bridge wordt niet ondersteund.
 
-Je logt in met je **Homey-account**: Instellingen → Homey → *Inloggen* → **Homey-account** → **Inloggen bij Homey…**. De browser opent de inlogpagina van Homey; daarna vult HomeWindow je Homey zelf in. HomeWindow bewaart alleen een versleutelde sleutel om opnieuw te verbinden, nooit je wachtwoord. De Systeem-pagina, updates, apps herstarten, meldingen wissen en het weer werken alleen met een **API-key** (kies *API-key* in plaats van *Homey-account*): die rechten geeft Athom niet aan apps die met een account inloggen. Een API-key kan alleen een Homey Pro (2023) of mini maken.
+Je logt in met je **Homey-account**: Instellingen → Homey → *Inloggen* → **Homey-account** → **Inloggen bij Homey…**. De browser opent de inlogpagina van Homey; daarna vult HomeWindow je Homey zelf in. HomeWindow bewaart alleen een versleutelde sleutel om opnieuw te verbinden, nooit je wachtwoord. De Systeem-pagina, updates, apps herstarten, meldingen wissen en Homey's eigen weer werken alleen met een **API-key** (kies *API-key* in plaats van *Homey-account*): die rechten geeft Athom niet aan apps die met een account inloggen. Het weer kan HomeWindow wel overnemen van een weer-app op je Homey (zie Overzicht). Een API-key kan alleen een Homey Pro (2023) of mini maken.
 
 ### Installeren
 
@@ -205,7 +205,9 @@ Links staan de pagina's, en onderaan de verbinding. Heb je meer dan één Homey,
 
 Het weer (met de verwachting voor de komende uren), het verbruik van nu, wie er thuis is, een waarschuwing als er batterijen bijna leeg zijn, je favoriete apparaten en flows, je sferen en de laatste vijf meldingen.
 
-Het weer van Homey zelf geeft temperatuur, luchtvochtigheid, luchtdruk en de verwachting, maar geen regen of wind. Heb je een apparaat dat regen of wind meet (een weerstation, of een app zoals Buienradar), dan zet HomeWindow die erbij op de weerkaart. Zijn het er meer, dan telt het eerste op naam. Een eigen meetwaarde van zo'n app, zoals regen in het komende uur, staat er met de naam die de app eraan geeft.
+Het weer van Homey zelf geeft temperatuur, luchtvochtigheid, luchtdruk en de verwachting, maar geen regen of wind. Heb je een apparaat dat regen of wind meet (een weerstation, of een weer-app zoals OpenWeatherMap of Open-Meteo), dan zet HomeWindow die erbij op de weerkaart. Zijn het er meer, dan telt het eerste op naam. Een eigen meetwaarde van zo'n app, zoals regen in het komende uur, staat er met de naam die de app eraan geeft.
+
+Log je in met je Homey-account, dan geeft Homey zijn eigen weer niet aan HomeWindow. HomeWindow neemt het weer dan over van een weer-app op je Homey: de temperatuur, de toestand en de luchtvochtigheid van het eerste apparaat (op naam) dat temperatuur en ook regen of wind meet. Een sensor binnenshuis telt dus niet mee. Heb je geen weer-app en staat het weer aan, dan zie je op het Overzicht een melding waarin staat hoe je het weer krijgt.
 
 ### Apparaten
 
@@ -386,7 +388,7 @@ Automatisch bijwerken werkt alleen als HomeWindow met de installer is geïnstall
 | Het icoon is niet te zien | Klik op **^** naast de klok en sleep het HomeWindow-icoon naar de taakbalk. |
 | Ctrl + Alt + H doet niets | Een ander programma gebruikt die combinatie al. Sluit dat programma, of zet de sneltoets uit en weer aan bij Instellingen. |
 | De energietotalen blijven leeg | Geef de API-key het recht om Insights te bekijken. Zonder slimme meter telt HomeWindow alleen apparaten met een eigen kWh-meter. |
-| Het weer ontbreekt | Geef de API-key het recht om de geolocatie te bekijken, en controleer of je Homey een locatie heeft. |
+| Het weer ontbreekt | Log je in met je Homey-account, installeer dan een weer-app op je Homey, zoals OpenWeatherMap of Open-Meteo. Met een API-key: geef die het recht om de geolocatie te bekijken, en controleer of je Homey een locatie heeft. |
 | Een schakelaar springt terug | Het apparaat reageerde niet. Kijk in de Homey-app of het bereikbaar is. |
 | Iets anders gaat mis | Meld het bij de [issues](https://github.com/WNijhof/homewindow/issues). **Instellingen → Updates → Log openen** toont het logbestand met onverwachte fouten; stuur dat mee. |
 
