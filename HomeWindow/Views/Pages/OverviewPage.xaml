@@ -19,7 +19,7 @@
                                 <TextBlock Text="{Binding Description}" Style="{StaticResource Sub}" />
                             </StackPanel>
                         </DockPanel>
-                        <TextBlock Text="{Binding Details}" Style="{StaticResource Sub}" Margin="0,8,0,0" Visibility="{Binding Details, Converter={StaticResource Visible}}" />
+                        <TextBlock Text="{Binding Details}" Style="{StaticResource Sub}" TextWrapping="Wrap" TextTrimming="None" Margin="0,8,0,0" Visibility="{Binding Details, Converter={StaticResource Visible}}" />
                         <ItemsControl ItemsSource="{Binding Hours}" Margin="0,10,0,0">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate>

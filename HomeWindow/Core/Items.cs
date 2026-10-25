@@ -445,8 +445,10 @@ public sealed class WeatherVM : ObservableObject
         Temperature = temp is { } t ? t.ToString("0", ci) + "°" : "";
         Description = Translate(state);
         Glyph = Icons.ForWeather(state, DateTime.Now.Hour is < 7 or >= 21);
-        // Homey's own details (or the device's humidity) on the first line, rain and wind below
-        Details = string.Join("\n", new[] { first, second }.Where(p => p.Count > 0).Select(p => string.Join(" · ", p)));
+        // Homey's own details (or the device's humidity) on the first line, rain and wind below. A long line wraps
+        // between two values, never inside one (non-breaking spaces).
+        Details = string.Join("\n", new[] { first, second }.Where(p => p.Count > 0)
+            .Select(p => string.Join(" · ", p.Select(x => x.Replace(' ', ' ')))));
         HasData = temp != null || second.Count > 0;
         OnPropertyChanged(string.Empty);
     }

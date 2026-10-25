@@ -371,11 +371,12 @@ public class WeatherTests
         var w = new WeatherVM();
         w.SetDevice(new DeviceWeather(null, null, null, ["Rain 0.4 mm/h", "Wind 3.6 m/s"]), true);
         Assert.True(w.HasData);
-        Assert.Equal("Rain 0.4 mm/h · Wind 3.6 m/s", w.Details);
+        // A long line wraps only between values: inside one the spaces do not break
+        Assert.Equal("Rain 0.4 mm/h · Wind 3.6 m/s", w.Details);
 
         w.Update(JsonNode.Parse("""{ "temperature": 17, "pressure": 1.016 }"""), null);
         Assert.Equal("17°", w.Temperature);
-        Assert.Equal("1016 hPa\nRain 0.4 mm/h · Wind 3.6 m/s", w.Details);
+        Assert.Equal("1016 hPa\nRain 0.4 mm/h · Wind 3.6 m/s", w.Details.Replace(' ', ' '));
     }
 
     [Fact]
@@ -387,7 +388,7 @@ public class WeatherTests
         Assert.True(w.HasData);
         Assert.False(w.Missing);
         Assert.Equal("3°", w.Temperature);
-        Assert.EndsWith(" 86 %\nWind 6 km/h", w.Details); // the word for humidity follows the language
+        Assert.EndsWith(" 86 %\nWind 6 km/h", w.Details.Replace(' ', ' ')); // the word for humidity follows the language
     }
 
     [Fact]
