@@ -21,6 +21,8 @@ public partial class SettingsPage : UserControl
     {
         InitializeComponent();
         Load();
+        // The weather can also be switched off from the Overview; show what is set now
+        IsVisibleChanged += (_, e) => { if (e.NewValue is true) RefreshWeather(); };
         Gate.Changed += () => Dispatcher.Invoke(RefreshPin);
         VersionText.Text = Loc.F("HomeWindow versie {0}", Updater.CurrentText);
         CheckButton.IsEnabled = Updater.IsInstalled;
@@ -79,6 +81,17 @@ public partial class SettingsPage : UserControl
             Process.Start(new ProcessStartInfo($"{Core.Diagnostics.IssuesUrl}?title={subject}&body={body}") { UseShellExecute = true });
     }
 
+    // The weather switch and the taskbar items
+    void RefreshWeather()
+    {
+        var wasLoading = loading;
+        loading = true;
+        WeatherSwitch.IsChecked = S.FlyoutWeather;
+        foreach (var chip in TaskbarItemsChoice.Children.OfType<ToggleButton>())
+            chip.IsChecked = S.TaskbarItems.Contains(chip.Tag as string ?? "");
+        loading = wasLoading;
+    }
+
     void Load()
     {
         loading = true;
@@ -93,15 +106,13 @@ public partial class SettingsPage : UserControl
         Check(TaskbarTextSizeChoice, S.TaskbarTextSize);
         Check(TaskbarGraphChoice, S.TaskbarGraph);
         Check(PowerUnitChoice, S.PowerUnit);
-        foreach (var chip in TaskbarItemsChoice.Children.OfType<ToggleButton>())
-            chip.IsChecked = S.TaskbarItems.Contains(chip.Tag as string ?? "");
+        RefreshWeather();
         Check(LanguageChoice, S.Language ?? "");
         IntensitySlider.Value = S.Intensity;
         ScaleSlider.Value = S.TextScale;
         ScaleText.Text = $"{S.TextScale * 100:0} %";
         ShadowSwitch.IsChecked = S.Shadows;
         HomeyIconSwitch.IsChecked = S.HomeyIcons;
-        WeatherSwitch.IsChecked = S.FlyoutWeather;
         EnergySwitch.IsChecked = S.FlyoutEnergy;
         TaskbarSwitch.IsChecked = S.TaskbarEnergy;
         StartupSwitch.IsChecked = AppSettings.StartWithWindows;

@@ -207,7 +207,7 @@ Het weer (met de verwachting voor de komende uren), het verbruik van nu, wie er 
 
 Het weer van Homey zelf geeft temperatuur, luchtvochtigheid, luchtdruk en de verwachting, maar geen regen of wind. Heb je een apparaat dat regen of wind meet (een weerstation, of een weer-app zoals OpenWeatherMap of Open-Meteo), dan zet HomeWindow die erbij op de weerkaart. Zijn het er meer, dan telt het eerste op naam. Een eigen meetwaarde van zo'n app, zoals regen in het komende uur, staat er met de naam die de app eraan geeft.
 
-Log je in met je Homey-account, dan geeft Homey zijn eigen weer niet aan HomeWindow. HomeWindow neemt het weer dan over van een weer-app op je Homey: de temperatuur, de toestand en de luchtvochtigheid van het eerste apparaat (op naam) dat temperatuur en ook regen of wind meet. Een sensor binnenshuis telt dus niet mee. Heb je geen weer-app en staat het weer aan, dan zie je op het Overzicht een melding waarin staat hoe je het weer krijgt.
+Log je in met je Homey-account, dan geeft Homey zijn eigen weer niet aan HomeWindow. HomeWindow neemt het weer dan over van een weer-app op je Homey: de temperatuur, de toestand en de luchtvochtigheid van het eerste apparaat (op naam) dat temperatuur en ook regen of wind meet. Een sensor binnenshuis telt dus niet mee. Heb je geen weer-app en staat het weer aan, dan zie je op het Overzicht een melding waarin staat hoe je het weer krijgt. De melding verschijnt als het weer aan staat in het paneel of in de taakbalkwidget; met **Weer uitzetten** zet je het op beide plekken uit.
 
 ### Apparaten
 

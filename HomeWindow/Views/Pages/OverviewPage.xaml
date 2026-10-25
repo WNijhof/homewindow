@@ -115,8 +115,10 @@
                         <TextBlock DockPanel.Dock="Left" Style="{StaticResource Icon}" Text="{x:Static c:Icons.Cloud}" FontSize="24" Foreground="{DynamicResource SubTextBrush}" Margin="0,0,14,0" />
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="{c:T 'Geen weer beschikbaar'}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" />
-                            <TextBlock Text="{c:T 'Homey geeft HomeWindow zijn weer niet. Installeer een weer-app op je Homey, zoals OpenWeatherMap of Open-Meteo, dan neemt HomeWindow het weer daaruit over. Geen weer nodig? Zet het uit bij Instellingen.'}"
+                            <TextBlock Text="{c:T 'Homey geeft HomeWindow zijn weer niet. Installeer een weer-app op je Homey, zoals OpenWeatherMap of Open-Meteo, dan neemt HomeWindow het weer daaruit over.'}"
                                        Style="{StaticResource Sub}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                            <Button Style="{StaticResource Btn}" Content="{c:T 'Weer uitzetten'}" Command="{Binding SwitchOffCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"
+                                    ToolTip="{c:T 'Zet het weer uit in het paneel en in de taakbalkwidget'}" />
                         </StackPanel>
                     </DockPanel>
                 </Border>

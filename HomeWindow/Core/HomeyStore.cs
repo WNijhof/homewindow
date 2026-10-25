@@ -186,7 +186,8 @@ public sealed class HomeyStore : ObservableObject
                 }
 
                 await LoadDevices(c, ct);
-                Weather.SetDevice(WeatherFromDevices(), App.Settings.FlyoutWeather || App.Settings.TaskbarItems.Contains("weather"));
+                Weather.SetDevice(WeatherFromDevices(), App.Settings.FlyoutWeather
+                    || App.Settings.TaskbarEnergy && App.Settings.TaskbarItems.Contains("weather"));
                 await Feature("favorites", () => TakeOverFavoritesOnce(c, ct));
 
                 if (now - mid > TimeSpan.FromSeconds(30))

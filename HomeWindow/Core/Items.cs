@@ -399,6 +399,16 @@ public sealed class WeatherVM : ObservableObject
     // the Overview then says where to get it
     public bool Missing => loaded && wanted && !HasData;
 
+    // From the notice: no weather in the panel nor in the taskbar widget
+    public ICommand SwitchOffCommand => new RelayCommand(() =>
+    {
+        App.Settings.FlyoutWeather = false;
+        App.Settings.TaskbarItems.Remove("weather");
+        App.Settings.Save();
+        wanted = false;
+        Compose();
+    });
+
     // The weather from a weather device (an app such as OpenWeatherMap, Open-Meteo or a weather station): the
     // temperature and condition when Homey gives none, and rain and wind, which Homey's own weather does not have
     public void SetDevice(DeviceWeather? weather, bool weatherWanted)
