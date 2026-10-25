@@ -50,9 +50,11 @@ public sealed class TaskbarStrip : IDisposable
     bool light;
     // Free room on the taskbar, in pixels from its left edge. Left: from the end of the buttons there (Widgets) to the
     // Start button, null when there is none. ButtonsEnd: where the last taskbar button ends, so the strip next to the
-    // notification area does not cover the icons of open programs; null when unknown.
+    // notification area does not cover the icons of open programs; null when unknown. BeforeList: the room before the
+    // window with the program buttons, when the buttons themselves cannot be seen and that window runs on to the
+    // notification area (StartAllBack with centred icons draws its own buttons).
     // Looked up in the background now and then, because the icons move as programs open and close.
-    readonly record struct Rooms((int from, int to)? Left, int? ButtonsEnd);
+    readonly record struct Rooms((int from, int to)? Left, int? ButtonsEnd, (int from, int to)? BeforeList = null);
     Rooms? rooms;
     IntPtr roomBar;
     DateTime roomChecked;
@@ -193,6 +195,11 @@ public sealed class TaskbarStrip : IDisposable
             x = left.from + gap;
             width = leftWidth;
         }
+        else if (room.BeforeList is { } before && Fit(before.to - before.from - 2 * gap, scale) is { } beforeWidth)
+        {
+            x = before.from + gap;
+            width = beforeWidth;
+        }
         else
         {
             var from = room.ButtonsEnd is { } end && end < right ? end : 0;
@@ -212,7 +219,7 @@ public sealed class TaskbarStrip : IDisposable
         // As an overlay the position is on the screen
         var (px, py) = overlay ? (tb.Left + x, tb.Top) : (x, 0);
         Status = $"taskbar {tb.Left},{tb.Top} {tb.Right - tb.Left}x{height}, scale {scale}, notification area at {right}, {lookup}, "
-            + $"room left {room.Left?.ToString() ?? "-"}, buttons end {room.ButtonsEnd?.ToString() ?? "-"}, strip at {x} width {width}{(overlay ? " (overlay)" : "")}";
+            + $"room left {room.Left?.ToString() ?? "-"}, buttons end {room.ButtonsEnd?.ToString() ?? "-"}, before programs {room.BeforeList?.ToString() ?? "-"}, strip at {x} width {width}{(overlay ? " (overlay)" : "")}";
         var now = (px, py, width, height, "");
         last = now;
         SetWindowPos(source.Handle, overlay ? HWND_TOPMOST : IntPtr.Zero, px, py, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS);
@@ -305,13 +312,41 @@ public sealed class TaskbarStrip : IDisposable
             }
             lookup = $"{found.Count} buttons ({found.Apps} programs{(raw ? ", full tree" : "")}), start at {found.StartLeft?.ToString() ?? "-"}"
                 + (found.Apps == 0 ? $", kinds {string.Join(" ", found.Kinds.OrderByDescending(k => k.Value).Take(8).Select(k => $"{k.Key}:{k.Value}"))}, windows {Windows(bar, taskbarLeft)}" : "");
-            return new Rooms(found.StartLeft >= 200 ? (found.From, found.StartLeft.Value) : null, found.End > 0 ? found.End : null);
+            var leftRoom = found.StartLeft >= 200 ? (found.From, found.StartLeft.Value) : ((int, int)?)null;
+            // No program buttons to be seen: then the window that holds them tells where they are
+            if (found.Apps == 0 && TaskList(bar, taskbarLeft) is { } list && list.Left > 0)
+            {
+                lookup += $", program window {list.Left}-{list.Right}";
+                return list.Right < notifyLeft
+                    ? new Rooms(leftRoom, Math.Max(found.End, list.Right))
+                    : new Rooms(leftRoom, found.End > 0 ? found.End : null, (found.EndBefore(list.Left), list.Left));
+            }
+            return new Rooms(leftRoom, found.End > 0 ? found.End : null);
         }
         catch (Exception e) when (e is UIA.ElementNotAvailableException or InvalidOperationException or COMException)
         {
             lookup = $"lookup failed: {e.GetType().Name}";
             return new Rooms(null, null);
         }
+    }
+
+    // Where the window with the program buttons is (MSTaskListWClass, the one a Windows 10 style taskbar has),
+    // from the left edge of the taskbar
+    static (int Left, int Right)? TaskList(IntPtr bar, int taskbarLeft)
+    {
+        (int, int)? found = null;
+        var name = new System.Text.StringBuilder(64);
+        EnumChildWindows(bar, (hwnd, _) =>
+        {
+            if (IsWindowVisible(hwnd) && GetClassName(hwnd, name, name.Capacity) > 0 && name.ToString() == "MSTaskListWClass"
+                && GetWindowRect(hwnd, out var r) && r.Right > r.Left)
+            {
+                found = (r.Left - taskbarLeft, r.Right - taskbarLeft);
+                return false;
+            }
+            return true;
+        }, IntPtr.Zero);
+        return found;
     }
 
     // The windows inside the taskbar, for the diagnosis: a taskbar tool (a Windows 10 taskbar, centred icons with
@@ -351,7 +386,8 @@ public sealed class TaskbarStrip : IDisposable
         readonly List<int> rights = [];
 
         public int From => rights.Where(x => x <= StartLeft).DefaultIfEmpty(0).Max();
-        public int End => rights.Where(x => x <= notifyLeft).DefaultIfEmpty(0).Max();
+        public int End => EndBefore(notifyLeft);
+        public int EndBefore(int x) => rights.Where(r => r <= x).DefaultIfEmpty(0).Max();
 
         public void Add(UIA.AutomationElement e)
         {
