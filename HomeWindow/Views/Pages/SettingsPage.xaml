@@ -255,6 +255,20 @@
                         </Border>
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Grafiek bij aanwijzen'}" Style="{StaticResource Label}" />
+                        <StackPanel>
+                            <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal" x:Name="TaskbarGraphChoice">
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="TaskbarGraph" Tag="off" Content="{c:T Uit}" Checked="TaskbarGraph_Checked" />
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="TaskbarGraph" Tag="15" Content="{c:T '15 min'}" Checked="TaskbarGraph_Checked" />
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="TaskbarGraph" Tag="60" Content="{c:T '1 uur'}" Checked="TaskbarGraph_Checked" />
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="TaskbarGraph" Tag="180" Content="{c:T '3 uur'}" Checked="TaskbarGraph_Checked" />
+                                </StackPanel>
+                            </Border>
+                            <TextBlock Text="{c:T 'Het verbruik van het huis als je de muis op de taakbalkwidget houdt, vanaf het moment dat HomeWindow start.'}" Style="{StaticResource Sub}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
                         <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T Vermogen}" Style="{StaticResource Label}" />
                         <Border Style="{StaticResource SegmentBar}" HorizontalAlignment="Left">
                             <StackPanel Orientation="Horizontal" x:Name="PowerUnitChoice">

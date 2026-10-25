@@ -889,6 +889,22 @@ public sealed class HomeyStore : ObservableObject
 
     List<DeviceVM> CountedSolar() => SolarPanels().Where(d => Config?.ExcludedSolar.Contains(d.Id) != true).ToList();
 
+    // The home batteries Homey knows, and the ones that count: a battery and its inverter can both say they are one
+    public List<DeviceVM> HomeBatteries() => Devices.Where(d => d.IsHomeBattery).ToList();
+
+    List<DeviceVM> CountedBatteries() => HomeBatteries().Where(d => Config?.ExcludedBatteries.Contains(d.Id) != true).ToList();
+
+    public void CountBattery(string id, bool counted)
+    {
+        if (Config == null) return;
+        Config.ExcludedBatteries.Remove(id);
+        if (!counted) Config.ExcludedBatteries.Add(id);
+        App.Settings.Save();
+        ComputeLiveEnergy(null);
+        EnergyReportRequested = true;
+        Kick();
+    }
+
     public void CountSolar(string id, bool counted)
     {
         if (Config == null) return;
@@ -918,10 +934,11 @@ public sealed class HomeyStore : ObservableObject
         var e = Energy;
         var gridMeter = GridMeter();
         var solar = CountedSolar();
-        var batteries = Devices.Where(d => d.IsHomeBattery).ToList();
+        var batteries = CountedBatteries();
         e.GridW = gridMeter?.PowerW;
         e.GridMeterCount = GridMeters().Count;
         e.SolarPanelCount = SolarPanels().Count;
+        e.BatteryCount = HomeBatteries().Count;
         e.HasSolar = solar.Count > 0;
         e.SolarW = solar.Sum(d => Math.Abs(d.PowerW ?? 0));
         e.HasBattery = batteries.Count > 0;
@@ -950,6 +967,7 @@ public sealed class HomeyStore : ObservableObject
         }
         consumers = consumers.OrderByDescending(x => x.watts).ToList();
         e.HomeW = e.GridW is { } g ? Math.Max(0, g + e.SolarW - e.BatteryW) : consumers.Count > 0 ? consumers.Sum(x => x.watts) : null;
+        if (e.HomeW is { } homeW) EnergyMath.Record(e.HomeHistory, DateTime.UtcNow, homeW);
 
         // Hidden devices still count in the home's use, they are only left off the list
         var hidden = Config?.HiddenConsumers ?? [];
@@ -1021,7 +1039,7 @@ public sealed class HomeyStore : ObservableObject
                 solar[day] = solar.GetValueOrDefault(day) + kwh;
         // Home batteries count their charged and discharged kWh; without them, charging would read as use
         Dictionary<DateTime, double> charged = [], discharged = [];
-        var homeBatteries = Devices.Where(d => d.IsHomeBattery && d.ChargedCapability != null && d.DischargedCapability != null).ToList();
+        var homeBatteries = CountedBatteries().Where(d => d.ChargedCapability != null && d.DischargedCapability != null).ToList();
         foreach (var battery in homeBatteries)
         {
             foreach (var (day, kwh) in PerDay(await Entries(c, battery.Id, battery.ChargedCapability!, "last31Days", ct)))

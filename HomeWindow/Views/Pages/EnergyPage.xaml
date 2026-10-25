@@ -29,6 +29,12 @@
                 <WrapPanel x:Name="SolarChoice" Loaded="Solar_Loaded" />
             </DockPanel>
 
+            <!-- More than one home battery: which ones count -->
+            <DockPanel Margin="0,10,0,0" Visibility="{Binding HasBatteryChoice, Converter={StaticResource Visible}}">
+                <TextBlock DockPanel.Dock="Left" Text="{c:T 'Batterij telt mee van'}" Style="{StaticResource Sub}" VerticalAlignment="Top" Margin="0,5,10,0" />
+                <WrapPanel x:Name="BatteryChoice" Loaded="Battery_Loaded" />
+            </DockPanel>
+
             <!-- Now -->
             <TextBlock Text="{c:T Nu}" Style="{StaticResource Heading}" />
             <UniformGrid Rows="1" Margin="0,0,-12,0">

@@ -459,6 +459,8 @@ public sealed class EnergyVM : ObservableObject
     public double SolarW { get; set; }
     public double BatteryW { get; set; }
     public double? HomeW { get; set; }
+    // The house use since HomeWindow started (up to 3 hours), for the graph when pointing at the taskbar widget
+    public List<(DateTime at, double watts)> HomeHistory { get; } = [];
     public bool HasGrid => GridW != null;
     // More than one grid meter: the Energy page then lets the user pick which one is the grid
     public int GridMeterCount { get; set; }
@@ -466,6 +468,9 @@ public sealed class EnergyVM : ObservableObject
     // More than one solar device: the Energy page then lets the user pick which ones count
     public int SolarPanelCount { get; set; }
     public bool HasSolarChoice => SolarPanelCount > 1;
+    // More than one home battery: the Energy page then lets the user pick which ones count
+    public int BatteryCount { get; set; }
+    public bool HasBatteryChoice => BatteryCount > 1;
     public bool HasSolar { get; set; }
     public bool HasBattery { get; set; }
     // EV chargers: what goes into the car now, and the car's charge when the charger reports it

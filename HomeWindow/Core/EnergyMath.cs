@@ -44,6 +44,17 @@ public static class EnergyMath
         return known.Count > 0 ? known.Average() : null;
     }
 
+    // Adds a reading to the history behind the graph on the taskbar widget: at most one point per 10 seconds (a newer
+    // reading within that time replaces the value), and nothing older than the longest period the graph shows
+    public static void Record(List<(DateTime at, double watts)> history, DateTime at, double watts)
+    {
+        if (history.Count > 0 && at - history[^1].at < TimeSpan.FromSeconds(10)) history[^1] = (history[^1].at, watts);
+        else history.Add((at, watts));
+        var oldest = at - TimeSpan.FromHours(3);
+        var stale = history.FindIndex(p => p.at >= oldest);
+        if (stale > 0) history.RemoveRange(0, stale);
+    }
+
     // The devices Homey's live report lists are the ones that count in Homey Energy. A report that lists none of the
     // devices with a power reading (it can hold only meters and the like) says nothing about them: no filter then.
     public static HashSet<string>? CountedFilter(HashSet<string>? reported, IEnumerable<string> measured) =>

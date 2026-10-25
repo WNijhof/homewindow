@@ -207,6 +207,19 @@ public class EnergyMathTests
     }
 
     [Fact]
+    public void Record_keeps_one_point_per_10_seconds_and_3_hours()
+    {
+        var history = new List<(DateTime at, double watts)>();
+        EnergyMath.Record(history, Day, 100);
+        EnergyMath.Record(history, Day.AddSeconds(5), 200);
+        Assert.Equal([(Day, 200.0)], history);
+        EnergyMath.Record(history, Day.AddSeconds(15), 300);
+        Assert.Equal(2, history.Count);
+        EnergyMath.Record(history, Day.AddHours(3).AddSeconds(10), 400);
+        Assert.Equal([(Day.AddSeconds(15), 300.0), (Day.AddHours(3).AddSeconds(10), 400.0)], history);
+    }
+
+    [Fact]
     public void Sum_picks_days()
     {
         var days = new Dictionary<DateTime, double> { [Day] = 1, [Day.AddDays(1)] = 2, [Day.AddDays(-40)] = 4 };

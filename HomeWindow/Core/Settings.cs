@@ -34,6 +34,8 @@ public sealed class HomeyConfig
     public string GridMeterId { get; set; } = "";
     // Solar devices left out of the totals: an inverter and a kWh meter on the same panels would otherwise count the sun twice
     public List<string> ExcludedSolar { get; set; } = [];
+    // Home batteries left out of the totals, so the same battery is not counted twice
+    public List<string> ExcludedBatteries { get; set; } = [];
     // Camera pictures left off the Overview, as "<device id>/<picture name on the device>"
     public List<string> HiddenCameras { get; set; } = [];
     // Devices left off the biggest consumers (Energy page and taskbar widget), by device id
@@ -97,6 +99,8 @@ public sealed class AppSettings
     public List<string> TaskbarItems { get; set; } = ["home", "solar", "grid", "battery", "charger"];
     // The text of the taskbar strip: normal, large
     public string TaskbarTextSize { get; set; } = "normal";
+    // Minutes of house use in the graph when pointing at the taskbar strip: 15, 60, 180, or off
+    public string TaskbarGraph { get; set; } = "60";
     // Power from 1000 W on in kW (kw), or always in watts (w)
     public string PowerUnit { get; set; } = "w";
     public string? Language { get; set; }
@@ -167,6 +171,7 @@ public sealed class AppSettings
         s.FlyoutLastTab ??= "moods";
         s.TaskbarPosition ??= "left";
         s.TaskbarTextSize ??= "normal";
+        s.TaskbarGraph ??= "60";
         s.PowerUnit ??= "w";
         s.PinHash ??= "";
         s.TaskbarItems ??= ["home", "solar", "grid", "battery", "charger"];
@@ -188,6 +193,7 @@ public sealed class AppSettings
             h.CollapsedFolders ??= [];
             h.GridMeterId ??= "";
             h.ExcludedSolar ??= [];
+            h.ExcludedBatteries ??= [];
             h.HiddenCameras ??= [];
             h.HiddenConsumers ??= [];
         }

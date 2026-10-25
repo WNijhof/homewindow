@@ -304,7 +304,7 @@ public sealed class TaskbarStrip : IDisposable
                 Walk(UIA.TreeWalker.RawViewWalker, taskbar, found);
             }
             lookup = $"{found.Count} buttons ({found.Apps} programs{(raw ? ", full tree" : "")}), start at {found.StartLeft?.ToString() ?? "-"}"
-                + (found.Apps == 0 ? $", kinds {string.Join(" ", found.Kinds.OrderByDescending(k => k.Value).Take(8).Select(k => $"{k.Key}:{k.Value}"))}" : "");
+                + (found.Apps == 0 ? $", kinds {string.Join(" ", found.Kinds.OrderByDescending(k => k.Value).Take(8).Select(k => $"{k.Key}:{k.Value}"))}, windows {Windows(bar, taskbarLeft)}" : "");
             return new Rooms(found.StartLeft >= 200 ? (found.From, found.StartLeft.Value) : null, found.End > 0 ? found.End : null);
         }
         catch (Exception e) when (e is UIA.ElementNotAvailableException or InvalidOperationException or COMException)
@@ -312,6 +312,22 @@ public sealed class TaskbarStrip : IDisposable
             lookup = $"lookup failed: {e.GetType().Name}";
             return new Rooms(null, null);
         }
+    }
+
+    // The windows inside the taskbar, for the diagnosis: a taskbar tool (a Windows 10 taskbar, centred icons with
+    // Start at the left) shows up here with class names of its own
+    static string Windows(IntPtr bar, int taskbarLeft)
+    {
+        var list = new List<string>();
+        var name = new System.Text.StringBuilder(64);
+        EnumChildWindows(bar, (hwnd, _) =>
+        {
+            if (list.Count >= 16) return false;
+            if (IsWindowVisible(hwnd) && GetWindowRect(hwnd, out var r) && r.Right > r.Left && GetClassName(hwnd, name, name.Capacity) > 0)
+                list.Add($"{name}:{r.Left - taskbarLeft}-{r.Right - taskbarLeft}");
+            return true;
+        }, IntPtr.Zero);
+        return list.Count > 0 ? string.Join(" ", list) : "-";
     }
 
     static void Walk(UIA.TreeWalker walker, UIA.AutomationElement parent, Found found, int depth = 0)
@@ -465,7 +481,7 @@ public sealed class TaskbarStrip : IDisposable
             part.Margin = new Thickness(visible && !first ? 12 : 0, 0, 0, 0);
             first &= !visible;
         }
-        root.ToolTip = string.Join("\n", new[]
+        var lines = string.Join("\n", new[]
         {
             weatherData.HasData ? $"{weatherData.Description} {weatherData.Temperature}".Trim() : null,
             $"{Loc.T("Huis")}: {energy.HomeText}",
@@ -474,6 +490,50 @@ public sealed class TaskbarStrip : IDisposable
             energy.HasBattery ? $"{energy.BatteryLabel}: {energy.BatteryText}" + (energy.BatteryPercent != null ? $" · {energy.BatteryPercentText}" : "") : null,
             energy.HasCharger ? $"{energy.ChargerLabel}: {energy.ChargerText}" + (energy.CarPercent != null ? $" · {energy.CarPercentText}" : "") : null,
         }.Where(s => s != null));
+        root.ToolTip = Graph() is { } graph
+            ? new StackPanel { Children = { new TextBlock { Text = lines }, graph } }
+            : lines;
+    }
+
+    // The house use over the chosen period as a small line graph, as in Homey Insights; null when it is switched off
+    // or there is not enough yet to draw
+    static FrameworkElement? Graph()
+    {
+        if (!int.TryParse(App.Settings.TaskbarGraph, out var minutes)) return null;
+        var now = DateTime.UtcNow;
+        var from = now.AddMinutes(-minutes);
+        var points = HomeyStore.I.Energy.HomeHistory.Where(p => p.at >= from).ToList();
+        if (points.Count < 2) return null;
+        const double W = 280, H = 90;
+        var max = Math.Max(100, points.Max(p => p.watts)) * 1.1;
+        double X(DateTime at) => (at - from).TotalSeconds / (now - from).TotalSeconds * W;
+        double Y(double watts) => H - watts / max * H;
+        var line = new PointCollection(points.Select(p => new Point(X(p.at), Y(p.watts))));
+        var area = new PointCollection(line) { new Point(line[^1].X, H), new Point(line[0].X, H) };
+        var yellow = Color.FromRgb(0xE0, 0xB4, 0x00);
+        var canvas = new Canvas { Width = W, Height = H, ClipToBounds = true };
+        canvas.Children.Add(new System.Windows.Shapes.Polygon { Points = area, Fill = new SolidColorBrush(Color.FromArgb(0x40, yellow.R, yellow.G, yellow.B)) });
+        canvas.Children.Add(new System.Windows.Shapes.Polyline { Points = line, Stroke = new SolidColorBrush(yellow), StrokeThickness = 1.5, StrokeLineJoin = PenLineJoin.Round });
+        canvas.Children.Add(new System.Windows.Shapes.Line { X1 = 0, X2 = W, Y1 = H - 0.5, Y2 = H - 0.5, Stroke = new SolidColorBrush(Color.FromArgb(0x60, 0x80, 0x80, 0x80)), StrokeThickness = 1 });
+
+        TextBlock Small(string text) => new() { Text = text, FontSize = 10.5, Opacity = 0.7 };
+        DockPanel Row(string left, string right, Thickness margin)
+        {
+            var end = Small(right);
+            DockPanel.SetDock(end, Dock.Right);
+            return new DockPanel { Width = W, Margin = margin, Children = { end, Small(left) } };
+        }
+        var period = minutes >= 60 ? Loc.T($"{minutes / 60} uur") : $"{minutes} min";
+        // Above: the period and the highest use in it; below: from when to now
+        return new StackPanel
+        {
+            Children =
+            {
+                Row(Loc.F("Huis, laatste {0}", period), EnergyVM.Watts(points.Max(p => p.watts)), new Thickness(0, 10, 0, 2)),
+                canvas,
+                Row(from.ToLocalTime().ToString("HH:mm", Loc.Culture), Loc.T("nu"), new Thickness(0, 2, 0, 0)),
+            },
+        };
     }
 
     void Close()
@@ -507,6 +567,14 @@ public sealed class TaskbarStrip : IDisposable
 
     [DllImport("user32.dll")]
     static extern bool IsWindow(IntPtr hwnd);
+
+    delegate bool EnumProc(IntPtr hwnd, IntPtr param);
+
+    [DllImport("user32.dll")]
+    static extern bool EnumChildWindows(IntPtr parent, EnumProc callback, IntPtr param);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    static extern int GetClassName(IntPtr hwnd, System.Text.StringBuilder name, int max);
 
     [DllImport("user32.dll")]
     static extern bool IsWindowVisible(IntPtr hwnd);

@@ -38,6 +38,18 @@ public partial class EnergyPage : UserControl
         }
     }
 
+    void Battery_Loaded(object sender, RoutedEventArgs e)
+    {
+        BatteryChoice.Children.Clear();
+        foreach (var d in HomeyStore.I.HomeBatteries())
+        {
+            var chip = new ToggleButton { Content = d.Name, Tag = d.Id, IsChecked = HomeyStore.I.Config?.ExcludedBatteries.Contains(d.Id) != true };
+            chip.SetResourceReference(StyleProperty, "ToggleChip");
+            chip.Click += (_, _) => HomeyStore.I.CountBattery(d.Id, chip.IsChecked == true);
+            BatteryChoice.Children.Add(chip);
+        }
+    }
+
     void Reload_Click(object sender, RoutedEventArgs e)
     {
         HomeyStore.I.EnergyReportRequested = true;

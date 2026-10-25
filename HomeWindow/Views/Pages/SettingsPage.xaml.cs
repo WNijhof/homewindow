@@ -91,6 +91,7 @@ public partial class SettingsPage : UserControl
         Check(TileSizeChoice, S.TileSize);
         Check(TaskbarPositionChoice, S.TaskbarPosition);
         Check(TaskbarTextSizeChoice, S.TaskbarTextSize);
+        Check(TaskbarGraphChoice, S.TaskbarGraph);
         Check(PowerUnitChoice, S.PowerUnit);
         foreach (var chip in TaskbarItemsChoice.Children.OfType<ToggleButton>())
             chip.IsChecked = S.TaskbarItems.Contains(chip.Tag as string ?? "");
@@ -349,6 +350,7 @@ public partial class SettingsPage : UserControl
     void TileSize_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TileSize = v);
     void TaskbarPosition_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TaskbarPosition = v);
     void TaskbarTextSize_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TaskbarTextSize = v);
+    void TaskbarGraph_Checked(object sender, RoutedEventArgs e) => Choose(sender, v => S.TaskbarGraph = v);
 
     void PowerUnit_Checked(object sender, RoutedEventArgs e)
     {

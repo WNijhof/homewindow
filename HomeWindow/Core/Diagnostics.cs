@@ -21,8 +21,8 @@ public static class Diagnostics
         sb.AppendLine($"Created {DateTime.Now:yyyy-MM-dd HH:mm:ss}; {Environment.OSVersion.VersionString}; .NET {Environment.Version}");
         sb.AppendLine($"Connection: {store.Status} - {store.StatusText}");
         if (s.ActiveHomey is { } h)
-            sb.AppendLine($"Homey: mode {h.Mode}, sign-in {h.Auth}, grid meter {(h.GridMeterId == "" ? "automatic" : "chosen")}, {h.ExcludedSolar.Count} solar device(s) left out");
-        sb.AppendLine($"Settings: language {s.Language ?? "auto"}, power unit {s.PowerUnit}, text size {s.TaskbarTextSize}, taskbar items {string.Join("+", s.TaskbarItems)}, tile size {s.TileSize}");
+            sb.AppendLine($"Homey: mode {h.Mode}, sign-in {h.Auth}, grid meter {(h.GridMeterId == "" ? "automatic" : "chosen")}, {h.ExcludedSolar.Count} solar device(s) and {h.ExcludedBatteries.Count} battery device(s) left out");
+        sb.AppendLine($"Settings: language {s.Language ?? "auto"}, power unit {s.PowerUnit}, text size {s.TaskbarTextSize}, graph {s.TaskbarGraph}, taskbar items {string.Join("+", s.TaskbarItems)}, tile size {s.TileSize}");
         sb.AppendLine($"Taskbar widget: {HomeWindow.Views.TaskbarStrip.Status}");
         sb.AppendLine();
         sb.AppendLine(store.LiveSummary());
