@@ -209,6 +209,8 @@ Het weer van Homey zelf geeft temperatuur, luchtvochtigheid, luchtdruk en de ver
 
 Log je in met je Homey-account, dan geeft Homey zijn eigen weer niet aan HomeWindow. HomeWindow neemt het weer dan over van een weer-app op je Homey: de temperatuur, de toestand en de luchtvochtigheid van het eerste apparaat (op naam) dat temperatuur en ook regen of wind meet. Een sensor binnenshuis telt dus niet mee. Heb je geen weer-app en staat het weer aan, dan zie je op het Overzicht een melding waarin staat hoe je het weer krijgt. De melding verschijnt als het weer aan staat in het paneel of in de taakbalkwidget; met **Weer uitzetten** zet je het op beide plekken uit.
 
+Geeft een app beelden aan Homey, zoals een camera of de weerkaarten van een weer-app, dan staan die onder **Camerabeelden**. Klik op een beeld voor een groot beeld. Met de rechtermuisknop verberg je één beeld, of met **Alle beelden van deze app verbergen** alles van die app in één keer. **Verborgen beelden tonen** brengt ze terug. Klik op de kop **Camerabeelden** om de hele rij in of uit te klappen.
+
 ### Apparaten
 
 Alle apparaten per kamer. Boven de lijst:
@@ -311,7 +313,7 @@ Hier voeg je een Homey toe, wijzig je hem of verwijder je hem. Met meerdere Home
 | Schaduwen | Schaduwen onder de kaarten |
 | Pictogrammen uit Homey | Apparaten tonen het pictogram dat ze in Homey hebben, ook een pictogram dat je in de Homey-app zelf koos. Uit: het pictogram dat HomeWindow kiest bij het soort apparaat. Een pictogram dat je in HomeWindow zelf kiest, gaat altijd voor. |
 | Tegelgrootte | Extra klein, Klein, Normaal of Groot, voor het hoofdvenster en het paneel. Groot zet in het paneel twee tegels naast elkaar en laat lange namen over twee regels lopen; Extra klein zet er vier naast elkaar. |
-| Paneel bij de klok | Apparaten als lijst of als tegels |
+| Paneel bij de klok | Apparaten, flows en sferen als lijst of als tegels |
 | Hoofdvenster | Apparaten als raster of als lijst |
 | Weer / Energie in het paneel | Deze regel bovenin het paneel tonen |
 | Energie in de taakbalk | Het verbruik van nu links van de klok tonen |

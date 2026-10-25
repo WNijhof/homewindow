@@ -555,12 +555,8 @@
                     <TextBlock Text="{Binding Count}" Style="{StaticResource Sub}" Margin="8,0,0,0" VerticalAlignment="Center" />
                 </StackPanel>
             </ToggleButton>
-            <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{StaticResource FlowTile}" Margin="-4,2,-4,0"
-                          Visibility="{Binding IsExpanded, Converter={StaticResource Visible}}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
+            <ItemsControl ItemsSource="{Binding Items}" ItemTemplate="{StaticResource FlowTile}" ItemsPanel="{DynamicResource FlowPanel}" Margin="-4,2,-4,0"
+                          Visibility="{Binding IsExpanded, Converter={StaticResource Visible}}" />
         </StackPanel>
     </DataTemplate>
 
@@ -634,4 +630,6 @@
 
     <ItemsPanelTemplate x:Key="WrapItems"><WrapPanel /></ItemsPanelTemplate>
     <ItemsPanelTemplate x:Key="StackItems"><StackPanel /></ItemsPanelTemplate>
+    <!-- Flows and moods side by side; the panel by the clock stacks them as a list -->
+    <ItemsPanelTemplate x:Key="FlowPanel"><WrapPanel /></ItemsPanelTemplate>
 </ResourceDictionary>

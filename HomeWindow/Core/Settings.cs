@@ -92,6 +92,8 @@ public sealed class AppSettings
     public string FlyoutLastTab { get; set; } = "moods";
     public bool FlyoutEnergy { get; set; } = true;
     public bool FlyoutWeather { get; set; } = true;
+    // The camera pictures on the Overview folded away
+    public bool CamerasCollapsed { get; set; }
     public bool TaskbarEnergy { get; set; } = true;
     // left (default): at the start of the taskbar, clear of centred icons; right: next to the notification area
     public string TaskbarPosition { get; set; } = "left";

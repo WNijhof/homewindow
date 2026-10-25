@@ -47,6 +47,8 @@ public sealed class DeviceVM : ObservableObject
     public string? UnavailableMessage { get; private set; }
     public string? QuickAction { get; private set; }
     public string? DriverName { get; private set; }
+    // The app the device belongs to (homey:app:<app>:<driver>), null for Homey's own devices
+    public string? AppId => DriverName?.Split(':') is ["homey", "app", var app, ..] ? app : null;
     public string? BatteryTypes { get; private set; }
 
     public bool IsGridMeter { get; private set; }

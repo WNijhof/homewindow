@@ -80,6 +80,10 @@ public partial class FlyoutWindow : Window, IDetailsHost
         Resources["FlyoutDeviceTemplate"] = FindResource(grid ? "DeviceTile" : "DeviceRow");
         Resources["FlyoutDevicePanel"] = FindResource(grid ? "WrapItems" : "StackItems");
         Resources["FlyoutItemsMargin"] = grid ? new Thickness(-4, 0, -4, 0) : new Thickness(0);
+        // Flows and moods: as a list one per row over the full width, a little lower
+        Resources["FlowPanel"] = FindResource(grid ? "WrapItems" : "StackItems");
+        Resources["FlowWidth"] = grid ? 169.0 : double.NaN;
+        Resources["FlowHeight"] = grid ? 54.0 : 44.0;
         ViewToggle.Content = grid ? Icons.List : Icons.Grid;
 
         // The last tab shows the moods, or instead every light

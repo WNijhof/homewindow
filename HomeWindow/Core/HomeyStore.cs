@@ -52,6 +52,15 @@ public sealed class HomeyStore : ObservableObject
     int hiddenCameraCount;
     public int HiddenCameraCount { get => hiddenCameraCount; private set { if (Set(ref hiddenCameraCount, value)) OnPropertyChanged(nameof(HasCameraSection)); } }
     public bool HasCameraSection => Cameras.Count > 0 || HiddenCameraCount > 0;
+    public bool CamerasExpanded
+    {
+        get => !App.Settings.CamerasCollapsed;
+        set
+        {
+            if (App.Settings.CamerasCollapsed != !value) { App.Settings.CamerasCollapsed = !value; App.Settings.Save(); }
+            OnPropertyChanged();
+        }
+    }
     public RelayCommand ShowHiddenCamerasCommand { get; }
     bool camerasRequested;
     public ObservableCollection<VariableVM> Variables { get; } = [];
@@ -657,7 +666,7 @@ public sealed class HomeyStore : ObservableObject
         foreach (var d in Devices)
             foreach (var picture in d.CameraImages)
             {
-                if (hidden.Contains(CameraVM.KeyOf(d.Id, picture.Slot))) hiddenCount++;
+                if (hidden.Contains(CameraVM.KeyOf(d.Id, picture.Slot)) || d.AppId is { } app && hidden.Contains(CameraVM.AppKeyOf(app))) hiddenCount++;
                 else owners.TryAdd(picture.ImageId, (d, picture));
             }
         HiddenCameraCount = hiddenCount;
@@ -674,6 +683,7 @@ public sealed class HomeyStore : ObservableObject
             var deviceId = device.Id;
             if (!cameras.TryGetValue(id, out var vm)) cameras[id] = vm = new CameraVM(id);
             vm.Key = CameraVM.KeyOf(deviceId, picture.Slot);
+            vm.AppKey = device.AppId is { } appId ? CameraVM.AppKeyOf(appId) : "";
             // A camera with more than one picture (Eufy: event and person) says which one this is
             vm.Name = device.CameraImages.Count > 1 && picture.Title.Length > 0 ? $"{device.Name} · {picture.Title}" : device.Name;
             vm.ZoneName = ZoneName(device.ZoneId);
@@ -703,14 +713,17 @@ public sealed class HomeyStore : ObservableObject
         OnPropertyChanged(nameof(HasCameraSection));
     }
 
-    // Right-click on a camera picture on the Overview: leave it off, e.g. the second picture of a camera
-    public void HideCamera(CameraVM camera)
+    // Right-click on a camera picture on the Overview: leave it off, e.g. the second picture of a camera, or every
+    // picture of its app (a weather app's maps are no camera)
+    public void HideCamera(CameraVM camera, bool wholeApp = false)
     {
-        if (Config == null || camera.Key.Length == 0) return;
-        if (!Config.HiddenCameras.Contains(camera.Key)) Config.HiddenCameras.Add(camera.Key);
+        var key = wholeApp ? camera.AppKey : camera.Key;
+        if (Config == null || key.Length == 0) return;
+        if (!Config.HiddenCameras.Contains(key)) Config.HiddenCameras.Add(key);
         App.Settings.Save();
-        Cameras.Remove(camera);
-        HiddenCameraCount++;
+        var gone = wholeApp ? Cameras.Where(c => c.AppKey == key).ToList() : [camera];
+        foreach (var c in gone) Cameras.Remove(c);
+        HiddenCameraCount += gone.Count;
         OnPropertyChanged(nameof(HasCameraSection));
     }
 

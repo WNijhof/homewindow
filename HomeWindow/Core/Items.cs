@@ -136,7 +136,12 @@ public sealed class CameraVM(string id) : ObservableObject
     // What the hidden list keeps; the picture's own id changes when its app restarts
     public string Key { get; set; } = "";
     public static string KeyOf(string deviceId, string slot) => $"{deviceId}/{slot}";
+    // In the hidden list: every picture of an app, e.g. the weather maps of a weather app
+    public static string AppKeyOf(string appId) => "app:" + appId;
+    public string AppKey { get; set; } = "";
     public RelayCommand HideCommand { get; } = new(o => { if (o is CameraVM c) HomeyStore.I.HideCamera(c); });
+    public RelayCommand HideAppCommand { get; } = new(o => { if (o is CameraVM c) HomeyStore.I.HideCamera(c, wholeApp: true); });
+    public bool HasApp => AppKey.Length > 0;
     string name = "";
     public string Name { get => name; set => Set(ref name, value); }
     string zoneName = "";

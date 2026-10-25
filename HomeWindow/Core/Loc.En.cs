@@ -40,6 +40,7 @@ public static partial class Loc
         ["Bediening"] = "Controls",
         ["Bekijk ze onder Batterijen"] = "See them under Batteries",
         ["Geen weer beschikbaar"] = "No weather available",
+        ["Alle beelden van deze app verbergen"] = "Hide all pictures of this app",
         ["Homey geeft HomeWindow zijn weer niet. Installeer een weer-app op je Homey, zoals OpenWeatherMap of Open-Meteo, dan neemt HomeWindow het weer daaruit over."] =
             "Homey does not give HomeWindow its weather. Install a weather app on your Homey, such as OpenWeatherMap or Open-Meteo, and HomeWindow takes the weather from there.",
         ["Weer uitzetten"] = "Switch weather off",
