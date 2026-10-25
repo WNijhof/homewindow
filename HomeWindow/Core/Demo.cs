@@ -43,6 +43,8 @@ public sealed class Demo
         Device("lock-front", "Voordeur", "hall", "lock", [Bool("locked", "Locked", true, true), Measure("measure_battery", "Battery", 35, "%", 0)], ["AA", "AA", "AA", "AA"]);
         Device("doorbell", "Deurbel", "hall", "doorbell", [Alarm("alarm_generic", "Ring", false), Measure("measure_battery", "Battery", 90, "%", 0)]);
         Device("light-garden", "Tuinverlichting", "garden", "light", [OnOff(false)]);
+        Device("weather-station", "Weerstation", "garden", "sensor", [Measure("measure_temperature", "Temperature", 16.8, "°C", 1), Measure("measure_rain", "Rain", 0.4, "mm/h", 1),
+            Measure("measure_wind_strength", "Wind", 3.6, "m/s", 1)]);
         Device("p1", "Slimme meter", "meterkast", "sensor", [Measure("measure_power", "Power", -1450, "W", 0), Measure("meter_power.imported", "Imported", 5123.4, "kWh", 2), Measure("meter_power.exported", "Exported", 2210.8, "kWh", 2), Measure("meter_gas", "Gas", 3011.2, "m³", 3)],
             energy: new JsonObject { ["cumulative"] = true, ["cumulativeImportedCapability"] = "meter_power.imported", ["cumulativeExportedCapability"] = "meter_power.exported" });
         Device("solar", "Omvormer", "meterkast", "solarpanel", [Measure("measure_power", "Power", 3480, "W", 0), Measure("meter_power", "Energy", 9811.0, "kWh", 2)]);

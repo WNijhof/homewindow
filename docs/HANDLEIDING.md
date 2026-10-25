@@ -205,6 +205,8 @@ Links staan de pagina's, en onderaan de verbinding. Heb je meer dan één Homey,
 
 Het weer (met de verwachting voor de komende uren), het verbruik van nu, wie er thuis is, een waarschuwing als er batterijen bijna leeg zijn, je favoriete apparaten en flows, je sferen en de laatste vijf meldingen.
 
+Het weer van Homey zelf geeft temperatuur, luchtvochtigheid, luchtdruk en de verwachting, maar geen regen of wind. Heb je een apparaat dat regen of wind meet (een weerstation, of een app zoals Buienradar), dan zet HomeWindow die erbij op de weerkaart. Zijn het er meer, dan telt het eerste op naam. Een eigen meetwaarde van zo'n app, zoals regen in het komende uur, staat er met de naam die de app eraan geeft.
+
 ### Apparaten
 
 Alle apparaten per kamer. Boven de lijst:

@@ -379,20 +379,40 @@ public sealed class WeatherVM : ObservableObject
     public string Details { get; private set; } = "";
     public ObservableCollection<HourVM> Hours { get; } = [];
 
+    List<string> homeyParts = [];
+    IReadOnlyList<string> deviceParts = [];
+    bool homeyData;
+
+    // Rain and wind from a weather device (an app such as Buienradar or a weather station): Homey's own weather
+    // does not give them
+    public void SetDeviceParts(IReadOnlyList<string> parts)
+    {
+        if (parts.SequenceEqual(deviceParts)) return;
+        deviceParts = parts;
+        Details = JoinDetails();
+        HasData = homeyData || deviceParts.Count > 0;
+        OnPropertyChanged(string.Empty);
+    }
+
+    // Homey's own details on the first line, the device ones below
+    string JoinDetails() => string.Join("\n", new[] { homeyParts, deviceParts }.Where(p => p.Count > 0).Select(p => string.Join(" · ", p)));
+
     public void Update(JsonNode? now, JsonNode? hourly)
     {
         var ci = Loc.Culture;
         var night = DateTime.Now.Hour is < 7 or >= 21;
         var temp = J.Num(now, "temperature") ?? J.Num(now, "temp");
         var state = J.Str(now, "state") ?? J.Str(now, "condition") ?? J.Str(now, "description");
-        HasData = temp != null;
+        homeyData = temp != null;
         Temperature = temp is { } t ? t.ToString("0", ci) + "°" : "";
         Description = Translate(state);
         Glyph = Icons.ForWeather(state, night);
         var parts = new List<string>();
         if (J.Num(now, "humidity") is { } h) parts.Add(Loc.F("Vochtigheid {0} %", (h <= 1 ? h * 100 : h).ToString("0", ci)));
         if (J.Num(now, "pressure") is { } p) parts.Add((p < 10 ? p * 1000 : p).ToString("0", ci) + " hPa");
-        Details = string.Join(" · ", parts);
+        homeyParts = parts;
+        Details = JoinDetails();
+        HasData = homeyData || deviceParts.Count > 0;
 
         Hours.Clear();
         var list = hourly as JsonArray ?? J.Arr(hourly, "hourly") ?? J.Arr(hourly, "list") ?? J.Arr(hourly, "forecast");

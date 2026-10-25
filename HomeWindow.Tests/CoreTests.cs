@@ -362,3 +362,22 @@ public class TranslationTests
         Assert.Same(reported, EnergyMath.CountedFilter(reported, ["plug1", "inverter"]));
     }
 }
+
+public class WeatherTests
+{
+    [Fact]
+    public void Device_rain_and_wind_follow_Homeys_details_and_show_the_card_without_Homeys_weather()
+    {
+        var w = new WeatherVM();
+        w.SetDeviceParts(["Rain 0.4 mm/h", "Wind 3.6 m/s"]);
+        Assert.True(w.HasData);
+        Assert.Equal("Rain 0.4 mm/h · Wind 3.6 m/s", w.Details);
+
+        w.Update(JsonNode.Parse("""{ "temperature": 17, "pressure": 1.016 }"""), null);
+        Assert.Equal("1016 hPa\nRain 0.4 mm/h · Wind 3.6 m/s", w.Details);
+
+        w.Update(null, null);
+        w.SetDeviceParts([]);
+        Assert.False(w.HasData);
+    }
+}

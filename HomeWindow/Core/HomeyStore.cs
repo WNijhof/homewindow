@@ -186,6 +186,7 @@ public sealed class HomeyStore : ObservableObject
                 }
 
                 await LoadDevices(c, ct);
+                Weather.SetDeviceParts(WeatherDeviceParts());
                 await Feature("favorites", () => TakeOverFavoritesOnce(c, ct));
 
                 if (now - mid > TimeSpan.FromSeconds(30))
@@ -834,6 +835,23 @@ public sealed class HomeyStore : ObservableObject
         if (string.IsNullOrEmpty(uri)) return "Homey";
         var last = uri.Split(':').Last();
         return last switch { "flow" => "Flow", "energy" => Loc.T("Energie"), "updates" => "Updates", "apps" => "Apps", _ => last };
+    }
+
+    // Rain and wind for the weather card, each from the first device (by name) that measures it. A sub-capability
+    // such as measure_rain.next_hour keeps the title its app gave it.
+    List<string> WeatherDeviceParts()
+    {
+        var parts = new List<string>();
+        foreach (var (prefix, label) in new[] { ("measure_rain", "Regen"), ("measure_wind_strength", "Wind") })
+        {
+            var device = Devices.Where(d => d.Available && d.Capabilities.Any(k => Measures(k, prefix))).OrderBy(d => d.Name).FirstOrDefault();
+            foreach (var k in device?.Capabilities.Where(k => Measures(k, prefix)).Take(2) ?? [])
+                parts.Add((k.Id.Contains('.') ? k.Title : Loc.T(label)) + " " + k.Display);
+        }
+        return parts;
+
+        static bool Measures(CapabilityVM k, string prefix) =>
+            k.Value is double && (k.Id == prefix || k.Id.StartsWith(prefix + ".", StringComparison.Ordinal));
     }
 
     async Task LoadWeather(HomeyClient c, CancellationToken ct)
