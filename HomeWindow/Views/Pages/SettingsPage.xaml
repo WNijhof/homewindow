@@ -214,6 +214,10 @@
                         <ToggleButton x:Name="WeatherSwitch" Style="{StaticResource Switch}" HorizontalAlignment="Left" Click="General_Click" />
                     </DockPanel>
                     <DockPanel Style="{StaticResource Row}">
+                        <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Vochtigheid en luchtdruk'}" Style="{StaticResource Label}" />
+                        <ToggleButton x:Name="HumiditySwitch" Style="{StaticResource Switch}" HorizontalAlignment="Left" Click="General_Click" />
+                    </DockPanel>
+                    <DockPanel Style="{StaticResource Row}">
                         <TextBlock DockPanel.Dock="Left" Width="170" Text="{c:T 'Energie in het paneel'}" Style="{StaticResource Label}" />
                         <ToggleButton x:Name="EnergySwitch" Style="{StaticResource Switch}" HorizontalAlignment="Left" Click="General_Click" />
                     </DockPanel>

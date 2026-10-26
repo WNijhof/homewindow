@@ -87,6 +87,7 @@ public partial class SettingsPage : UserControl
         var wasLoading = loading;
         loading = true;
         WeatherSwitch.IsChecked = S.FlyoutWeather;
+        HumiditySwitch.IsChecked = S.WeatherHumidity;
         foreach (var chip in TaskbarItemsChoice.Children.OfType<ToggleButton>())
             chip.IsChecked = S.TaskbarItems.Contains(chip.Tag as string ?? "");
         loading = wasLoading;
@@ -437,6 +438,8 @@ public partial class SettingsPage : UserControl
     {
         if (loading) return;
         S.FlyoutWeather = WeatherSwitch.IsChecked == true;
+        var humidityChanged = S.WeatherHumidity != (HumiditySwitch.IsChecked == true);
+        S.WeatherHumidity = HumiditySwitch.IsChecked == true;
         S.FlyoutEnergy = EnergySwitch.IsChecked == true;
         S.TaskbarEnergy = TaskbarSwitch.IsChecked == true;
         S.Toasts = ToastSwitch.IsChecked == true;
@@ -448,6 +451,7 @@ public partial class SettingsPage : UserControl
         S.Midi = MidiSwitch.IsChecked == true;
         S.Save();
         if (hotkeyChanged) App.Current.RegisterHotkey();
+        if (humidityChanged) HomeyStore.I.Weather.Refresh();
         if (midiChanged) Midi.Apply(S.Midi);
     }
 

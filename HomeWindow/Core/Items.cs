@@ -432,6 +432,9 @@ public sealed class WeatherVM : ObservableObject
         Compose();
     }
 
+    // After the choice for humidity and pressure changed in the settings
+    public void Refresh() => Compose();
+
     void Compose()
     {
         var ci = Loc.Culture;
@@ -441,6 +444,7 @@ public sealed class WeatherVM : ObservableObject
         var first = homeyParts;
         if (fromDevice && device!.Humidity is { } h) first = [Loc.F("Vochtigheid {0} %", h.ToString("0", ci))];
         else if (fromDevice) first = [];
+        if (!App.Settings.WeatherHumidity) first = [];
         var second = device?.Parts ?? [];
         Temperature = temp is { } t ? t.ToString("0", ci) + "°" : "";
         Description = Translate(state);

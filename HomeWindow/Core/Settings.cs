@@ -92,6 +92,8 @@ public sealed class AppSettings
     public string FlyoutLastTab { get; set; } = "moods";
     public bool FlyoutEnergy { get; set; } = true;
     public bool FlyoutWeather { get; set; } = true;
+    // Humidity and air pressure on the weather card; off leaves only the temperature, condition, rain and wind
+    public bool WeatherHumidity { get; set; } = true;
     // The camera pictures on the Overview folded away
     public bool CamerasCollapsed { get; set; }
     public bool TaskbarEnergy { get; set; } = true;

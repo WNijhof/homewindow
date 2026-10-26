@@ -188,14 +188,16 @@ public sealed class TaskbarStrip : IDisposable
         if (last != default && input == lastInput && ++ticks % (overlay ? 15 : 10) != 0) return;
         lastInput = input;
         int x, width;
-        // At the far left when chosen and when it fits before the Start button, with fewer biggest consumers if need be;
-        // otherwise on the right, also with fewer when the icons of open programs reach far to the right
-        if (App.Settings.TaskbarPosition == "left" && room.Left is { } left && Fit(left.to - left.from - 2 * gap, scale) is { } leftWidth)
+        // At the far left when chosen and when it fits before the Start button (or, when the program buttons cannot be
+        // seen, before the window that holds them), with fewer biggest consumers if need be; otherwise on the right, also
+        // with fewer when the icons of open programs reach far to the right
+        var atLeft = App.Settings.TaskbarPosition == "left";
+        if (atLeft && room.Left is { } left && Fit(left.to - left.from - 2 * gap, scale) is { } leftWidth)
         {
             x = left.from + gap;
             width = leftWidth;
         }
-        else if (room.BeforeList is { } before && Fit(before.to - before.from - 2 * gap, scale) is { } beforeWidth)
+        else if (atLeft && room.BeforeList is { } before && Fit(before.to - before.from - 2 * gap, scale) is { } beforeWidth)
         {
             x = before.from + gap;
             width = beforeWidth;
@@ -520,15 +522,19 @@ public sealed class TaskbarStrip : IDisposable
         var lines = string.Join("\n", new[]
         {
             weatherData.HasData ? $"{weatherData.Description} {weatherData.Temperature}".Trim() : null,
+            // Rain, wind and the like too, so a glance at the tooltip is enough
+            weatherData.HasData && weatherData.Details != "" ? weatherData.Details : null,
             $"{Loc.T("Huis")}: {energy.HomeText}",
             energy.HasSolar ? $"{Loc.T("Zon")}: {energy.SolarText}" : null,
             energy.HasGrid ? $"{energy.GridLabel}: {energy.GridText}" : null,
             energy.HasBattery ? $"{energy.BatteryLabel}: {energy.BatteryText}" + (energy.BatteryPercent != null ? $" · {energy.BatteryPercentText}" : "") : null,
             energy.HasCharger ? $"{energy.ChargerLabel}: {energy.ChargerText}" + (energy.CarPercent != null ? $" · {energy.CarPercentText}" : "") : null,
         }.Where(s => s != null));
+        // A long weather line wraps between two values, at the width of the graph
+        var linesText = new TextBlock { Text = lines, TextWrapping = TextWrapping.Wrap, MaxWidth = 280 };
         root.ToolTip = Graph() is { } graph
-            ? new StackPanel { Children = { new TextBlock { Text = lines }, graph } }
-            : lines;
+            ? new StackPanel { Children = { linesText, graph } }
+            : linesText;
     }
 
     // The house use over the chosen period as a small line graph, as in Homey Insights; null when it is switched off
