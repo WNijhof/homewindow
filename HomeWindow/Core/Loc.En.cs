@@ -314,6 +314,7 @@ public static partial class Loc
         ["3 uur"] = "3 hours",
         ["Het verbruik van het huis als je de muis op de taakbalkwidget houdt, vanaf het moment dat HomeWindow start."] = "The house's use when you hold the mouse over the taskbar widget, from the moment HomeWindow starts.",
         ["Huis, laatste {0}"] = "Home, last {0}",
+        ["max. {0}"] = "max {0}",
         ["nu"] = "now",
         ["Zonder map"] = "No folder",
         ["Zonnepanelen"] = "Solar panels",

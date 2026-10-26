@@ -855,38 +855,50 @@ public sealed class HomeyStore : ObservableObject
     // The weather from devices: temperature, condition and humidity from a weather device (the first by name that
     // measures the temperature and also rain or wind, so not a sensor indoors), its feels-like temperature, and rain
     // and wind, each from the first device that measures it. A sub-capability such as measure_rain.next_1_hour keeps
-    // the title its app gave it, with its chance when the app gives one (yr.no: measure_rain_next_1_hour in %). Wind
-    // comes with its gusts and direction. Some apps number their own capabilities (measure_wind_strength1).
+    // the title its app gave it, with its chance when the app gives one (yr.no: measure_rain_next_1_hour in %); a
+    // second one drops the word rain ("Next 6 hours"). Wind comes with its direction and gusts. Some apps number their
+    // own capabilities (measure_wind_strength1). Rain shows one decimal, wind none.
     DeviceWeather? WeatherFromDevices()
     {
         var devices = Devices.Where(d => d.Available).OrderBy(d => d.Name).ToList();
         var station = devices.FirstOrDefault(d => Number(d, "measure_temperature") != null
             && d.Capabilities.Any(k => Measures(k, "measure_rain") || Measures(k, "measure_wind_strength")));
-        var parts = new List<string>();
         var ci = Loc.Culture;
-        if (station?.Capabilities.FirstOrDefault(k => Measures(k, "measure_temperature") && k.Id.Contains("feel", StringComparison.OrdinalIgnoreCase))?.Value is double feels)
-            parts.Add(Loc.F("Voelt als {0}", feels.ToString("0", ci) + "°"));
+        var feels = station?.Capabilities.FirstOrDefault(k => Measures(k, "measure_temperature") && k.Id.Contains("feel", StringComparison.OrdinalIgnoreCase))?.Value as double?;
+        var rain = new List<string>();
         var rainDevice = devices.FirstOrDefault(d => d.Capabilities.Any(k => Measures(k, "measure_rain")));
         foreach (var k in rainDevice?.Capabilities.Where(k => Measures(k, "measure_rain")).Take(2) ?? [])
         {
             var chance = k.Id.Contains('.') ? rainDevice!.Cap("measure_rain_" + k.Id[(k.Id.IndexOf('.') + 1)..]) : null;
-            parts.Add((k.Id.Contains('.') ? k.Title : Loc.T("Regen")) + " " + k.Display
+            var title = !k.Id.Contains('.') ? Loc.T("Regen") : rain.Count == 0 ? k.Title : WithoutRain(k.Title);
+            rain.Add(title + " " + Amount((double)k.Value!, "0.0", k.Units)
                 + (chance is { Value: double p, Units: "%" } ? $" ({p.ToString("0", ci)} %)" : ""));
         }
+        string? windText = null;
         var windDevice = devices.FirstOrDefault(d => d.Capabilities.Any(k => Measures(k, "measure_wind_strength")));
         if (windDevice?.Capabilities.First(k => Measures(k, "measure_wind_strength")) is { } wind)
         {
             var gust = windDevice.Capabilities.FirstOrDefault(k => Measures(k, "measure_gust_strength"));
             var direction = Direction(windDevice);
-            parts.Add((wind.Id.Contains('.') ? wind.Title : Loc.T("Wind")) + " " + wind.Display
-                + (direction != null ? " " + direction : "")
-                + (gust != null ? ", " + Loc.F("stoten {0}", gust.Display) : ""));
+            windText = (wind.Id.Contains('.') ? wind.Title : Loc.T("Wind"))
+                + (direction != null ? " " + direction : "") + " " + Amount((double)wind.Value!, "0", wind.Units)
+                + (gust != null ? " (" + Loc.F("stoten {0}", Amount((double)gust.Value!, "0", gust.Units)) + ")" : "");
         }
-        if (station == null && parts.Count == 0) return null;
+        if (station == null && rain.Count == 0 && windText == null) return null;
         var state = new[] { "conditioncode_text", "weatherCondition", "weather_description", "conditioncode", "description" }
             .Select(id => station?.Cap(id)?.Value as string).FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
         return new DeviceWeather(station == null ? null : Number(station, "measure_temperature"), state,
-            station == null ? null : Number(station, "measure_humidity"), parts);
+            station == null ? null : Number(station, "measure_humidity"), rain, windText) { FeelsLike = feels };
+
+        string Amount(double v, string format, string? units) => v.ToString(format, ci) + (string.IsNullOrEmpty(units) ? "" : " " + units);
+        // "Rain next 6 hours" behind the rain of the next hour
+        static string WithoutRain(string title)
+        {
+            foreach (var word in new[] { "Rain", "Regen" })
+                if (title.Length > word.Length + 1 && title.StartsWith(word + " ", StringComparison.OrdinalIgnoreCase))
+                    return char.ToUpper(title[word.Length + 1], Loc.Culture) + title[(word.Length + 2)..];
+            return title;
+        }
 
         // The capability itself, a sub-capability (prefix.x) or one the app numbered (prefix1)
         static bool Measures(CapabilityVM k, string prefix) =>

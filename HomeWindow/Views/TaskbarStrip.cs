@@ -519,22 +519,19 @@ public sealed class TaskbarStrip : IDisposable
             part.Margin = new Thickness(visible && !first ? 12 : 0, 0, 0, 0);
             first &= !visible;
         }
+        // Only what the widget itself does not show, and nothing the user left out of it: the weather in words with
+        // rain and wind, and whether the battery charges or discharges at what power
         var lines = string.Join("\n", new[]
         {
-            weatherData.HasData ? $"{weatherData.Description} {weatherData.Temperature}".Trim() : null,
-            // Rain, wind and the like too, so a glance at the tooltip is enough
-            weatherData.HasData && weatherData.Details != "" ? weatherData.Details : null,
-            $"{Loc.T("Huis")}: {energy.HomeText}",
-            energy.HasSolar ? $"{Loc.T("Zon")}: {energy.SolarText}" : null,
-            energy.HasGrid ? $"{energy.GridLabel}: {energy.GridText}" : null,
-            energy.HasBattery ? $"{energy.BatteryLabel}: {energy.BatteryText}" + (energy.BatteryPercent != null ? $" · {energy.BatteryPercentText}" : "") : null,
-            energy.HasCharger ? $"{energy.ChargerLabel}: {energy.ChargerText}" + (energy.CarPercent != null ? $" · {energy.CarPercentText}" : "") : null,
-        }.Where(s => s != null));
+            shown.Contains("weather") ? weatherData.Summary : null,
+            shown.Contains("weather") ? weatherData.Details : null,
+            shown.Contains("battery") ? energy.BatteryStateText : null,
+        }.Where(s => !string.IsNullOrEmpty(s)));
         // A long weather line wraps between two values, at the width of the graph
-        var linesText = new TextBlock { Text = lines, TextWrapping = TextWrapping.Wrap, MaxWidth = 280 };
-        root.ToolTip = Graph() is { } graph
-            ? new StackPanel { Children = { linesText, graph } }
-            : linesText;
+        var linesText = lines == "" ? null : new TextBlock { Text = lines, TextWrapping = TextWrapping.Wrap, MaxWidth = 280 };
+        var graph = Graph();
+        root.ToolTip = graph != null && linesText != null ? new StackPanel { Children = { linesText, graph } }
+            : graph ?? (object?)linesText;
     }
 
     // The house use over the chosen period as a small line graph, as in Homey Insights; null when it is switched off
@@ -571,7 +568,7 @@ public sealed class TaskbarStrip : IDisposable
         {
             Children =
             {
-                Row(Loc.F("Huis, laatste {0}", period), EnergyVM.Watts(points.Max(p => p.watts)), new Thickness(0, 10, 0, 2)),
+                Row(Loc.F("Huis, laatste {0}", period), Loc.F("max. {0}", EnergyVM.Watts(points.Max(p => p.watts))), new Thickness(0, 10, 0, 2)),
                 canvas,
                 Row(from.ToLocalTime().ToString("HH:mm", Loc.Culture), Loc.T("nu"), new Thickness(0, 2, 0, 0)),
             },

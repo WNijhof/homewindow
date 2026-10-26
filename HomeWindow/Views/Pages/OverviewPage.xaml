@@ -16,7 +16,7 @@
                             <TextBlock DockPanel.Dock="Left" Style="{StaticResource Icon}" Text="{Binding Glyph}" FontSize="34" Foreground="{DynamicResource SolarBrush}" Margin="0,0,14,0" />
                             <StackPanel>
                                 <TextBlock Text="{Binding Temperature}" Style="{StaticResource Big}" FontSize="30" />
-                                <TextBlock Text="{Binding Description}" Style="{StaticResource Sub}" />
+                                <TextBlock Text="{Binding DescriptionLine}" Style="{StaticResource Sub}" />
                             </StackPanel>
                         </DockPanel>
                         <TextBlock Text="{Binding Details}" Style="{StaticResource Sub}" TextWrapping="Wrap" TextTrimming="None" Margin="0,8,0,0" Visibility="{Binding Details, Converter={StaticResource Visible}}" />

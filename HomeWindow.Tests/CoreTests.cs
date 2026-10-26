@@ -366,17 +366,20 @@ public class TranslationTests
 public class WeatherTests
 {
     [Fact]
-    public void Device_rain_and_wind_follow_Homeys_details_and_show_the_card_without_Homeys_weather()
+    public void Device_rain_and_wind_get_a_line_each_above_Homeys_details_and_show_the_card_without_Homeys_weather()
     {
         var w = new WeatherVM();
-        w.SetDevice(new DeviceWeather(null, null, null, ["Rain 0.4 mm/h", "Wind 3.6 m/s"]), true);
+        w.SetDevice(new DeviceWeather(null, null, null, ["Rain 0.4 mm/h", "Next 6 hours 0.7 mm"], "Wind WNW 4 m/s") { FeelsLike = 7 }, true);
         Assert.True(w.HasData);
         // A long line wraps only between values: inside one the spaces do not break
-        Assert.Equal("Rain 0.4 mm/h · Wind 3.6 m/s", w.Details);
+        Assert.Equal("Rain\u00A00.4\u00A0mm/h · Next\u00A06\u00A0hours\u00A00.7\u00A0mm\nWind\u00A0WNW\u00A04\u00A0m/s", w.Details);
+        Assert.Equal("", w.FeelsLike); // no temperature to go with it
 
         w.Update(JsonNode.Parse("""{ "temperature": 17, "pressure": 1.016 }"""), null);
         Assert.Equal("17°", w.Temperature);
-        Assert.Equal("1016 hPa\nRain 0.4 mm/h · Wind 3.6 m/s", w.Details.Replace(' ', ' '));
+        Assert.StartsWith("17° · ", w.Summary);
+        Assert.EndsWith(" 7°", w.Summary);
+        Assert.Equal("Rain 0.4 mm/h · Next 6 hours 0.7 mm\nWind WNW 4 m/s\n1016 hPa", w.Details.Replace('\u00A0', ' '));
     }
 
     [Fact]
@@ -384,11 +387,12 @@ public class WeatherTests
     {
         var w = new WeatherVM();
         w.Update(null, null);
-        w.SetDevice(new DeviceWeather(3.1, "Clouds", 86, ["Wind 6 km/h"]), true);
+        w.SetDevice(new DeviceWeather(3.1, "Clouds", 86, [], "Wind 6 km/h"), true);
         Assert.True(w.HasData);
         Assert.False(w.Missing);
         Assert.Equal("3°", w.Temperature);
-        Assert.EndsWith(" 86 %\nWind 6 km/h", w.Details.Replace(' ', ' ')); // the word for humidity follows the language
+        Assert.StartsWith("Wind 6 km/h\n", w.Details.Replace('\u00A0', ' '));
+        Assert.EndsWith(" 86 %", w.Details.Replace('\u00A0', ' ')); // the word for humidity follows the language
     }
 
     [Fact]

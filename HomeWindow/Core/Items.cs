@@ -375,13 +375,15 @@ public sealed class HourVM
     public string Glyph { get; init; } = Icons.Sun;
 }
 
-// The weather a device on Homey measures; Parts are rain and wind, ready to show
-public sealed record DeviceWeather(double? Temperature, string? State, double? Humidity, IReadOnlyList<string> Parts)
+// The weather a device on Homey measures; Rain (now, and later) and Wind are ready to show
+public sealed record DeviceWeather(double? Temperature, string? State, double? Humidity, IReadOnlyList<string> Rain, string? Wind = null)
 {
-    // A record compares a list by reference; the parts by their text
+    public double? FeelsLike { get; init; }
+
+    // A record compares a list by reference; the rain by its text
     public bool Equals(DeviceWeather? other) => other is not null && Temperature == other.Temperature && State == other.State
-        && Humidity == other.Humidity && Parts.SequenceEqual(other.Parts);
-    public override int GetHashCode() => HashCode.Combine(Temperature, State, Humidity, Parts.Count);
+        && Humidity == other.Humidity && Rain.SequenceEqual(other.Rain) && Wind == other.Wind && FeelsLike == other.FeelsLike;
+    public override int GetHashCode() => HashCode.Combine(Temperature, State, Humidity, Rain.Count, Wind, FeelsLike);
 }
 
 public sealed class WeatherVM : ObservableObject
@@ -389,6 +391,11 @@ public sealed class WeatherVM : ObservableObject
     public bool HasData { get; private set; }
     public string Temperature { get; private set; } = "";
     public string Description { get; private set; } = "";
+    // "Feels like 7°" when a weather app gives it, next to the temperature
+    public string FeelsLike { get; private set; } = "";
+    public string DescriptionLine => string.Join(" · ", new[] { Description, FeelsLike }.Where(s => s != ""));
+    // One line for the tooltip: "Cloudy 11° · Feels like 7°"
+    public string Summary => string.Join(" · ", new[] { $"{Description} {Temperature}".Trim(), FeelsLike }.Where(s => s != ""));
     public string Glyph { get; private set; } = Icons.Sun;
     public string Details { get; private set; } = "";
     public ObservableCollection<HourVM> Hours { get; } = [];
@@ -445,15 +452,17 @@ public sealed class WeatherVM : ObservableObject
         if (fromDevice && device!.Humidity is { } h) first = [Loc.F("Vochtigheid {0} %", h.ToString("0", ci))];
         else if (fromDevice) first = [];
         if (!App.Settings.WeatherHumidity) first = [];
-        var second = device?.Parts ?? [];
+        IReadOnlyList<string> rain = device?.Rain ?? [];
+        IReadOnlyList<string> wind = device?.Wind is { } w ? [w] : [];
         Temperature = temp is { } t ? t.ToString("0", ci) + "°" : "";
         Description = Translate(state);
+        FeelsLike = temp != null && device?.FeelsLike is { } f ? Loc.F("Voelt als {0}", f.ToString("0", ci) + "°") : "";
         Glyph = Icons.ForWeather(state, DateTime.Now.Hour is < 7 or >= 21);
-        // Homey's own details (or the device's humidity) on the first line, rain and wind below. A long line wraps
+        // Rain on one line, wind on the next, then Homey's own details (or the device's humidity). A long line wraps
         // between two values, never inside one (non-breaking spaces).
-        Details = string.Join("\n", new[] { first, second }.Where(p => p.Count > 0)
+        Details = string.Join("\n", new[] { rain, wind, first }.Where(p => p.Count > 0)
             .Select(p => string.Join(" · ", p.Select(x => x.Replace(' ', ' ')))));
-        HasData = temp != null || second.Count > 0;
+        HasData = temp != null || rain.Count > 0 || wind.Count > 0;
         OnPropertyChanged(string.Empty);
     }
 
