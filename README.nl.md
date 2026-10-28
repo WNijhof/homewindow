@@ -32,7 +32,7 @@ HomeWindow werkt met de Web API van Homey. Je logt in met je Homey-account: de b
 - **Bedienen**: aan/uit, dimmen, kleurtemperatuur, thermostaat, rolluiken, speakers en sloten. Per apparaat zijn ook alle andere instellingen en metingen te zien.
 - **Favorieten**: je eigen, of overgenomen uit de Homey-app.
 - **Pincode**, zodat collega’s of gasten op je laptop je huis niet kunnen bedienen.
-- **Hoofdvenster** met een overzicht en pagina's voor apparaten (zoeken, filteren op soort, kamers inklappen), flows per map, sferen, variabelen, energie, batterijen, meldingen en systeem (apps met hun icoon, herstarten).
+- **Hoofdvenster** met een overzicht en pagina's voor apparaten (zoeken, filteren op soort, kamers inklappen), flows per map (zoeken, alleen de flows die je kunt starten), sferen, variabelen, energie, batterijen, meldingen en systeem (apps met hun icoon, herstarten).
 - **Energie**: verbruik, zon, net en thuisbatterij op dit moment (ook in de taakbalk, met teruglevering in het groen), de grootste verbruikers, totalen van vandaag en deze maand, en een grafiek van de laatste 14 dagen.
 - **Thuis en onderweg**: lokaal via het IP-adres van je Homey en automatisch via de cloud van Athom als je niet thuis bent. Meerdere Homeys mogelijk.
 - **Uiterlijk**: licht, donker of volgens Windows, de stijl van het Homey-energiedashboard of een van vijf andere achtergronden (Papier, Aurora, Schemer, Oceaan, Glas), eigen pictogrammen per apparaat, tekstgrootte. Nederlands en Engels.

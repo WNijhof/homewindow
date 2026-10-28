@@ -32,7 +32,7 @@ HomeWindow uses the Homey Web API. You sign in with your Homey account: your bro
 - **Control**: on/off, dimming, colour temperature, thermostats, blinds, speakers and locks. Every other setting and measurement of a device is one click away.
 - **Favourites** of your own, or taken over from the Homey app.
 - **PIN lock**, so colleagues or guests on your laptop cannot control your home.
-- **Main window** with an overview and pages for devices (search, filter by type, collapse rooms), flows per folder, moods, Logic variables, energy, batteries, notifications and system (restart apps).
+- **Main window** with an overview and pages for devices (search, filter by type, collapse rooms), flows per folder (search, show only the ones you can start), moods, Logic variables, energy, batteries, notifications and system (restart apps).
 - **Energy**: use, solar, grid, home battery and EV charger right now – also on the taskbar, with returned power in green – the biggest users, totals for today and this month, and a chart of the last 14 days.
 - **At home and away**: local through your Homey's IP address, and automatically through Athom's cloud when you are out. More than one Homey is fine.
 - **Looks**: light, dark or following Windows; the *Dashboard* style of the Homey energy dashboard or one of five other backgrounds; your own icons per device; text size. Dutch and English.
