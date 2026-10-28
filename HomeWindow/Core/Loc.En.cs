@@ -24,6 +24,8 @@ public static partial class Loc
         ["Alleen lokaal"] = "Local only",
         ["Alles"] = "All",
         ["Alles inklappen"] = "Collapse all",
+        ["Alleen te starten"] = "Startable only",
+        ["Verberg flows zonder startknop, hier en in het paneel"] = "Hide flows without a start button, here and in the panel",
         ["Alles uitklappen"] = "Expand all",
         ["Altijd aan"] = "Always on",
         ["Ander pictogram"] = "Change icon",

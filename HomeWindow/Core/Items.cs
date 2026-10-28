@@ -102,7 +102,9 @@ public sealed class FlowVM : ObservableObject
     public string State { get => state; set { if (Set(ref state, value)) OnPropertyChanged(nameof(StateGlyph)); } }
     public string StateGlyph => State switch { "done" => Icons.Check, "failed" => Icons.Warning, _ => Icons.Play };
 
-    public bool CanRun => Enabled && Triggerable && !Broken && State != "running";
+    // Has a start button that works: enabled, with the card 'This flow is started', and not broken
+    public bool Startable => Enabled && Triggerable && !Broken;
+    public bool CanRun => Startable && State != "running";
     public string Glyph => IsAdvanced ? Icons.Grid : Icons.Flow;
     public string Subtitle => !Enabled ? Loc.T("Uitgeschakeld") : !Triggerable ? Loc.T("Niet handmatig te starten") : Broken ? Loc.T("Kapot") : FolderName;
 

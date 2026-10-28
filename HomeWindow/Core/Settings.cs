@@ -96,6 +96,8 @@ public sealed class AppSettings
     public bool WeatherHumidity { get; set; } = true;
     // The camera pictures on the Overview folded away
     public bool CamerasCollapsed { get; set; }
+    // Only flows that can be started by hand in the flow lists (panel and Flows page); favourites always show
+    public bool OnlyStartableFlows { get; set; }
     public bool TaskbarEnergy { get; set; } = true;
     // left (default): at the start of the taskbar, clear of centred icons; right: next to the notification area
     public string TaskbarPosition { get; set; } = "left";

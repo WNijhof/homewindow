@@ -226,7 +226,7 @@ Alle apparaten per kamer. Boven de lijst:
 
 Je favoriete flows, en daaronder alle flows per map, ook geavanceerde flows. Klik op een flow om hem te starten. Het icoon wordt even groen als het gelukt is, of rood als het misging.
 
-Alleen flows die beginnen met de kaart **Deze flow is gestart** kun je met de hand starten. Andere flows zijn grijs, met *Niet handmatig te starten*. Uitgeschakelde flows staan er ook bij, als *Uitgeschakeld*.
+Alleen flows die beginnen met de kaart **Deze flow is gestart** kun je met de hand starten. Andere flows zijn grijs, met *Niet handmatig te starten*. Uitgeschakelde flows staan er ook bij, als *Uitgeschakeld*. Zet rechtsboven **Alleen te starten** aan om alleen flows met een werkende startknop te zien; dat geldt ook voor het paneel en blijft bewaard. Favorieten blijven altijd zichtbaar.
 
 ### Sferen
 

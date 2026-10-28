@@ -202,6 +202,15 @@ public partial class App : Application
         Render((FrameworkElement)flyout.Content, Path.Combine(folder, "flyout-lights-list.png"));
         Settings.FlyoutLastTab = "moods";
 
+        // Only the flows with a start button
+        store.OnlyStartableFlows = true;
+        main.Navigate("flows");
+        flyout.SelectTab("flows");
+        await Task.Delay(400);
+        Render((FrameworkElement)main.Content, Path.Combine(folder, "main-flows-startable.png"));
+        Render((FrameworkElement)flyout.Content, Path.Combine(folder, "flyout-flows-startable.png"));
+        store.OnlyStartableFlows = false;
+
         // Each tile size, to check that names, state and buttons fit
         Settings.FlyoutView = "grid";
         main.CloseDetail();

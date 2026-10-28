@@ -61,6 +61,18 @@ public sealed class HomeyStore : ObservableObject
             OnPropertyChanged();
         }
     }
+    public bool OnlyStartableFlows
+    {
+        get => App.Settings.OnlyStartableFlows;
+        set
+        {
+            if (App.Settings.OnlyStartableFlows == value) return;
+            App.Settings.OnlyStartableFlows = value;
+            App.Settings.Save();
+            OnPropertyChanged();
+            RebuildFlowGroups();
+        }
+    }
     public RelayCommand ShowHiddenCamerasCommand { get; }
     bool camerasRequested;
     public ObservableCollection<VariableVM> Variables { get; } = [];
@@ -630,15 +642,16 @@ public sealed class HomeyStore : ObservableObject
             else if (!Config.CollapsedFolders.Contains(g.Key)) Config.CollapsedFolders.Add(g.Key);
             App.Settings.Save();
         }
+        var shown = App.Settings.OnlyStartableFlows ? Flows.Where(f => f.Startable).ToList() : Flows.ToList();
         var groups = new List<FlowGroup>();
         foreach (var folder in Folders)
         {
-            var items = Flows.Where(f => f.FolderId == folder.Id).ToList();
+            var items = shown.Where(f => f.FolderId == folder.Id).ToList();
             if (items.Count == 0) continue;
             var title = folder.Depth > 0 ? string.Join(" › ", Ancestors(folder).Select(a => a.Name)) : folder.Name;
             groups.Add(new FlowGroup(folder.Id, title, items, !collapsed.Contains(folder.Id), Persist));
         }
-        var loose = Flows.Where(f => f.FolderId == null || !folders.ContainsKey(f.FolderId)).ToList();
+        var loose = shown.Where(f => f.FolderId == null || !folders.ContainsKey(f.FolderId)).ToList();
         if (loose.Count > 0) groups.Add(new FlowGroup("", Loc.T("Zonder map"), loose, !collapsed.Contains(""), Persist));
         FlowGroups.Clear();
         foreach (var g in groups) FlowGroups.Add(g);

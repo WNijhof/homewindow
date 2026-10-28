@@ -5,6 +5,8 @@
     <DockPanel>
         <DockPanel DockPanel.Dock="Top" Margin="28,22,22,8">
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                <ToggleButton Style="{StaticResource ToggleChip}" Margin="0,0,6,0" Content="{c:T 'Alleen te starten'}" IsChecked="{Binding OnlyStartableFlows}"
+                              ToolTip="{c:T 'Verberg flows zonder startknop, hier en in het paneel'}" />
                 <Button Style="{StaticResource IconBtn}" Content="&#xE70E;" ToolTip="{c:T 'Alles inklappen'}" Click="CollapseAll_Click" />
                 <Button Style="{StaticResource IconBtn}" Content="&#xE70D;" ToolTip="{c:T 'Alles uitklappen'}" Click="ExpandAll_Click" />
             </StackPanel>
